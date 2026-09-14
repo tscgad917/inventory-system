@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>庫存盤點系統｜後台登入</title>
 
+  <style>
+    body {
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f6f8;
+      color: #333;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 80px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 28px;
+      padding: 12px;
+      font-size: 17px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>總務課管理後台</h1>
+
+    <label for="email">Email</label>
+    <input
+      type="email"
+      id="email"
+      placeholder="請輸入管理帳號"
+    >
+
+    <label for="password">密碼</label>
+    <input
+      type="password"
+      id="password"
+      placeholder="請輸入密碼"
+    >
+
+    <button type="button" onclick="login()">
+      登入
+    </button>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+    async function login() {
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("請輸入 Email 及密碼");
+        return;
+      }
+
+      try {
+
+        const response = await fetch(
+          SUPABASE_URL + "/auth/v1/token?grant_type=password",
+          {
+            method: "POST",
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              email: email,
+              password: password
+            })
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert("登入失敗，請確認帳號及密碼。");
+          console.error(result);
+          return;
+        }
+
+        // 暫存登入資訊
+        localStorage.setItem(
+          "admin_access_token",
+          result.access_token
+        );
+
+        localStorage.setItem(
+          "admin_email",
+          email
+        );
+
+        alert("登入成功！");
+
+      } catch (error) {
+
+        console.error(error);
+        alert("系統連線失敗，請稍後再試。");
+
+      }
+    }
+  </script>
+
+</body>
+</html>
