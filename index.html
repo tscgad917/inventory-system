@@ -155,11 +155,88 @@
 
   </div>
 
-  <script>
-    function submitForm() {
-      alert("目前為畫面測試，尚未連接資料庫。");
-    }
-  </script>
+ <script>
+  const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
-</body>
+  async function submitForm() {
+
+    const unitId = document.getElementById("unit").value;
+    const name = document.getElementById("name").value.trim();
+
+    if (!unitId) {
+      alert("請選擇盤點單位");
+      return;
+    }
+
+    if (!name) {
+      alert("請輸入盤點人員姓名");
+      return;
+    }
+
+    const itemIds = [1, 2, 3, 4, 5, 6];
+    const itemCodes = ["T", "R", "AP", "AR", "AB", "AN"];
+
+    const quantities = [];
+
+    for (let i = 0; i < itemIds.length; i++) {
+      const value = document.getElementById(itemCodes[i]).value;
+
+      if (value === "") {
+        alert("請填寫全部 6 項庫存數量");
+        return;
+      }
+
+      quantities.push(Number(value));
+    }
+
+    // 盤點日期固定為當月 1 日
+    const today = new Date();
+    const countDate =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-01";
+
+    const data = itemIds.map((itemId, index) => ({
+      count_date: countDate,
+      unit_id: Number(unitId),
+      item_id: itemId,
+      quantity: quantities[index],
+      submitted_by: name
+    }));
+
+    try {
+
+      const response = await fetch(
+        SUPABASE_URL + "/rest/v1/monthly_counts",
+        {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(data)
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(errorText);
+        alert("送出失敗，請通知總務課處理。");
+        return;
+      }
+
+      alert("盤點資料已成功送出！");
+
+    } catch (error) {
+
+      console.error(error);
+      alert("系統連線失敗，請稍後再試。");
+
+    }
+  }
+</script>
 </html>
