@@ -198,32 +198,42 @@
         // =====================================================
 
         const months = [...new Set(
-  data.map(row => row.count_date.substring(0, 7))
-)].sort().reverse();
+          data.map(row =>
+            row.count_date.substring(0, 7)
+          )
+        )].sort().reverse();
 
-const monthSelect =
-  document.getElementById("monthSelect");
 
-monthSelect.innerHTML = "";
+        const monthSelect =
+          document.getElementById("monthSelect");
 
-months.forEach(month => {
 
-  const option =
-    document.createElement("option");
+        monthSelect.innerHTML = "";
 
-  option.value = month;
 
-  const [year, monthNumber] =
-    month.split("-");
+        months.forEach(month => {
 
-  option.textContent =
-    year + "年" +
-    Number(monthNumber) +
-    "月";
+          const option =
+            document.createElement("option");
 
-  monthSelect.appendChild(option);
 
-});
+          option.value = month;
+
+
+          const [year, monthNumber] =
+            month.split("-");
+
+
+          option.textContent =
+            year + "年" +
+            Number(monthNumber) +
+            "月";
+
+
+          monthSelect.appendChild(option);
+
+        });
+
 
         const tbody =
           document.getElementById(
@@ -257,7 +267,7 @@ months.forEach(month => {
             [...new Set(
               data
                 .filter(row =>
-                  row.count_date === selectedMonth
+                  row.count_date.substring(0, 7) === selectedMonth
                 )
                 .filter(row =>
                   row.counted_quantity !== null
@@ -272,7 +282,7 @@ months.forEach(month => {
             [...new Set(
               data
                 .filter(row =>
-                  row.count_date === selectedMonth
+                  row.count_date.substring(0, 7) === selectedMonth
                 )
                 .map(row =>
                   row.unit_name
@@ -317,7 +327,7 @@ months.forEach(month => {
 
           data
             .filter(row =>
-              row.count_date === selectedMonth
+              row.count_date.substring(0, 7) === selectedMonth
             )
             .forEach(row => {
 
