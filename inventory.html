@@ -231,6 +231,20 @@ monthSelect.onchange = function() {
   const selectedMonth = this.value;
 
   tbody.innerHTML = "";
+  const allUnits = [...new Set(
+  data
+    .filter(row => row.count_date === selectedMonth)
+    .map(row => row.unit_name)
+)];
+
+const pendingUnits = allUnits.filter(
+  unit => !completedUnits.includes(unit)
+);
+
+document.getElementById("pendingUnits").textContent =
+  pendingUnits.length > 0
+    ? "尚未盤點：" + pendingUnits.join("、")
+    : "所有單位均已完成盤點";
 const completedUnits = [...new Set(
   data
     .filter(row => row.count_date === selectedMonth)
@@ -238,14 +252,25 @@ const completedUnits = [...new Set(
     .map(row => row.unit_name)
 )];
 
-const totalUnits = [...new Set(
+const allUnits = [...new Set(
   data
     .filter(row => row.count_date === selectedMonth)
     .map(row => row.unit_name)
-)].length;
+)];
+
+const pendingUnits = allUnits.filter(
+  unit => !completedUnits.includes(unit)
+);
+
+const totalUnits = allUnits.length;
 
 document.getElementById("countProgress").textContent =
   `本月盤點進度：${completedUnits.length} / ${totalUnits} 個單位已完成`;
+
+document.getElementById("pendingUnits").textContent =
+  pendingUnits.length > 0
+    ? "尚未盤點：" + pendingUnits.join("、")
+    : "所有單位均已完成盤點";
 data
   .filter(row => row.count_date === selectedMonth)
   .forEach(row => {
