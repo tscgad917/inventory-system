@@ -339,17 +339,17 @@
 
       }
 
-    catch (error) {
+      catch (error) {
 
-  console.error(error);
+        console.error(error);
 
-  document.getElementById(
-    "status"
-  ).textContent =
-    "資料讀取失敗：" +
-    (error.message || "未知錯誤");
+        document.getElementById(
+          "status"
+        ).textContent =
+          "資料讀取失敗：" +
+          (error.message || "未知錯誤");
 
-}
+      }
 
     }
 
@@ -358,36 +358,28 @@
     // 取得盤點期間
     // ============================================================
 
-    async function loadInventoryData() {
+    async function loadPeriods() {
 
-  const response =
-    await apiFetch(
-      SUPABASE_URL +
-      "/rest/v1/monthly_counts" +
-      "?select=count_date,unit_id,item_id,quantity,submitted_by" +
-      "&order=count_date.desc,unit_id,item_id" +
-      "&order=count_date.desc,unit_id,item_id"
-    );
+      const response =
+        await apiFetch(
+          SUPABASE_URL +
+          "/rest/v1/inventory_periods" +
+          "?select=period_month,count_date,is_open" +
+          "&order=period_month.desc"
+        );
 
-  if (!response.ok) {
+      if (!response.ok) {
 
-    const errorText =
-      await response.text();
+        throw new Error(
+          "inventory_periods 讀取失敗"
+        );
 
-    console.error(
-      errorText
-    );
+      }
 
-    throw new Error(
-      "monthly_counts 讀取失敗"
-    );
+      inventoryPeriods =
+        await response.json();
 
-  }
-
-  inventoryData =
-    await response.json();
-
-}
+    }
 
 
     // ============================================================
