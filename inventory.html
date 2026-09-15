@@ -315,52 +315,65 @@
         }
 
 
-       inventoryData =
-  await response.json();
+        inventoryData =
+          await response.json();
+
 
         // =================================================
         // 建立月份選單
         //
-        // 月份來源以 inventory_periods 為準
-        // 這樣尚未產生盤點資料的月份也能出現
+        // 月份來源：
+        // 1. inventory_periods 已設定的月份
+        // 2. inventory_expected 已存在的歷史盤點月份
+        //
+        // 這樣尚未產生盤點資料的月份也能出現，
+        // 同時保留沒有建立盤點期間的歷史月份。
         // =================================================
 
-      const periodMonths =
-  periods
-    .map(period => {
-      if (!period.period_month) {
-        return null;
-      }
+        const periodMonths =
+          periods
+            .map(period => {
 
-      return String(period.period_month).substring(0, 7);
-    })
-    .filter(month => month);
+              if (!period.period_month) {
+                return null;
+              }
 
+              return String(
+                period.period_month
+              ).substring(0, 7);
 
-const inventoryMonths =
-  inventoryData
-    .map(row => {
-      if (!row.count_date) {
-        return null;
-      }
-
-      return String(row.count_date).substring(0, 7);
-    })
-    .filter(month => month);
+            })
+            .filter(month => month);
 
 
-const months = [
-  ...new Set([
-    ...periodMonths,
-    ...inventoryMonths
-  ])
-].sort().reverse();
-console.log("periodMonths =", periodMonths);
-console.log("inventoryMonths =", inventoryMonths);
-console.log("months =", months);
+        const inventoryMonths =
+          inventoryData
+            .map(row => {
+
+              if (!row.count_date) {
+                return null;
+              }
+
+              return String(
+                row.count_date
+              ).substring(0, 7);
+
+            })
+            .filter(month => month);
+
+
+        const months = [
+          ...new Set([
+            ...periodMonths,
+            ...inventoryMonths
+          ])
+        ].sort().reverse();
+
 
         const monthSelect =
-          document.getElementById("monthSelect");
+          document.getElementById(
+            "monthSelect"
+          );
 
 
         monthSelect.innerHTML = "";
@@ -413,7 +426,9 @@ console.log("months =", months);
 
 
         const unitSelect =
-          document.getElementById("unitSelect");
+          document.getElementById(
+            "unitSelect"
+          );
 
 
         unitSelect.innerHTML =
