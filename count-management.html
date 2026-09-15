@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
@@ -161,61 +162,64 @@
       }
     }
   </style>
+
 </head>
 
 <body>
 
   <div class="container">
 
-    <h1>盤點資料管理</h1>
+```
+<h1>盤點資料管理</h1>
 
-    <div class="subtitle">
-      總務課管理後台
-    </div>
+<div class="subtitle">
+  總務課管理後台
+</div>
 
-    <div class="filter-area">
+<div class="filter-area">
 
-      <div class="field">
-        <label for="monthSelect">盤點月份</label>
+  <div class="field">
+    <label for="monthSelect">盤點月份</label>
 
-        <select
-          id="monthSelect"
-          onchange="loadUnits()"
-        >
-          <option value="">
-            請選擇盤點月份
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="unitSelect">盤點單位</label>
-
-        <select
-          id="unitSelect"
-          onchange="loadCountData()"
-          disabled
-        >
-          <option value="">
-            請先選擇月份
-          </option>
-        </select>
-      </div>
-
-    </div>
-
-    <div id="status" class="status">
-      資料載入中……
-    </div>
-
-    <div id="dataArea"></div>
-
-    <a
-      href="admin-home.html"
-      class="back-button"
+    <select
+      id="monthSelect"
+      onchange="loadUnits()"
     >
-      返回管理後台
-    </a>
+      <option value="">
+        請選擇盤點月份
+      </option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="unitSelect">盤點單位</label>
+
+    <select
+      id="unitSelect"
+      onchange="loadCountData()"
+      disabled
+    >
+      <option value="">
+        請先選擇月份
+      </option>
+    </select>
+  </div>
+
+</div>
+
+<div id="status" class="status">
+  資料載入中……
+</div>
+
+<div id="dataArea"></div>
+
+<a
+  href="admin-home.html"
+  class="back-button"
+>
+  返回管理後台
+</a>
+```
 
   </div>
 
@@ -370,6 +374,13 @@
 
       if (!response.ok) {
 
+        const errorText =
+          await response.text();
+
+        console.error(
+          errorText
+        );
+
         throw new Error(
           "inventory_periods 讀取失敗"
         );
@@ -397,6 +408,13 @@
         );
 
       if (!response.ok) {
+
+        const errorText =
+          await response.text();
+
+        console.error(
+          errorText
+        );
 
         throw new Error(
           "monthly_counts 讀取失敗"
@@ -787,6 +805,7 @@
           html +=
             "<td>";
 
+
           html +=
             '<input type="number" ' +
             'id="quantity_' +
@@ -801,6 +820,7 @@
                 : quantity
             ) +
             '">';
+
 
           html +=
             "</td>";
