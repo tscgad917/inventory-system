@@ -176,7 +176,20 @@ const unitNames = [...new Set(
     .filter(row => row.counted_quantity !== null)
     .map(row => row.unit_name)
 )];
+const allUnits = [...new Set(
+  data
+    .filter(row => row.count_date === selectedMonth)
+    .map(row => row.unit_name)
+)];
 
+const pendingUnits = allUnits.filter(
+  unit => !unitNames.includes(unit)
+);
+
+document.getElementById("pendingUnits").textContent =
+  pendingUnits.length > 0
+    ? "尚未盤點：" + pendingUnits.join("、")
+    : "所有單位均已完成盤點";
 const totalUnits = [...new Set(
   data
     .filter(row => row.count_date === selectedMonth)
