@@ -552,15 +552,18 @@
 
 
       // =================================================
-      // 這裡只使用「本月份實際存在的資料」
-      // 不自行建立尚未盤點的單位
+      // 所有單位固定以系統既有單位為準
       // =================================================
 
       const allUnits =
         [...new Set(
-          monthData.map(row =>
-            row.unit_name
-          )
+          inventoryData
+            .map(row =>
+              row.unit_name
+            )
+            .filter(unit =>
+              unit
+            )
         )];
 
 
@@ -573,8 +576,7 @@
             );
 
 
-          return unitRows.length > 0 &&
-            unitRows.length === 6 &&
+          return unitRows.length === 6 &&
             unitRows.every(row =>
               row.counted_quantity !== null
             );
@@ -593,23 +595,29 @@
       // 尚未有任何資料的月份
       // =================================================
 
-      if (allUnits.length === 0) {
+      if (monthData.length === 0) {
 
         document.getElementById(
           "countProgress"
         ).textContent =
-          "本月盤點進度：尚無盤點資料";
+          `本月盤點進度：0 / ${allUnits.length} 個單位已完成`;
 
 
         document.getElementById(
           "pendingUnits"
         ).textContent =
-          "本月份尚未產生盤點資料";
-
+          allUnits.length > 0
+            ? "尚未盤點：" +
+              allUnits.join("、")
+            : "目前尚無單位資料";
 
         return;
       }
 
+
+      // =================================================
+      // 已有部分或全部盤點資料
+      // =================================================
 
       document.getElementById(
         "countProgress"
