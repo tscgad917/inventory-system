@@ -365,7 +365,7 @@
       "/rest/v1/monthly_counts" +
       "?select=count_date,unit_id,item_id,quantity,submitted_by" +
       "&order=count_date.desc,unit_id,item_id" +
-      "&limit=5000"
+      "&order=count_date.desc,unit_id,item_id"
     );
 
   if (!response.ok) {
