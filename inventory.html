@@ -171,14 +171,24 @@ filteredData.forEach(row => {
 
           const tr = document.createElement("tr");
 
-          tr.innerHTML = `
-            <td>${row.unit_name}</td>
-            <td>${row.item_name}</td>
-            <td class="number">${row.counted_quantity}</td>
-            <td class="number">${row.delivery_adjustment}</td>
-             <td class="number">${row.purchase_quantity}</td>
-            <td class="number">${row.expected_quantity}</td>
-          `;
+          const countedText =
+  row.counted_quantity === null
+    ? "尚未盤點"
+    : row.counted_quantity;
+
+const expectedText =
+  row.expected_quantity === null
+    ? "—"
+    : row.expected_quantity;
+
+tr.innerHTML = `
+  <td>${row.unit_name}</td>
+  <td>${row.item_name}</td>
+  <td class="number">${countedText}</td>
+  <td class="number">${row.delivery_adjustment}</td>
+  <td class="number">${row.purchase_quantity}</td>
+  <td class="number">${expectedText}</td>
+`;
 
           tbody.appendChild(tr);
 
@@ -191,22 +201,32 @@ monthSelect.onchange = function() {
 
   tbody.innerHTML = "";
 
-  data
-    .filter(row => row.count_date === selectedMonth)
-    .forEach(row => {
-      const tr = document.createElement("tr");
+data
+  .filter(row => row.count_date === selectedMonth)
+  .forEach(row => {
+    const tr = document.createElement("tr");
 
-      tr.innerHTML = `
-        <td>${row.unit_name}</td>
-        <td>${row.item_name}</td>
-        <td class="number">${row.counted_quantity}</td>
-        <td class="number">${row.delivery_adjustment}</td>
-        <td class="number">${row.purchase_quantity}</td>
-        <td class="number">${row.expected_quantity}</td>
-      `;
+    const countedText =
+      row.counted_quantity === null
+        ? "尚未盤點"
+        : row.counted_quantity;
 
-      tbody.appendChild(tr);
-    });
+    const expectedText =
+      row.expected_quantity === null
+        ? "—"
+        : row.expected_quantity;
+
+    tr.innerHTML = `
+      <td>${row.unit_name}</td>
+      <td>${row.item_name}</td>
+      <td class="number">${countedText}</td>
+      <td class="number">${row.delivery_adjustment}</td>
+      <td class="number">${row.purchase_quantity}</td>
+      <td class="number">${expectedText}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
 };
       } catch (error) {
 
