@@ -342,26 +342,17 @@ async function savePeriod() {
       }
     );
 
-    if (!response.ok) {
+  if (!response.ok) {
 
-      const errorText =
-        await response.text();
+  const errorText = await response.text();
 
-      console.error(errorText);
+  console.error("儲存失敗：", errorText);
 
-      if (response.status === 409) {
+  status.textContent =
+    "儲存失敗：" + errorText;
 
-        status.textContent =
-          "這個月份已經設定過盤點期間。";
-
-      } else {
-
-        status.textContent =
-          "儲存失敗，請通知總務課處理。";
-      }
-
-      return;
-    }
+  return;
+}
 
     status.textContent =
       "盤點期間已成功儲存。";
