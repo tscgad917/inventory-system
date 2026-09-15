@@ -295,13 +295,18 @@
       options = {}
     ) {
 
+      const currentAccessToken =
+        localStorage.getItem(
+          "admin_access_token"
+        );
+
       const headers = {
 
         "apikey":
           SUPABASE_KEY,
 
         "Authorization":
-          "Bearer " + accessToken,
+          "Bearer " + currentAccessToken,
 
         ...(
           options.headers || {}
