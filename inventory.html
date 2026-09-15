@@ -326,13 +326,28 @@
         // 這樣尚未產生盤點資料的月份也能出現
         // =================================================
 
-        const months = [
-          ...new Set(
-            periods
-              .map(period => period.period_month)
-              .filter(month => month)
-          )
-        ].sort().reverse();
+        const periodMonths =
+  periods
+    .map(period => period.period_month)
+    .filter(month => month);
+
+
+const inventoryMonths =
+  inventoryData
+    .map(row =>
+      row.count_date
+        ? row.count_date.substring(0, 7)
+        : null
+    )
+    .filter(month => month);
+
+
+const months = [
+  ...new Set([
+    ...periodMonths,
+    ...inventoryMonths
+  ])
+].sort().reverse();
 
 
         const monthSelect =
