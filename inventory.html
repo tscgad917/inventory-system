@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
@@ -161,54 +162,56 @@
       color: #777;
     }
   </style>
+
 </head>
 
 <body>
 
   <div class="container">
 
-    <a href="admin-home.html" class="back">← 返回後台</a>
+```
+<a href="admin-home.html" class="back">← 返回後台</a>
 
-    <h1>庫存統計</h1>
+<h1>庫存統計</h1>
 
-    <div class="filter-area">
+<div class="filter-area">
 
-      <div class="filter-item">
-        <label for="monthSelect">
-          盤點月份：
-        </label>
+  <div class="filter-item">
+    <label for="monthSelect">
+      盤點月份：
+    </label>
 
-        <select id="monthSelect"></select>
-      </div>
-
-      <div class="filter-item">
-        <label for="unitSelect">
-          查看單位：
-        </label>
-
-        <select id="unitSelect">
-          <option value="all">全部單位</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div id="message" class="message">
-      資料載入中……
-    </div>
-
-    <div id="countProgress" class="count-progress">
-      本月盤點進度：讀取中……
-    </div>
-
-    <div id="pendingUnits" class="pending-units">
-    </div>
-
-    <div id="unitContainer">
-    </div>
-
+    <select id="monthSelect"></select>
   </div>
 
+  <div class="filter-item">
+    <label for="unitSelect">
+      查看單位：
+    </label>
+
+    <select id="unitSelect">
+      <option value="all">全部單位</option>
+    </select>
+  </div>
+
+</div>
+
+<div id="message" class="message">
+  資料載入中……
+</div>
+
+<div id="countProgress" class="count-progress">
+  本月盤點進度：讀取中……
+</div>
+
+<div id="pendingUnits" class="pending-units">
+</div>
+
+<div id="unitContainer">
+</div>
+```
+
+  </div>
 
   <script>
 
@@ -240,18 +243,62 @@
 
       try {
 
-        const response = await fetch(
-          SUPABASE_URL +
-          "/rest/v1/inventory_expected?select=*",
-          {
-            method: "GET",
+        // =================================================
+        // 讀取盤點期間
+        // =================================================
 
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Authorization": "Bearer " + accessToken
+        const periodResponse =
+          await fetch(
+            SUPABASE_URL +
+            "/rest/v1/inventory_periods?select=period_month,count_date,is_open,note&order=period_month.desc",
+            {
+              method: "GET",
+
+              headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + accessToken
+              }
             }
-          }
-        );
+          );
+
+
+        if (!periodResponse.ok) {
+
+          const errorText =
+            await periodResponse.text();
+
+          console.error(errorText);
+
+          document.getElementById(
+            "message"
+          ).textContent =
+            "盤點期間資料讀取失敗。";
+
+          return;
+        }
+
+
+        const periods =
+          await periodResponse.json();
+
+
+        // =================================================
+        // 讀取庫存統計資料
+        // =================================================
+
+        const response =
+          await fetch(
+            SUPABASE_URL +
+            "/rest/v1/inventory_expected?select=*",
+            {
+              method: "GET",
+
+              headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + accessToken
+              }
+            }
+          );
 
 
         if (!response.ok) {
@@ -274,26 +321,18 @@
           await response.json();
 
 
-        if (inventoryData.length === 0) {
-
-          document.getElementById(
-            "message"
-          ).textContent =
-            "目前尚無庫存統計資料。";
-
-          return;
-        }
-
-
         // =================================================
         // 建立月份選單
+        // 月份來源改由 inventory_periods 決定
         // =================================================
 
-        const months = [...new Set(
-          inventoryData.map(row =>
-            row.count_date.substring(0, 7)
+        const months = [
+          ...new Set(
+            periods
+              .map(period => period.period_month)
+              .filter(month => month)
           )
-        )].sort().reverse();
+        ].sort().reverse();
 
 
         const monthSelect =
@@ -329,6 +368,7 @@
 
         // =================================================
         // 建立單位選單
+        // 單位仍由既有庫存資料取得
         // =================================================
 
         const units = [];
@@ -364,6 +404,35 @@
           unitSelect.appendChild(option);
 
         });
+
+
+        // =================================================
+        // 沒有任何盤點期間
+        // =================================================
+
+        if (months.length === 0) {
+
+          document.getElementById(
+            "message"
+          ).textContent =
+            "目前尚未建立任何盤點期間。";
+
+          document.getElementById(
+            "countProgress"
+          ).textContent =
+            "本月盤點進度：尚無資料";
+
+          document.getElementById(
+            "pendingUnits"
+          ).textContent = "";
+
+          document.getElementById(
+            "unitContainer"
+          ).innerHTML =
+            '<div class="no-data">目前尚未建立盤點期間。</div>';
+
+          return;
+        }
 
 
         // =================================================
@@ -433,13 +502,20 @@
 
       const monthData =
         inventoryData.filter(row =>
+          row.count_date &&
           row.count_date.substring(0, 7) === selectedMonth
         );
 
 
+      // =================================================
+      // 所有單位以既有庫存資料中的單位為基準
+      // 即使本月份尚未有任何盤點資料，
+      // 仍應顯示完整單位數。
+      // =================================================
+
       const allUnits =
         [...new Set(
-          monthData.map(row =>
+          inventoryData.map(row =>
             row.unit_name
           )
         )];
@@ -455,6 +531,7 @@
 
 
           return unitRows.length > 0 &&
+            unitRows.length === 6 &&
             unitRows.every(row =>
               row.counted_quantity !== null
             );
@@ -506,13 +583,19 @@
 
       const monthData =
         inventoryData.filter(row =>
+          row.count_date &&
           row.count_date.substring(0, 7) === selectedMonth
         );
 
 
+      // =================================================
+      // 單位來源改為全部既有單位
+      // 因此尚未盤點的月份仍能顯示所有單位
+      // =================================================
+
       let units =
         [...new Set(
-          monthData.map(row =>
+          inventoryData.map(row =>
             row.unit_name
           )
         )];
@@ -545,14 +628,19 @@
           );
 
 
+        // =================================================
+        // 每個單位固定有 6 種耗材
+        // 尚未盤點時 unitRows 可能為 0 筆，
+        // 仍以 6 項作為完整盤點數。
+        // =================================================
+
         const completedCount =
           unitRows.filter(row =>
             row.counted_quantity !== null
           ).length;
 
 
-        const totalCount =
-          unitRows.length;
+        const totalCount = 6;
 
 
         const completed =
