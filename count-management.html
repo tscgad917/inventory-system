@@ -906,6 +906,9 @@
 
       try {
 
+        const changedLogs = [];
+
+
         for (
           const item of items
         ) {
@@ -965,6 +968,25 @@
           }
 
 
+          const oldQuantity =
+            Number(
+              existingRow.quantity
+            );
+
+
+          // 數量沒有變更，不更新，也不建立異動紀錄
+
+          if (
+            oldQuantity === quantity
+          ) {
+
+            continue;
+
+          }
+
+
+          // 更新 monthly_counts
+
           const response =
             await apiFetch(
               SUPABASE_URL +
@@ -1016,12 +1038,104 @@
 
           }
 
+
+          // 建立異動紀錄資料
+
+          changedLogs.push({
+
+            count_date:
+              existingRow.count_date,
+
+            unit_id:
+              Number(
+                existingRow.unit_id
+              ),
+
+            item_id:
+              Number(
+                existingRow.item_id
+              ),
+
+            old_quantity:
+              oldQuantity,
+
+            new_quantity:
+              quantity,
+
+            modified_by:
+              localStorage.getItem(
+                "admin_email"
+              ) ||
+              "未記錄"
+
+          });
+
         }
 
 
-        alert(
-          "盤點資料已成功修改！"
-        );
+        // 將異動紀錄寫入 inventory_logs
+
+        if (
+          changedLogs.length > 0
+        ) {
+
+          const logResponse =
+            await apiFetch(
+              SUPABASE_URL +
+              "/rest/v1/inventory_logs",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  "Prefer":
+                    "return=minimal"
+                },
+
+                body:
+                  JSON.stringify(
+                    changedLogs
+                  )
+
+              }
+            );
+
+
+          if (!logResponse.ok) {
+
+            const errorText =
+              await logResponse.text();
+
+            console.error(
+              errorText
+            );
+
+            throw new Error(
+              "盤點資料已修改，但異動紀錄寫入失敗，請立即檢查系統。"
+            );
+
+          }
+
+        }
+
+
+        if (
+          changedLogs.length === 0
+        ) {
+
+          alert(
+            "資料未有變更，未產生異動紀錄。"
+          );
+
+        } else {
+
+          alert(
+            "盤點資料已成功修改，並已建立異動紀錄。"
+          );
+
+        }
 
 
         await loadInventoryData();
