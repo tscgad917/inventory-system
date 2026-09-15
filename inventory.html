@@ -169,47 +169,45 @@
 
   <div class="container">
 
-```
-<a href="admin-home.html" class="back">← 返回後台</a>
+    <a href="admin-home.html" class="back">← 返回後台</a>
 
-<h1>庫存統計</h1>
+    <h1>庫存統計</h1>
 
-<div class="filter-area">
+    <div class="filter-area">
 
-  <div class="filter-item">
-    <label for="monthSelect">
-      盤點月份：
-    </label>
+      <div class="filter-item">
+        <label for="monthSelect">
+          盤點月份：
+        </label>
 
-    <select id="monthSelect"></select>
-  </div>
+        <select id="monthSelect"></select>
+      </div>
 
-  <div class="filter-item">
-    <label for="unitSelect">
-      查看單位：
-    </label>
+      <div class="filter-item">
+        <label for="unitSelect">
+          查看單位：
+        </label>
 
-    <select id="unitSelect">
-      <option value="all">全部單位</option>
-    </select>
-  </div>
+        <select id="unitSelect">
+          <option value="all">全部單位</option>
+        </select>
+      </div>
 
-</div>
+    </div>
 
-<div id="message" class="message">
-  資料載入中……
-</div>
+    <div id="message" class="message">
+      資料載入中……
+    </div>
 
-<div id="countProgress" class="count-progress">
-  本月盤點進度：讀取中……
-</div>
+    <div id="countProgress" class="count-progress">
+      本月盤點進度：讀取中……
+    </div>
 
-<div id="pendingUnits" class="pending-units">
-</div>
+    <div id="pendingUnits" class="pending-units">
+    </div>
 
-<div id="unitContainer">
-</div>
-```
+    <div id="unitContainer">
+    </div>
 
   </div>
 
@@ -323,7 +321,9 @@
 
         // =================================================
         // 建立月份選單
-        // 月份來源改由 inventory_periods 決定
+        //
+        // 月份來源以 inventory_periods 為準
+        // 這樣尚未產生盤點資料的月份也能出現
         // =================================================
 
         const months = [
@@ -368,7 +368,9 @@
 
         // =================================================
         // 建立單位選單
-        // 單位仍由既有庫存資料取得
+        //
+        // 單位仍然以既有庫存資料為來源
+        // 不改變原本 9 月資料的呈現方式
         // =================================================
 
         const units = [];
@@ -376,7 +378,10 @@
 
         inventoryData.forEach(row => {
 
-          if (!units.includes(row.unit_name)) {
+          if (
+            row.unit_name &&
+            !units.includes(row.unit_name)
+          ) {
             units.push(row.unit_name);
           }
 
@@ -508,14 +513,13 @@
 
 
       // =================================================
-      // 所有單位以既有庫存資料中的單位為基準
-      // 即使本月份尚未有任何盤點資料，
-      // 仍應顯示完整單位數。
+      // 這裡只使用「本月份實際存在的資料」
+      // 不自行建立尚未盤點的單位
       // =================================================
 
       const allUnits =
         [...new Set(
-          inventoryData.map(row =>
+          monthData.map(row =>
             row.unit_name
           )
         )];
@@ -544,6 +548,28 @@
           unit =>
             !completedUnits.includes(unit)
         );
+
+
+      // =================================================
+      // 尚未有任何資料的月份
+      // =================================================
+
+      if (allUnits.length === 0) {
+
+        document.getElementById(
+          "countProgress"
+        ).textContent =
+          "本月盤點進度：尚無盤點資料";
+
+
+        document.getElementById(
+          "pendingUnits"
+        ).textContent =
+          "本月份尚未產生盤點資料";
+
+
+        return;
+      }
 
 
       document.getElementById(
@@ -589,13 +615,26 @@
 
 
       // =================================================
-      // 單位來源改為全部既有單位
-      // 因此尚未盤點的月份仍能顯示所有單位
+      // 尚未有任何盤點資料
+      // =================================================
+
+      if (monthData.length === 0) {
+
+        container.innerHTML =
+          '<div class="no-data">本月份尚無盤點資料。</div>';
+
+        return;
+      }
+
+
+      // =================================================
+      // 單位仍以該月份實際資料為準
+      // 保留原本 9 月資料的顯示方式
       // =================================================
 
       let units =
         [...new Set(
-          inventoryData.map(row =>
+          monthData.map(row =>
             row.unit_name
           )
         )];
@@ -627,12 +666,6 @@
             row.unit_name === unit
           );
 
-
-        // =================================================
-        // 每個單位固定有 6 種耗材
-        // 尚未盤點時 unitRows 可能為 0 筆，
-        // 仍以 6 項作為完整盤點數。
-        // =================================================
 
         const completedCount =
           unitRows.filter(row =>
