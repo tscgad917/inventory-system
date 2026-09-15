@@ -187,7 +187,7 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error(errorText);
-          alert("進貨資料送出失敗。");
+        alert("進貨資料送出失敗：" + errorText);
           return;
         }
 
