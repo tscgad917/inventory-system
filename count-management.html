@@ -169,57 +169,55 @@
 
   <div class="container">
 
-```
-<h1>盤點資料管理</h1>
+    <h1>盤點資料管理</h1>
 
-<div class="subtitle">
-  總務課管理後台
-</div>
+    <div class="subtitle">
+      總務課管理後台
+    </div>
 
-<div class="filter-area">
+    <div class="filter-area">
 
-  <div class="field">
-    <label for="monthSelect">盤點月份</label>
+      <div class="field">
+        <label for="monthSelect">盤點月份</label>
 
-    <select
-      id="monthSelect"
-      onchange="loadUnits()"
+        <select
+          id="monthSelect"
+          onchange="loadUnits()"
+        >
+          <option value="">
+            請選擇盤點月份
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="unitSelect">盤點單位</label>
+
+        <select
+          id="unitSelect"
+          onchange="loadCountData()"
+          disabled
+        >
+          <option value="">
+            請先選擇月份
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <div id="status" class="status">
+      資料載入中……
+    </div>
+
+    <div id="dataArea"></div>
+
+    <a
+      href="admin-home.html"
+      class="back-button"
     >
-      <option value="">
-        請選擇盤點月份
-      </option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="unitSelect">盤點單位</label>
-
-    <select
-      id="unitSelect"
-      onchange="loadCountData()"
-      disabled
-    >
-      <option value="">
-        請先選擇月份
-      </option>
-    </select>
-  </div>
-
-</div>
-
-<div id="status" class="status">
-  資料載入中……
-</div>
-
-<div id="dataArea"></div>
-
-<a
-  href="admin-home.html"
-  class="back-button"
->
-  返回管理後台
-</a>
-```
+      返回管理後台
+    </a>
 
   </div>
 
@@ -402,10 +400,10 @@
       const response =
         await apiFetch(
           SUPABASE_URL +
-         "/rest/v1/monthly_counts" +
-"?select=count_date,unit_id,item_id,quantity,submitted_by" +
-"&order=count_date.desc,unit_id,item_id" +
-"&limit=5000"
+          "/rest/v1/monthly_counts" +
+          "?select=count_date,unit_id,item_id,quantity,submitted_by" +
+          "&order=count_date.desc,unit_id,item_id" +
+          "&limit=5000"
         );
 
       if (!response.ok) {
@@ -1007,7 +1005,9 @@
           }
 
 
+          // ======================================================
           // 更新 monthly_counts
+          // ======================================================
 
           const response =
             await apiFetch(
@@ -1033,7 +1033,7 @@
                     "application/json",
 
                   "Prefer":
-                    "return=minimal"
+                    "return=representation"
                 },
 
                 body:
@@ -1045,6 +1045,8 @@
             );
 
 
+          // API 本身發生錯誤
+
           if (!response.ok) {
 
             const errorText =
@@ -1055,13 +1057,43 @@
             );
 
             throw new Error(
-              "資料更新失敗。"
+              "資料更新失敗，請確認權限或資料狀態。"
             );
 
           }
 
 
+          // ======================================================
+          // 確認資料庫是否真的更新成功
+          // ======================================================
+
+          const updatedRows =
+            await response.json();
+
+
+          if (
+            !Array.isArray(updatedRows) ||
+            updatedRows.length !== 1 ||
+            Number(
+              updatedRows[0].quantity
+            ) !== quantity
+          ) {
+
+            console.error(
+              "UPDATE 未實際更新資料：",
+              updatedRows
+            );
+
+            throw new Error(
+              "資料未實際更新，未建立異動紀錄。"
+            );
+
+          }
+
+
+          // ======================================================
           // 建立異動紀錄資料
+          // ======================================================
 
           changedLogs.push({
 
@@ -1095,7 +1127,9 @@
         }
 
 
+        // ========================================================
         // 將異動紀錄寫入 inventory_logs
+        // ========================================================
 
         if (
           changedLogs.length > 0
@@ -1142,6 +1176,10 @@
 
         }
 
+
+        // ========================================================
+        // 成功訊息
+        // ========================================================
 
         if (
           changedLogs.length === 0
