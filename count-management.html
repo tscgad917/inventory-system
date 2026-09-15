@@ -339,16 +339,17 @@
 
       }
 
-      catch (error) {
+    catch (error) {
 
-        console.error(error);
+  console.error(error);
 
-        document.getElementById(
-          "status"
-        ).textContent =
-          "資料讀取失敗，請重新登入後再試。";
+  document.getElementById(
+    "status"
+  ).textContent =
+    "資料讀取失敗：" +
+    (error.message || "未知錯誤");
 
-      }
+}
 
     }
 
