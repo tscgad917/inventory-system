@@ -15,7 +15,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
       background: white;
       padding: 24px;
@@ -76,6 +76,14 @@
     .number {
       text-align: right;
     }
+
+    .difference-positive {
+      font-weight: bold;
+    }
+
+    .difference-negative {
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -111,6 +119,7 @@
     </div>
 
     <table id="inventoryTable" style="display:none;">
+
       <thead>
         <tr>
           <th>單位</th>
@@ -119,17 +128,21 @@
           <th>配送異動</th>
           <th>廠商進貨</th>
           <th>應有庫存</th>
+          <th>下月盤點</th>
+          <th>差異</th>
         </tr>
       </thead>
 
       <tbody id="inventoryBody"></tbody>
+
     </table>
 
   </div>
 
   <script>
 
-    const accessToken = localStorage.getItem("admin_access_token");
+    const accessToken =
+      localStorage.getItem("admin_access_token");
 
     if (!accessToken) {
       window.location.href = "admin.html";
@@ -147,9 +160,11 @@
       try {
 
         const response = await fetch(
-          SUPABASE_URL + "/rest/v1/inventory_expected?select=*",
+          SUPABASE_URL +
+          "/rest/v1/inventory_expected?select=*",
           {
             method: "GET",
+
             headers: {
               "apikey": SUPABASE_KEY,
               "Authorization": "Bearer " + accessToken
@@ -160,18 +175,22 @@
 
         if (!response.ok) {
 
-          const errorText = await response.text();
+          const errorText =
+            await response.text();
 
           console.error(errorText);
 
-          document.getElementById("message").textContent =
+          document.getElementById(
+            "message"
+          ).textContent =
             "庫存資料讀取失敗。";
 
           return;
         }
 
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
 
         // =====================================================
@@ -198,11 +217,15 @@
           option.value = month;
 
 
-          const date = new Date(month);
+          const date =
+            new Date(month);
+
 
           option.textContent =
-            date.getFullYear() + "年" +
-            (date.getMonth() + 1) + "月";
+            date.getFullYear() +
+            "年" +
+            (date.getMonth() + 1) +
+            "月";
 
 
           monthSelect.appendChild(option);
@@ -211,7 +234,9 @@
 
 
         const tbody =
-          document.getElementById("inventoryBody");
+          document.getElementById(
+            "inventoryBody"
+          );
 
 
         tbody.innerHTML = "";
@@ -219,7 +244,9 @@
 
         if (data.length === 0) {
 
-          document.getElementById("message").textContent =
+          document.getElementById(
+            "message"
+          ).textContent =
             "目前尚無庫存統計資料。";
 
           return;
@@ -227,34 +254,38 @@
 
 
         // =====================================================
-        // 共用：更新盤點進度及尚未盤點單位
+        // 更新盤點進度
         // =====================================================
 
-        function updateProgress(selectedMonth) {
+        function updateProgress(
+          selectedMonth
+        ) {
 
-          const completedUnits = [...new Set(
-            data
-              .filter(row =>
-                row.count_date === selectedMonth
-              )
-              .filter(row =>
-                row.counted_quantity !== null
-              )
-              .map(row =>
-                row.unit_name
-              )
-          )];
+          const completedUnits =
+            [...new Set(
+              data
+                .filter(row =>
+                  row.count_date === selectedMonth
+                )
+                .filter(row =>
+                  row.counted_quantity !== null
+                )
+                .map(row =>
+                  row.unit_name
+                )
+            )];
 
 
-          const allUnits = [...new Set(
-            data
-              .filter(row =>
-                row.count_date === selectedMonth
-              )
-              .map(row =>
-                row.unit_name
-              )
-          )];
+          const allUnits =
+            [...new Set(
+              data
+                .filter(row =>
+                  row.count_date === selectedMonth
+                )
+                .map(row =>
+                  row.unit_name
+                )
+            )];
 
 
           const pendingUnits =
@@ -264,31 +295,30 @@
             );
 
 
-          // 盤點進度
-
           document.getElementById(
             "countProgress"
           ).textContent =
             `本月盤點進度：${completedUnits.length} / ${allUnits.length} 個單位已完成`;
 
 
-          // 尚未盤點單位
-
           document.getElementById(
             "pendingUnits"
           ).textContent =
             pendingUnits.length > 0
-              ? "尚未盤點：" + pendingUnits.join("、")
+              ? "尚未盤點：" +
+                pendingUnits.join("、")
               : "所有單位均已完成盤點";
 
         }
 
 
         // =====================================================
-        // 顯示指定月份的庫存資料
+        // 顯示庫存表格
         // =====================================================
 
-        function renderTable(selectedMonth) {
+        function renderTable(
+          selectedMonth
+        ) {
 
           tbody.innerHTML = "";
 
@@ -303,11 +333,15 @@
                 document.createElement("tr");
 
 
+              // 月初盤點
+
               const countedText =
                 row.counted_quantity === null
                   ? "尚未盤點"
                   : row.counted_quantity;
 
+
+              // 應有庫存
 
               const expectedText =
                 row.expected_quantity === null
@@ -315,13 +349,50 @@
                   : row.expected_quantity;
 
 
+              // 下月盤點
+
+              const nextCountedText =
+                row.next_counted_quantity === null
+                  ? "尚未盤點"
+                  : row.next_counted_quantity;
+
+
+              // 差異
+
+              const differenceText =
+                row.inventory_difference === null
+                  ? "—"
+                  : row.inventory_difference;
+
+
               tr.innerHTML = `
                 <td>${row.unit_name}</td>
+
                 <td>${row.item_name}</td>
-                <td class="number">${countedText}</td>
-                <td class="number">${row.delivery_adjustment}</td>
-                <td class="number">${row.purchase_quantity}</td>
-                <td class="number">${expectedText}</td>
+
+                <td class="number">
+                  ${countedText}
+                </td>
+
+                <td class="number">
+                  ${row.delivery_adjustment}
+                </td>
+
+                <td class="number">
+                  ${row.purchase_quantity}
+                </td>
+
+                <td class="number">
+                  ${expectedText}
+                </td>
+
+                <td class="number">
+                  ${nextCountedText}
+                </td>
+
+                <td class="number">
+                  ${differenceText}
+                </td>
               `;
 
 
@@ -340,9 +411,14 @@
           monthSelect.value;
 
 
-        updateProgress(selectedMonth);
+        updateProgress(
+          selectedMonth
+        );
 
-        renderTable(selectedMonth);
+
+        renderTable(
+          selectedMonth
+        );
 
 
         document.getElementById(
@@ -359,17 +435,23 @@
         // 切換月份
         // =====================================================
 
-        monthSelect.onchange = function() {
+        monthSelect.onchange =
+          function() {
 
-          const selectedMonth =
-            this.value;
+            const selectedMonth =
+              this.value;
 
 
-          updateProgress(selectedMonth);
+            updateProgress(
+              selectedMonth
+            );
 
-          renderTable(selectedMonth);
 
-        };
+            renderTable(
+              selectedMonth
+            );
+
+          };
 
 
       } catch (error) {
