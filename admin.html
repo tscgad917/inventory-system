@@ -129,15 +129,20 @@
         }
 
         // 暫存登入資訊
-        localStorage.setItem(
-          "admin_access_token",
-          result.access_token
-        );
+       localStorage.setItem(
+  "admin_access_token",
+  result.access_token
+);
 
-        localStorage.setItem(
-          "admin_email",
-          email
-        );
+localStorage.setItem(
+  "admin_refresh_token",
+  result.refresh_token
+);
+
+localStorage.setItem(
+  "admin_email",
+  email
+);
 
        alert("登入成功！");
 window.location.href = "admin-home.html";
