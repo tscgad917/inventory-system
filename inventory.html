@@ -198,40 +198,32 @@
         // =====================================================
 
         const months = [...new Set(
-          data.map(row => row.count_date)
-        )].sort().reverse();
+  data.map(row => row.count_date.substring(0, 7))
+)].sort().reverse();
 
+const monthSelect =
+  document.getElementById("monthSelect");
 
-        const monthSelect =
-          document.getElementById("monthSelect");
+monthSelect.innerHTML = "";
 
+months.forEach(month => {
 
-        monthSelect.innerHTML = "";
+  const option =
+    document.createElement("option");
 
+  option.value = month;
 
-        months.forEach(month => {
+  const [year, monthNumber] =
+    month.split("-");
 
-          const option =
-            document.createElement("option");
+  option.textContent =
+    year + "年" +
+    Number(monthNumber) +
+    "月";
 
-          option.value = month;
+  monthSelect.appendChild(option);
 
-
-          const date =
-            new Date(month);
-
-
-          option.textContent =
-            date.getFullYear() +
-            "年" +
-            (date.getMonth() + 1) +
-            "月";
-
-
-          monthSelect.appendChild(option);
-
-        });
-
+});
 
         const tbody =
           document.getElementById(
