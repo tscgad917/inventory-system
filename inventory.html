@@ -132,7 +132,25 @@
         }
 
         const data = await response.json();
+const months = [...new Set(
+  data.map(row => row.count_date)
+)].sort().reverse();
 
+const monthSelect = document.getElementById("monthSelect");
+
+monthSelect.innerHTML = "";
+
+months.forEach(month => {
+  const option = document.createElement("option");
+  option.value = month;
+
+  const date = new Date(month);
+  option.textContent =
+    date.getFullYear() + "年" +
+    (date.getMonth() + 1) + "月";
+
+  monthSelect.appendChild(option);
+});
         const tbody = document.getElementById("inventoryBody");
 
         tbody.innerHTML = "";
@@ -143,7 +161,13 @@
           return;
         }
 
-        data.forEach(row => {
+        const selectedMonth = monthSelect.value;
+
+const filteredData = data.filter(row =>
+  row.count_date === selectedMonth
+);
+
+filteredData.forEach(row => {
 
           const tr = document.createElement("tr");
 
@@ -162,7 +186,28 @@
 
         document.getElementById("message").style.display = "none";
         document.getElementById("inventoryTable").style.display = "table";
+monthSelect.onchange = function() {
+  const selectedMonth = this.value;
 
+  tbody.innerHTML = "";
+
+  data
+    .filter(row => row.count_date === selectedMonth)
+    .forEach(row => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${row.unit_name}</td>
+        <td>${row.item_name}</td>
+        <td class="number">${row.counted_quantity}</td>
+        <td class="number">${row.delivery_adjustment}</td>
+        <td class="number">${row.purchase_quantity}</td>
+        <td class="number">${row.expected_quantity}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+};
       } catch (error) {
 
         console.error(error);
