@@ -168,7 +168,21 @@ months.forEach(month => {
 const filteredData = data.filter(row =>
   row.count_date === selectedMonth
 );
+const unitNames = [...new Set(
+  data
+    .filter(row => row.count_date === selectedMonth)
+    .filter(row => row.counted_quantity !== null)
+    .map(row => row.unit_name)
+)];
 
+const totalUnits = [...new Set(
+  data
+    .filter(row => row.count_date === selectedMonth)
+    .map(row => row.unit_name)
+)].length;
+
+document.getElementById("countProgress").textContent =
+  `本月盤點進度：${unitNames.length} / ${totalUnits} 個單位已完成`;
 filteredData.forEach(row => {
 
           const tr = document.createElement("tr");
