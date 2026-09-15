@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>庫存盤點系統｜盤點資料管理</title>
+
+  <style>
+    body {
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f6f8;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .filter-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: bold;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .info {
+      background: #f0f2f5;
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+
+    .item-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .item-table th,
+    .item-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .item-table th {
+      background: #f5f6f8;
+    }
+
+    .item-table input {
+      max-width: 150px;
+      margin: 0 auto;
+    }
+
+    .save-button {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .save-button:hover {
+      opacity: 0.9;
+    }
+
+    .save-button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .back-button {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 8px;
+      background: #777;
+      color: white;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .status {
+      text-align: center;
+      margin: 15px 0;
+      color: #666;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+    }
+
+    @media (max-width: 700px) {
+      .filter-area {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .item-table {
+        font-size: 14px;
+      }
+
+      .item-table th,
+      .item-table td {
+        padding: 7px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>盤點資料管理</h1>
+
+    <div class="subtitle">
+      總務課管理後台
+    </div>
+
+    <div class="filter-area">
+
+      <div class="field">
+        <label for="monthSelect">盤點月份</label>
+
+        <select
+          id="monthSelect"
+          onchange="loadUnits()"
+        >
+          <option value="">
+            請選擇盤點月份
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="unitSelect">盤點單位</label>
+
+        <select
+          id="unitSelect"
+          onchange="loadCountData()"
+          disabled
+        >
+          <option value="">
+            請先選擇月份
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <div id="status" class="status">
+      資料載入中……
+    </div>
+
+    <div id="dataArea"></div>
+
+    <a
+      href="admin-home.html"
+      class="back-button"
+    >
+      返回管理後台
+    </a>
+
+  </div>
+
+  <script>
+
+    // ============================================================
+    // Supabase 設定
+    // ============================================================
+
+    const SUPABASE_URL =
+      "https://onebxqajsiqmhfcizaxl.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+
+    // ============================================================
+    // 管理者登入檢查
+    // ============================================================
+
+    const accessToken =
+      localStorage.getItem("admin_access_token");
+
+    if (!accessToken) {
+
+      window.location.href =
+        "admin.html";
+
+    }
+
+
+    // ============================================================
+    // 資料
+    // ============================================================
+
+    const items = [
+      {
+        id: 1,
+        name: "櫃員機色帶（長）T"
+      },
+      {
+        id: 2,
+        name: "報表機色帶（小）R"
+      },
+      {
+        id: 3,
+        name: "ATM 色帶（長）AP"
+      },
+      {
+        id: 4,
+        name: "ATM 色帶（小）AR"
+      },
+      {
+        id: 5,
+        name: "ATM 紙捲（餘額證明）AB"
+      },
+      {
+        id: 6,
+        name: "ATM 紙捲（敘時）AN"
+      }
+    ];
+
+
+    let inventoryPeriods = [];
+    let inventoryData = [];
+    let units = [];
+
+
+    // ============================================================
+    // Supabase API
+    // ============================================================
+
+    async function apiFetch(
+      url,
+      options = {}
+    ) {
+
+      const headers = {
+
+        "apikey":
+          SUPABASE_KEY,
+
+        "Authorization":
+          "Bearer " + accessToken,
+
+        ...(
+          options.headers || {}
+        )
+
+      };
+
+      return fetch(
+        url,
+        {
+          ...options,
+          headers
+        }
+      );
+
+    }
+
+
+    // ============================================================
+    // 初始化
+    // ============================================================
+
+    async function init() {
+
+      try {
+
+        await loadPeriods();
+
+        await loadInventoryData();
+
+        buildMonthSelect();
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "請選擇盤點月份。";
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "資料讀取失敗，請重新登入後再試。";
+
+      }
+
+    }
+
+
+    // ============================================================
+    // 取得盤點期間
+    // ============================================================
+
+    async function loadPeriods() {
+
+      const response =
+        await apiFetch(
+          SUPABASE_URL +
+          "/rest/v1/inventory_periods" +
+          "?select=period_month,count_date,is_open" +
+          "&order=period_month.desc"
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "inventory_periods 讀取失敗"
+        );
+
+      }
+
+      inventoryPeriods =
+        await response.json();
+
+    }
+
+
+    // ============================================================
+    // 取得盤點資料
+    // ============================================================
+
+    async function loadInventoryData() {
+
+      const response =
+        await apiFetch(
+          SUPABASE_URL +
+          "/rest/v1/monthly_counts" +
+          "?select=count_date,unit_id,item_id,quantity,submitted_by" +
+          "&order=count_date.desc,unit_id,item_id"
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "monthly_counts 讀取失敗"
+        );
+
+      }
+
+      inventoryData =
+        await response.json();
+
+    }
+
+
+    // ============================================================
+    // 建立月份選單
+    // ============================================================
+
+    function buildMonthSelect() {
+
+      const monthSelect =
+        document.getElementById(
+          "monthSelect"
+        );
+
+      const periodMonths =
+        inventoryPeriods
+          .map(period => {
+
+            if (!period.period_month) {
+              return null;
+            }
+
+            return String(
+              period.period_month
+            ).substring(0, 7);
+
+          })
+          .filter(month => month);
+
+
+      const inventoryMonths =
+        inventoryData
+          .map(row => {
+
+            if (!row.count_date) {
+              return null;
+            }
+
+            return String(
+              row.count_date
+            ).substring(0, 7);
+
+          })
+          .filter(month => month);
+
+
+      const months =
+        [
+          ...new Set([
+            ...periodMonths,
+            ...inventoryMonths
+          ])
+        ]
+        .sort()
+        .reverse();
+
+
+      months.forEach(
+        function (month) {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            month;
+
+          option.textContent =
+            month.replace("-", " 年 ") +
+            " 月";
+
+          monthSelect.appendChild(
+            option
+          );
+
+        }
+      );
+
+    }
+
+
+    // ============================================================
+    // 選擇月份後建立單位
+    // ============================================================
+
+    function loadUnits() {
+
+      const selectedMonth =
+        document.getElementById(
+          "monthSelect"
+        ).value;
+
+      const unitSelect =
+        document.getElementById(
+          "unitSelect"
+        );
+
+      unitSelect.innerHTML =
+        '<option value="">請選擇盤點單位</option>';
+
+      document.getElementById(
+        "dataArea"
+      ).innerHTML = "";
+
+      if (!selectedMonth) {
+
+        unitSelect.disabled =
+          true;
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "請選擇盤點月份。";
+
+        return;
+
+      }
+
+
+      const monthData =
+        inventoryData.filter(
+          row =>
+            row.count_date &&
+            String(
+              row.count_date
+            ).substring(0, 7) ===
+            selectedMonth
+        );
+
+
+      const unitIds =
+        [
+          ...new Set(
+            monthData.map(
+              row =>
+                row.unit_id
+            )
+          )
+        ]
+        .sort(
+          (a, b) =>
+            Number(a) - Number(b)
+        );
+
+
+      if (unitIds.length === 0) {
+
+        unitSelect.disabled =
+          true;
+
+        document.getElementById(
+          "status"
+        ).textContent =
+          "本月份尚無盤點資料。";
+
+        return;
+
+      }
+
+
+      unitIds.forEach(
+        function (unitId) {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            unitId;
+
+          option.textContent =
+            getUnitName(unitId);
+
+          unitSelect.appendChild(
+            option
+          );
+
+        }
+      );
+
+
+      unitSelect.disabled =
+        false;
+
+      document.getElementById(
+        "status"
+      ).textContent =
+        "請選擇盤點單位。";
+
+    }
+
+
+    // ============================================================
+    // 取得單位名稱
+    // ============================================================
+
+    function getUnitName(unitId) {
+
+      const unitNames = {
+
+        1: "總務課",
+        2: "營業部",
+        3: "水碓分社",
+        4: "竹圍分社",
+        5: "金山分社",
+        6: "淡海分社",
+        7: "八里分社",
+        8: "北新分社",
+        9: "新市分社",
+        10: "三芝分社",
+        11: "石門分社",
+        12: "萬里分社",
+        13: "中和分社",
+        14: "新莊分社",
+        15: "五股分社",
+        16: "蘆洲分社",
+        17: "林口分社"
+
+      };
+
+      return (
+        unitNames[unitId] ||
+        "單位 " + unitId
+      );
+
+    }
+
+
+    // ============================================================
+    // 讀取指定單位盤點資料
+    // ============================================================
+
+    function loadCountData() {
+
+      const selectedMonth =
+        document.getElementById(
+          "monthSelect"
+        ).value;
+
+      const unitId =
+        document.getElementById(
+          "unitSelect"
+        ).value;
+
+      const dataArea =
+        document.getElementById(
+          "dataArea"
+        );
+
+      if (!selectedMonth || !unitId) {
+
+        dataArea.innerHTML =
+          "";
+
+        return;
+
+      }
+
+
+      const rows =
+        inventoryData.filter(
+          row =>
+            row.count_date &&
+            String(
+              row.count_date
+            ).substring(0, 7) ===
+            selectedMonth &&
+            Number(row.unit_id) ===
+            Number(unitId)
+        );
+
+
+      if (rows.length === 0) {
+
+        dataArea.innerHTML =
+          '<div class="empty">本單位尚無盤點資料。</div>';
+
+        return;
+
+      }
+
+
+      const countDate =
+        rows[0].count_date;
+
+      const submittedBy =
+        rows[0].submitted_by ||
+        "未填寫";
+
+
+      let html = "";
+
+
+      html +=
+        '<div class="info">';
+
+      html +=
+        "<strong>盤點日期：</strong>" +
+        countDate +
+        "<br>";
+
+      html +=
+        "<strong>盤點人員：</strong>" +
+        escapeHtml(
+          submittedBy
+        );
+
+      html +=
+        "</div>";
+
+
+      html +=
+        '<table class="item-table">';
+
+      html +=
+        "<thead>";
+
+      html +=
+        "<tr>";
+
+      html +=
+        "<th>耗材項目</th>";
+
+      html +=
+        "<th>目前數量</th>";
+
+      html +=
+        "<th>修改後數量</th>";
+
+      html +=
+        "</tr>";
+
+      html +=
+        "</thead>";
+
+      html +=
+        "<tbody>";
+
+
+      items.forEach(
+        function (item) {
+
+          const row =
+            rows.find(
+              r =>
+                Number(
+                  r.item_id
+                ) ===
+                item.id
+            );
+
+
+          const quantity =
+            row
+              ? row.quantity
+              : "";
+
+
+          html +=
+            "<tr>";
+
+          html +=
+            "<td>" +
+            item.name +
+            "</td>";
+
+          html +=
+            "<td>" +
+            (
+              quantity === null
+                ? ""
+                : quantity
+            ) +
+            "</td>";
+
+          html +=
+            "<td>";
+
+          html +=
+            '<input type="number" ' +
+            'id="quantity_' +
+            item.id +
+            '" ' +
+            'min="0" ' +
+            'step="1" ' +
+            'value="' +
+            (
+              quantity === null
+                ? ""
+                : quantity
+            ) +
+            '">';
+
+          html +=
+            "</td>";
+
+          html +=
+            "</tr>";
+
+        }
+      );
+
+
+      html +=
+        "</tbody>";
+
+      html +=
+        "</table>";
+
+
+      html +=
+        '<button ' +
+        'type="button" ' +
+        'class="save-button" ' +
+        'id="saveButton" ' +
+        'onclick="saveChanges()">' +
+        "儲存修改" +
+        "</button>";
+
+
+      dataArea.innerHTML =
+        html;
+
+
+      document.getElementById(
+        "status"
+      ).textContent =
+        "已載入盤點資料，可修改數量。";
+
+    }
+
+
+    // ============================================================
+    // 儲存修改
+    // ============================================================
+
+    async function saveChanges() {
+
+      const selectedMonth =
+        document.getElementById(
+          "monthSelect"
+        ).value;
+
+      const unitId =
+        document.getElementById(
+          "unitSelect"
+        ).value;
+
+
+      if (!selectedMonth || !unitId) {
+
+        alert(
+          "請先選擇盤點月份及單位。"
+        );
+
+        return;
+
+      }
+
+
+      const rows =
+        inventoryData.filter(
+          row =>
+            row.count_date &&
+            String(
+              row.count_date
+            ).substring(0, 7) ===
+            selectedMonth &&
+            Number(row.unit_id) ===
+            Number(unitId)
+        );
+
+
+      if (rows.length === 0) {
+
+        alert(
+          "查無盤點資料，無法修改。"
+        );
+
+        return;
+
+      }
+
+
+      const saveButton =
+        document.getElementById(
+          "saveButton"
+        );
+
+      saveButton.disabled =
+        true;
+
+      saveButton.textContent =
+        "儲存中……";
+
+
+      try {
+
+        for (
+          const item of items
+        ) {
+
+          const input =
+            document.getElementById(
+              "quantity_" +
+              item.id
+            );
+
+          const value =
+            input.value;
+
+
+          if (value === "") {
+
+            throw new Error(
+              "請填寫全部 6 項庫存數量。"
+            );
+
+          }
+
+
+          const quantity =
+            Number(value);
+
+
+          if (
+            !Number.isInteger(
+              quantity
+            ) ||
+            quantity < 0
+          ) {
+
+            throw new Error(
+              "庫存數量必須為 0 以上的整數。"
+            );
+
+          }
+
+
+          const existingRow =
+            rows.find(
+              row =>
+                Number(
+                  row.item_id
+                ) === item.id
+            );
+
+
+          if (!existingRow) {
+
+            throw new Error(
+              "盤點資料不完整，無法修改。"
+            );
+
+          }
+
+
+          const response =
+            await apiFetch(
+              SUPABASE_URL +
+              "/rest/v1/monthly_counts" +
+              "?count_date=eq." +
+              encodeURIComponent(
+                existingRow.count_date
+              ) +
+              "&unit_id=eq." +
+              encodeURIComponent(
+                existingRow.unit_id
+              ) +
+              "&item_id=eq." +
+              encodeURIComponent(
+                existingRow.item_id
+              ),
+              {
+                method: "PATCH",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  "Prefer":
+                    "return=minimal"
+                },
+
+                body:
+                  JSON.stringify({
+                    quantity:
+                      quantity
+                  })
+              }
+            );
+
+
+          if (!response.ok) {
+
+            const errorText =
+              await response.text();
+
+            console.error(
+              errorText
+            );
+
+            throw new Error(
+              "資料更新失敗。"
+            );
+
+          }
+
+        }
+
+
+        alert(
+          "盤點資料已成功修改！"
+        );
+
+
+        await loadInventoryData();
+
+        loadUnits();
+
+
+        document.getElementById(
+          "unitSelect"
+        ).value =
+          unitId;
+
+
+        loadCountData();
+
+      }
+
+      catch (error) {
+
+        console.error(
+          error
+        );
+
+        alert(
+          error.message ||
+          "系統連線失敗，請稍後再試。"
+        );
+
+      }
+
+      finally {
+
+        const button =
+          document.getElementById(
+            "saveButton"
+          );
+
+        if (button) {
+
+          button.disabled =
+            false;
+
+          button.textContent =
+            "儲存修改";
+
+        }
+
+      }
+
+    }
+
+
+    // ============================================================
+    // HTML 安全處理
+    // ============================================================
+
+    function escapeHtml(
+      value
+    ) {
+
+      return String(value)
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+
+    }
+
+
+    // ============================================================
+    // 啟動
+    // ============================================================
+
+    init();
+
+  </script>
+
+</body>
+</html>
