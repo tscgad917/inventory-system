@@ -42,6 +42,34 @@
       border-radius: 6px;
     }
 
+    .filter-area {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-item label {
+      font-weight: bold;
+    }
+
+    select {
+      padding: 8px 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: white;
+    }
+
     .count-progress {
       margin: 20px 0 8px 0;
       padding: 12px;
@@ -56,10 +84,60 @@
       color: #555;
     }
 
+    .unit-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .unit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      cursor: pointer;
+      background: #f8f8f8;
+      user-select: none;
+    }
+
+    .unit-header:hover {
+      background: #f0f0f0;
+    }
+
+    .unit-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .unit-status {
+      margin-left: 12px;
+      color: #666;
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    .unit-arrow {
+      font-size: 16px;
+      margin-left: 12px;
+    }
+
+    .unit-content {
+      display: none;
+      padding: 0 12px 12px 12px;
+      overflow-x: auto;
+    }
+
+    .unit-content.open {
+      display: block;
+    }
+
     table {
       width: 100%;
+      min-width: 850px;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 10px;
     }
 
     th,
@@ -77,12 +155,10 @@
       text-align: right;
     }
 
-    .difference-positive {
-      font-weight: bold;
-    }
-
-    .difference-negative {
-      font-weight: bold;
+    .no-data {
+      padding: 20px;
+      text-align: center;
+      color: #777;
     }
   </style>
 </head>
@@ -95,16 +171,26 @@
 
     <h1>庫存統計</h1>
 
-    <div style="margin: 20px 0;">
-      <label for="monthSelect" style="font-weight: bold;">
-        盤點月份：
-      </label>
+    <div class="filter-area">
 
-      <select
-        id="monthSelect"
-        style="padding: 8px; margin-left: 8px;"
-      >
-      </select>
+      <div class="filter-item">
+        <label for="monthSelect">
+          盤點月份：
+        </label>
+
+        <select id="monthSelect"></select>
+      </div>
+
+      <div class="filter-item">
+        <label for="unitSelect">
+          查看單位：
+        </label>
+
+        <select id="unitSelect">
+          <option value="all">全部單位</option>
+        </select>
+      </div>
+
     </div>
 
     <div id="message" class="message">
@@ -118,42 +204,37 @@
     <div id="pendingUnits" class="pending-units">
     </div>
 
-    <table id="inventoryTable" style="display:none;">
-
-      <thead>
-        <tr>
-          <th>單位</th>
-          <th>耗材</th>
-          <th>月初盤點</th>
-          <th>配送異動</th>
-          <th>廠商進貨</th>
-          <th>應有庫存</th>
-          <th>下月盤點</th>
-          <th>差異</th>
-        </tr>
-      </thead>
-
-      <tbody id="inventoryBody"></tbody>
-
-    </table>
+    <div id="unitContainer">
+    </div>
 
   </div>
+
 
   <script>
 
     const accessToken =
       localStorage.getItem("admin_access_token");
 
+
     if (!accessToken) {
       window.location.href = "admin.html";
     }
 
+
     const SUPABASE_URL =
       "https://onebxqajsiqmhfcizaxl.supabase.co";
+
 
     const SUPABASE_KEY =
       "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
+
+    let inventoryData = [];
+
+
+    // =====================================================
+    // 載入資料
+    // =====================================================
 
     async function loadInventory() {
 
@@ -189,16 +270,27 @@
         }
 
 
-        const data =
+        inventoryData =
           await response.json();
 
 
-        // =====================================================
+        if (inventoryData.length === 0) {
+
+          document.getElementById(
+            "message"
+          ).textContent =
+            "目前尚無庫存統計資料。";
+
+          return;
+        }
+
+
+        // =================================================
         // 建立月份選單
-        // =====================================================
+        // =================================================
 
         const months = [...new Set(
-          data.map(row =>
+          inventoryData.map(row =>
             row.count_date.substring(0, 7)
           )
         )].sort().reverse();
@@ -235,225 +327,55 @@
         });
 
 
-        const tbody =
-          document.getElementById(
-            "inventoryBody"
-          );
+        // =================================================
+        // 建立單位選單
+        // =================================================
+
+        const units = [];
 
 
-        tbody.innerHTML = "";
+        inventoryData.forEach(row => {
+
+          if (!units.includes(row.unit_name)) {
+            units.push(row.unit_name);
+          }
+
+        });
 
 
-        if (data.length === 0) {
-
-          document.getElementById(
-            "message"
-          ).textContent =
-            "目前尚無庫存統計資料。";
-
-          return;
-        }
+        const unitSelect =
+          document.getElementById("unitSelect");
 
 
-        // =====================================================
-        // 更新盤點進度
-        // =====================================================
-
-        function updateProgress(
-          selectedMonth
-        ) {
-
-          const completedUnits =
-            [...new Set(
-              data
-                .filter(row =>
-                  row.count_date.substring(0, 7) === selectedMonth
-                )
-                .filter(row =>
-                  row.counted_quantity !== null
-                )
-                .map(row =>
-                  row.unit_name
-                )
-            )];
+        unitSelect.innerHTML =
+          '<option value="all">全部單位</option>';
 
 
-          const allUnits =
-            [...new Set(
-              data
-                .filter(row =>
-                  row.count_date.substring(0, 7) === selectedMonth
-                )
-                .map(row =>
-                  row.unit_name
-                )
-            )];
+        units.forEach(unit => {
+
+          const option =
+            document.createElement("option");
 
 
-          const pendingUnits =
-            allUnits.filter(
-              unit =>
-                !completedUnits.includes(unit)
-            );
+          option.value = unit;
+          option.textContent = unit;
 
 
-          document.getElementById(
-            "countProgress"
-          ).textContent =
-            `本月盤點進度：${completedUnits.length} / ${allUnits.length} 個單位已完成`;
+          unitSelect.appendChild(option);
+
+        });
 
 
-          document.getElementById(
-            "pendingUnits"
-          ).textContent =
-            pendingUnits.length > 0
-              ? "尚未盤點：" +
-                pendingUnits.join("、")
-              : "所有單位均已完成盤點";
-
-        }
-
-
-        // =====================================================
-        // 顯示庫存表格
-        // =====================================================
-
-        function renderTable(
-          selectedMonth
-        ) {
-
-          tbody.innerHTML = "";
-
-
-          data
-            .filter(row =>
-              row.count_date.substring(0, 7) === selectedMonth
-            )
-            .forEach(row => {
-
-              const tr =
-                document.createElement("tr");
-
-
-              // 月初盤點
-
-              const countedText =
-                row.counted_quantity === null
-                  ? "尚未盤點"
-                  : row.counted_quantity;
-
-
-              // 應有庫存
-
-              const expectedText =
-                row.expected_quantity === null
-                  ? "—"
-                  : row.expected_quantity;
-
-
-              // 下月盤點
-
-              const nextCountedText =
-                row.next_counted_quantity === null
-                  ? "尚未盤點"
-                  : row.next_counted_quantity;
-
-
-              // 差異
-
-              const differenceText =
-                row.inventory_difference === null
-                  ? "—"
-                  : row.inventory_difference;
-
-
-              tr.innerHTML = `
-                <td>${row.unit_name}</td>
-
-                <td>${row.item_name}</td>
-
-                <td class="number">
-                  ${countedText}
-                </td>
-
-                <td class="number">
-                  ${row.delivery_adjustment}
-                </td>
-
-                <td class="number">
-                  ${row.purchase_quantity}
-                </td>
-
-                <td class="number">
-                  ${expectedText}
-                </td>
-
-                <td class="number">
-                  ${nextCountedText}
-                </td>
-
-                <td class="number">
-                  ${differenceText}
-                </td>
-              `;
-
-
-              tbody.appendChild(tr);
-
-            });
-
-        }
-
-
-        // =====================================================
+        // =================================================
         // 第一次載入
-        // =====================================================
+        // =================================================
 
-        const selectedMonth =
-          monthSelect.value;
-
-
-        updateProgress(
-          selectedMonth
-        );
-
-
-        renderTable(
-          selectedMonth
-        );
+        updatePage();
 
 
         document.getElementById(
           "message"
         ).style.display = "none";
-
-
-        document.getElementById(
-          "inventoryTable"
-        ).style.display = "table";
-
-
-        // =====================================================
-        // 切換月份
-        // =====================================================
-
-        monthSelect.onchange =
-          function() {
-
-            const selectedMonth =
-              this.value;
-
-
-            updateProgress(
-              selectedMonth
-            );
-
-
-            renderTable(
-              selectedMonth
-            );
-
-          };
 
 
       } catch (error) {
@@ -469,6 +391,401 @@
 
     }
 
+
+    // =====================================================
+    // 更新整個頁面
+    // =====================================================
+
+    function updatePage() {
+
+      const selectedMonth =
+        document.getElementById(
+          "monthSelect"
+        ).value;
+
+
+      const selectedUnit =
+        document.getElementById(
+          "unitSelect"
+        ).value;
+
+
+      updateProgress(
+        selectedMonth
+      );
+
+
+      renderUnits(
+        selectedMonth,
+        selectedUnit
+      );
+
+    }
+
+
+    // =====================================================
+    // 更新盤點進度
+    // =====================================================
+
+    function updateProgress(
+      selectedMonth
+    ) {
+
+      const monthData =
+        inventoryData.filter(row =>
+          row.count_date.substring(0, 7) === selectedMonth
+        );
+
+
+      const allUnits =
+        [...new Set(
+          monthData.map(row =>
+            row.unit_name
+          )
+        )];
+
+
+      const completedUnits =
+        allUnits.filter(unit => {
+
+          const unitRows =
+            monthData.filter(row =>
+              row.unit_name === unit
+            );
+
+
+          return unitRows.length > 0 &&
+            unitRows.every(row =>
+              row.counted_quantity !== null
+            );
+
+        });
+
+
+      const pendingUnits =
+        allUnits.filter(
+          unit =>
+            !completedUnits.includes(unit)
+        );
+
+
+      document.getElementById(
+        "countProgress"
+      ).textContent =
+        `本月盤點進度：${completedUnits.length} / ${allUnits.length} 個單位已完成`;
+
+
+      document.getElementById(
+        "pendingUnits"
+      ).textContent =
+        pendingUnits.length > 0
+          ? "尚未盤點：" +
+            pendingUnits.join("、")
+          : "所有單位均已完成盤點";
+
+    }
+
+
+    // =====================================================
+    // 顯示單位
+    // =====================================================
+
+    function renderUnits(
+      selectedMonth,
+      selectedUnit
+    ) {
+
+      const container =
+        document.getElementById(
+          "unitContainer"
+        );
+
+
+      container.innerHTML = "";
+
+
+      const monthData =
+        inventoryData.filter(row =>
+          row.count_date.substring(0, 7) === selectedMonth
+        );
+
+
+      let units =
+        [...new Set(
+          monthData.map(row =>
+            row.unit_name
+          )
+        )];
+
+
+      if (selectedUnit !== "all") {
+
+        units =
+          units.filter(unit =>
+            unit === selectedUnit
+          );
+
+      }
+
+
+      if (units.length === 0) {
+
+        container.innerHTML =
+          '<div class="no-data">目前沒有符合條件的資料。</div>';
+
+        return;
+      }
+
+
+      units.forEach(unit => {
+
+        const unitRows =
+          monthData.filter(row =>
+            row.unit_name === unit
+          );
+
+
+        const completedCount =
+          unitRows.filter(row =>
+            row.counted_quantity !== null
+          ).length;
+
+
+        const totalCount =
+          unitRows.length;
+
+
+        const completed =
+          completedCount === totalCount;
+
+
+        const card =
+          document.createElement("div");
+
+
+        card.className =
+          "unit-card";
+
+
+        const header =
+          document.createElement("div");
+
+
+        header.className =
+          "unit-header";
+
+
+        const title =
+          document.createElement("div");
+
+
+        title.innerHTML = `
+          <span class="unit-title">
+            ${unit}
+          </span>
+
+          <span class="unit-status">
+            ${
+              completed
+                ? `${completedCount} / ${totalCount} 已完成`
+                : `${completedCount} / ${totalCount} 尚未完成`
+            }
+          </span>
+        `;
+
+
+        const arrow =
+          document.createElement("span");
+
+
+        arrow.className =
+          "unit-arrow";
+
+
+        arrow.textContent =
+          "▶";
+
+
+        header.appendChild(title);
+        header.appendChild(arrow);
+
+
+        const content =
+          document.createElement("div");
+
+
+        content.className =
+          "unit-content";
+
+
+        // ===============================================
+        // 建立該單位的表格
+        // ===============================================
+
+        const table =
+          document.createElement("table");
+
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>耗材</th>
+              <th>月初盤點</th>
+              <th>配送異動</th>
+              <th>廠商進貨</th>
+              <th>應有庫存</th>
+              <th>下月盤點</th>
+              <th>差異</th>
+            </tr>
+          </thead>
+
+          <tbody></tbody>
+        `;
+
+
+        const tbody =
+          table.querySelector("tbody");
+
+
+        unitRows.forEach(row => {
+
+          const tr =
+            document.createElement("tr");
+
+
+          const countedText =
+            row.counted_quantity === null
+              ? "尚未盤點"
+              : row.counted_quantity;
+
+
+          const expectedText =
+            row.expected_quantity === null
+              ? "—"
+              : row.expected_quantity;
+
+
+          const nextCountedText =
+            row.next_counted_quantity === null
+              ? "尚未盤點"
+              : row.next_counted_quantity;
+
+
+          const differenceText =
+            row.inventory_difference === null
+              ? "—"
+              : row.inventory_difference;
+
+
+          tr.innerHTML = `
+            <td>${row.item_name}</td>
+
+            <td class="number">
+              ${countedText}
+            </td>
+
+            <td class="number">
+              ${row.delivery_adjustment}
+            </td>
+
+            <td class="number">
+              ${row.purchase_quantity}
+            </td>
+
+            <td class="number">
+              ${expectedText}
+            </td>
+
+            <td class="number">
+              ${nextCountedText}
+            </td>
+
+            <td class="number">
+              ${differenceText}
+            </td>
+          `;
+
+
+          tbody.appendChild(tr);
+
+        });
+
+
+        content.appendChild(table);
+
+
+        // ===============================================
+        // 點擊展開／收合
+        // ===============================================
+
+        header.onclick =
+          function() {
+
+            const isOpen =
+              content.classList.contains("open");
+
+
+            if (isOpen) {
+
+              content.classList.remove("open");
+
+              arrow.textContent =
+                "▶";
+
+            } else {
+
+              content.classList.add("open");
+
+              arrow.textContent =
+                "▼";
+
+            }
+
+          };
+
+
+        card.appendChild(header);
+        card.appendChild(content);
+
+
+        container.appendChild(card);
+
+      });
+
+    }
+
+
+    // =====================================================
+    // 月份切換
+    // =====================================================
+
+    document.getElementById(
+      "monthSelect"
+    ).onchange =
+      function() {
+
+        updatePage();
+
+      };
+
+
+    // =====================================================
+    // 單位切換
+    // =====================================================
+
+    document.getElementById(
+      "unitSelect"
+    ).onchange =
+      function() {
+
+        updatePage();
+
+      };
+
+
+    // =====================================================
+    // 開始載入
+    // =====================================================
 
     loadInventory();
 
