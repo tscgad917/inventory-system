@@ -326,19 +326,27 @@ alert("庫存資料筆數：" + inventoryData.length + "\n第一筆日期：" + 
         // 這樣尚未產生盤點資料的月份也能出現
         // =================================================
 
-        const periodMonths =
+      const periodMonths =
   periods
-    .map(period => period.period_month)
+    .map(period => {
+      if (!period.period_month) {
+        return null;
+      }
+
+      return String(period.period_month).substring(0, 7);
+    })
     .filter(month => month);
 
 
 const inventoryMonths =
   inventoryData
-    .map(row =>
-      row.count_date
-        ? row.count_date.substring(0, 7)
-        : null
-    )
+    .map(row => {
+      if (!row.count_date) {
+        return null;
+      }
+
+      return String(row.count_date).substring(0, 7);
+    })
     .filter(month => month);
 
 
