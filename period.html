@@ -104,7 +104,7 @@
       margin-bottom: 6px;
     }
 
-    .period-row div:last-child {
+    .period-row div:last-of-type {
       margin-bottom: 0;
     }
 
@@ -118,11 +118,29 @@
       font-weight: bold;
     }
 
+    .edit-button {
+      background: #555;
+      margin-top: 15px;
+      padding: 9px;
+      font-size: 15px;
+    }
+
     .delete-button {
       background: #999;
       margin-top: 10px;
       padding: 9px;
       font-size: 15px;
+    }
+
+    .cancel-button {
+      background: #777;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .edit-mode {
+      background: #f0f4f8;
+      border: 2px solid #777;
     }
   </style>
 
@@ -144,10 +162,30 @@
 
 <label for="isOpen">開放狀態</label> <select id="isOpen"> <option value="false">未開放</option> <option value="true">開放</option> </select>
 
-<label for="note">備註</label> <input type="text" id="note" placeholder="例如：11/1假日，改於11/2盤點">
+<label for="note">備註</label>
+<input
+type="text"
+id="note"
+placeholder="例如：11/1假日，改於11/2盤點"
 
-  <button type="button" onclick="savePeriod()">
+>
+
+  <button type="button" id="saveButton" onclick="savePeriod()">
     儲存盤點期間
+  </button>
+
+<button
+type="button"
+id="cancelButton"
+class="cancel-button"
+onclick="cancelEdit()"
+
+>
+
+```
+取消編輯
+```
+
   </button>
 
   <div id="status" class="status">
@@ -155,10 +193,15 @@
   </div>
 
   <div class="period-list">
-    <h2>已設定的盤點期間</h2>
-    <div id="periodList">
-      正在讀取……
-    </div>
+
+```
+<h2>已設定的盤點期間</h2>
+
+<div id="periodList">
+  正在讀取……
+</div>
+```
+
   </div>
 
 <button
@@ -178,18 +221,35 @@ onclick="location.href='admin-home.html'"
 
 <script>
 
-const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const SUPABASE_URL =
+  "https://onebxqajsiqmhfcizaxl.supabase.co";
 
-const accessToken = localStorage.getItem("admin_access_token");
+const SUPABASE_KEY =
+  "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+const accessToken =
+  localStorage.getItem("admin_access_token");
+
+let editingId = null;
+
+
+// --------------------------------------------------
+// 登入檢查
+// --------------------------------------------------
 
 if (!accessToken) {
   window.location.href = "admin.html";
 }
 
+
+// --------------------------------------------------
+// 讀取盤點期間
+// --------------------------------------------------
+
 async function loadPeriods() {
 
-  const periodList = document.getElementById("periodList");
+  const periodList =
+    document.getElementById("periodList");
 
   try {
 
@@ -200,6 +260,7 @@ async function loadPeriods() {
       "&order=period_month.asc",
       {
         method: "GET",
+
         headers: {
           "apikey": SUPABASE_KEY,
           "Authorization": "Bearer " + accessToken
@@ -209,7 +270,8 @@ async function loadPeriods() {
 
     if (!response.ok) {
 
-      const errorText = await response.text();
+      const errorText =
+        await response.text();
 
       console.error(errorText);
 
@@ -219,7 +281,8 @@ async function loadPeriods() {
       return;
     }
 
-    const periods = await response.json();
+    const periods =
+      await response.json();
 
     if (periods.length === 0) {
 
@@ -233,25 +296,59 @@ async function loadPeriods() {
 
     periods.forEach(function(period) {
 
-      const row = document.createElement("div");
+      const row =
+        document.createElement("div");
 
       row.className = "period-row";
 
       const statusText =
         period.is_open
-        ? "開放"
-        : "未開放";
+          ? "開放"
+          : "未開放";
 
       const statusClass =
         period.is_open
-        ? "open"
-        : "closed";
+          ? "open"
+          : "closed";
 
       row.innerHTML = `
-        <div><strong>盤點月份：</strong>${period.period_month}</div>
-        <div><strong>實際盤點日：</strong>${period.count_date}</div>
-        <div><strong>狀態：</strong><span class="${statusClass}">${statusText}</span></div>
-        <div><strong>備註：</strong>${period.note || "－"}</div>
+
+        <div>
+          <strong>盤點月份：</strong>
+          ${period.period_month}
+        </div>
+
+        <div>
+          <strong>實際盤點日：</strong>
+          ${period.count_date}
+        </div>
+
+        <div>
+          <strong>狀態：</strong>
+          <span class="${statusClass}">
+            ${statusText}
+          </span>
+        </div>
+
+        <div>
+          <strong>備註：</strong>
+          ${period.note || "－"}
+        </div>
+
+        <button
+          type="button"
+          class="edit-button"
+          onclick="editPeriod(
+            ${period.id},
+            '${period.period_month}',
+            '${period.count_date}',
+            ${period.is_open},
+            ${JSON.stringify(period.note || "")}
+          )"
+        >
+          編輯
+        </button>
+
         <button
           type="button"
           class="delete-button"
@@ -259,6 +356,7 @@ async function loadPeriods() {
         >
           刪除此設定
         </button>
+
       `;
 
       periodList.appendChild(row);
@@ -274,6 +372,10 @@ async function loadPeriods() {
   }
 }
 
+
+// --------------------------------------------------
+// 新增盤點期間
+// --------------------------------------------------
 
 async function savePeriod() {
 
@@ -308,59 +410,94 @@ async function savePeriod() {
     return;
   }
 
+
+  // ------------------------------------------------
+  // 編輯模式
+  // ------------------------------------------------
+
+  if (editingId !== null) {
+
+    await updatePeriod(
+      editingId,
+      countDate,
+      isOpen,
+      note
+    );
+
+    return;
+  }
+
+
+  // ------------------------------------------------
+  // 新增模式
+  // ------------------------------------------------
+
   const periodMonthDate =
     periodMonth + "-01";
 
   const data = {
 
-    period_month: periodMonthDate,
+    period_month:
+      periodMonthDate,
 
-    count_date: countDate,
+    count_date:
+      countDate,
 
-    is_open: isOpen,
+    is_open:
+      isOpen,
 
-    note: note || null
+    note:
+      note || null
 
   };
 
+
   try {
 
-    const response = await fetch(
-      SUPABASE_URL +
-      "/rest/v1/inventory_periods",
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods",
+        {
+          method: "POST",
 
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal"
-        },
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization":
+              "Bearer " + accessToken,
+            "Content-Type":
+              "application/json",
+            "Prefer":
+              "return=minimal"
+          },
 
-        body: JSON.stringify(data)
-      }
-    );
+          body:
+            JSON.stringify(data)
+        }
+      );
 
-  if (!response.ok) {
 
-  const errorText = await response.text();
+    if (!response.ok) {
 
-  console.error("儲存失敗：", errorText);
+      const errorText =
+        await response.text();
 
-  status.textContent =
-    "儲存失敗：" + errorText;
+      console.error(
+        "儲存失敗：",
+        errorText
+      );
 
-  return;
-}
+      status.textContent =
+        "儲存失敗：" + errorText;
+
+      return;
+    }
+
 
     status.textContent =
       "盤點期間已成功儲存。";
 
-    document.getElementById("periodMonth").value = "";
-    document.getElementById("countDate").value = "";
-    document.getElementById("isOpen").value = "false";
-    document.getElementById("note").value = "";
+    clearForm();
 
     loadPeriods();
 
@@ -374,29 +511,217 @@ async function savePeriod() {
 }
 
 
+// --------------------------------------------------
+// 進入編輯模式
+// --------------------------------------------------
+
+function editPeriod(
+  id,
+  periodMonth,
+  countDate,
+  isOpen,
+  note
+) {
+
+  editingId = id;
+
+  document.getElementById("periodMonth").value =
+    periodMonth.substring(0, 7);
+
+  document.getElementById("periodMonth").disabled =
+    true;
+
+  document.getElementById("countDate").value =
+    countDate;
+
+  document.getElementById("isOpen").value =
+    isOpen ? "true" : "false";
+
+  document.getElementById("note").value =
+    note || "";
+
+  document.getElementById("saveButton").textContent =
+    "儲存修改";
+
+  document.getElementById("cancelButton").style.display =
+    "block";
+
+  document.getElementById("status").textContent =
+    "目前正在編輯盤點期間。";
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+// --------------------------------------------------
+// 更新盤點期間
+// --------------------------------------------------
+
+async function updatePeriod(
+  id,
+  countDate,
+  isOpen,
+  note
+) {
+
+  const status =
+    document.getElementById("status");
+
+  const data = {
+
+    count_date:
+      countDate,
+
+    is_open:
+      isOpen,
+
+    note:
+      note || null
+
+  };
+
+
+  try {
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods?id=eq." + id,
+        {
+          method: "PATCH",
+
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization":
+              "Bearer " + accessToken,
+            "Content-Type":
+              "application/json",
+            "Prefer":
+              "return=minimal"
+          },
+
+          body:
+            JSON.stringify(data)
+        }
+      );
+
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text();
+
+      console.error(
+        "修改失敗：",
+        errorText
+      );
+
+      status.textContent =
+        "修改失敗：" + errorText;
+
+      return;
+    }
+
+
+    status.textContent =
+      "盤點期間已成功修改。";
+
+    clearForm();
+
+    loadPeriods();
+
+  } catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+      "系統連線失敗，請稍後再試。";
+  }
+}
+
+
+// --------------------------------------------------
+// 取消編輯
+// --------------------------------------------------
+
+function cancelEdit() {
+
+  editingId = null;
+
+  clearForm();
+
+  document.getElementById("status").textContent =
+    "已取消編輯。";
+}
+
+
+// --------------------------------------------------
+// 清除表單
+// --------------------------------------------------
+
+function clearForm() {
+
+  editingId = null;
+
+  document.getElementById("periodMonth").value =
+    "";
+
+  document.getElementById("periodMonth").disabled =
+    false;
+
+  document.getElementById("countDate").value =
+    "";
+
+  document.getElementById("isOpen").value =
+    "false";
+
+  document.getElementById("note").value =
+    "";
+
+  document.getElementById("saveButton").textContent =
+    "儲存盤點期間";
+
+  document.getElementById("cancelButton").style.display =
+    "none";
+}
+
+
+// --------------------------------------------------
+// 刪除盤點期間
+// --------------------------------------------------
+
 async function deletePeriod(id) {
 
   const confirmed =
-    confirm("確定要刪除這筆盤點期間設定嗎？");
+    confirm(
+      "確定要刪除這筆盤點期間設定嗎？"
+    );
 
   if (!confirmed) {
     return;
   }
 
+
   try {
 
-    const response = await fetch(
-      SUPABASE_URL +
-      "/rest/v1/inventory_periods?id=eq." + id,
-      {
-        method: "DELETE",
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods?id=eq." + id,
+        {
+          method: "DELETE",
 
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization":
+              "Bearer " + accessToken
+          }
         }
-      }
-    );
+      );
+
 
     if (!response.ok) {
 
@@ -405,12 +730,17 @@ async function deletePeriod(id) {
 
       console.error(errorText);
 
-      alert("刪除失敗，請通知總務課處理。");
+      alert(
+        "刪除失敗，請通知總務課處理。"
+      );
 
       return;
     }
 
-    alert("盤點期間已刪除。");
+
+    alert(
+      "盤點期間已刪除。"
+    );
 
     loadPeriods();
 
@@ -418,10 +748,16 @@ async function deletePeriod(id) {
 
     console.error(error);
 
-    alert("系統連線失敗，請稍後再試。");
+    alert(
+      "系統連線失敗，請稍後再試。"
+    );
   }
 }
 
+
+// --------------------------------------------------
+// 初始載入
+// --------------------------------------------------
 
 loadPeriods();
 
