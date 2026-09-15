@@ -357,28 +357,36 @@
     // 取得盤點期間
     // ============================================================
 
-    async function loadPeriods() {
+    async function loadInventoryData() {
 
-      const response =
-        await apiFetch(
-          SUPABASE_URL +
-          "/rest/v1/inventory_periods" +
-          "?select=period_month,count_date,is_open" +
-          "&order=period_month.desc"
-        );
+  const response =
+    await apiFetch(
+      SUPABASE_URL +
+      "/rest/v1/monthly_counts" +
+      "?select=count_date,unit_id,item_id,quantity,submitted_by" +
+      "&order=count_date.desc,unit_id,item_id" +
+      "&limit=5000"
+    );
 
-      if (!response.ok) {
+  if (!response.ok) {
 
-        throw new Error(
-          "inventory_periods 讀取失敗"
-        );
+    const errorText =
+      await response.text();
 
-      }
+    console.error(
+      errorText
+    );
 
-      inventoryPeriods =
-        await response.json();
+    throw new Error(
+      "monthly_counts 讀取失敗"
+    );
 
-    }
+  }
+
+  inventoryData =
+    await response.json();
+
+}
 
 
     // ============================================================
