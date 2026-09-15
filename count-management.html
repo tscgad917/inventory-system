@@ -402,9 +402,10 @@
       const response =
         await apiFetch(
           SUPABASE_URL +
-          "/rest/v1/monthly_counts" +
-          "?select=count_date,unit_id,item_id,quantity,submitted_by" +
-          "&order=count_date.desc,unit_id,item_id"
+         "/rest/v1/monthly_counts" +
+"?select=count_date,unit_id,item_id,quantity,submitted_by" +
+"&order=count_date.desc,unit_id,item_id" +
+"&limit=5000"
         );
 
       if (!response.ok) {
