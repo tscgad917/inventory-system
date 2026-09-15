@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>廠商進貨登錄</title>
+
+  <style>
+    body {
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f6f8;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 12px;
+      font-size: 17px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .back {
+      background: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>廠商進貨登錄</h1>
+
+    <label for="date">進貨日期</label>
+    <input type="date" id="date">
+
+    <label for="item">耗材項目</label>
+    <select id="item">
+      <option value="">請選擇耗材</option>
+      <option value="1">櫃員機色帶(長)</option>
+      <option value="2">報表機色帶(小)</option>
+      <option value="3">ATM色帶(長)</option>
+      <option value="4">ATM色帶(小)</option>
+      <option value="5">ATM紙捲(餘額證明)</option>
+      <option value="6">ATM紙捲(敘時)</option>
+    </select>
+
+    <label for="quantity">進貨數量</label>
+    <input
+      type="number"
+      id="quantity"
+      min="1"
+      placeholder="請輸入進貨數量"
+    >
+
+    <label for="note">備註</label>
+    <textarea
+      id="note"
+      placeholder="可填寫廠商、採購單號或其他備註"
+    ></textarea>
+
+    <button type="button" onclick="submitPurchase()">
+      送出進貨資料
+    </button>
+
+    <button
+      type="button"
+      class="back"
+      onclick="location.href='admin-home.html'"
+    >
+      返回後台
+    </button>
+
+  </div>
+
+  <script>
+
+    // 檢查是否已登入
+    const accessToken = localStorage.getItem("admin_access_token");
+
+    if (!accessToken) {
+      window.location.href = "admin.html";
+    }
+
+    const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+    // 預設今天
+    document.getElementById("date").value =
+      new Date().toISOString().split("T")[0];
+
+    async function submitPurchase() {
+
+      const date = document.getElementById("date").value;
+      const itemId = document.getElementById("item").value;
+      const quantity = document.getElementById("quantity").value;
+      const note = document.getElementById("note").value.trim();
+
+      if (!date) {
+        alert("請選擇進貨日期");
+        return;
+      }
+
+      if (!itemId) {
+        alert("請選擇耗材項目");
+        return;
+      }
+
+      if (!quantity || Number(quantity) <= 0) {
+        alert("請輸入正確的進貨數量");
+        return;
+      }
+
+      const data = {
+        purchase_date: date,
+        item_id: Number(itemId),
+        quantity: Number(quantity),
+        note: note || null
+      };
+
+      try {
+
+        const response = await fetch(
+          SUPABASE_URL + "/rest/v1/purchases",
+          {
+            method: "POST",
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Authorization": "Bearer " + SUPABASE_KEY,
+              "Content-Type": "application/json",
+              "Prefer": "return=minimal"
+            },
+            body: JSON.stringify(data)
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(errorText);
+          alert("進貨資料送出失敗。");
+          return;
+        }
+
+        alert("進貨資料已成功登錄！");
+
+        document.getElementById("item").value = "";
+        document.getElementById("quantity").value = "";
+        document.getElementById("note").value = "";
+
+      } catch (error) {
+
+        console.error(error);
+        alert("系統連線失敗，請稍後再試。");
+
+      }
+    }
+  </script>
+
+</body>
+</html>
