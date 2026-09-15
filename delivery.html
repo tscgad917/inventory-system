@@ -143,6 +143,11 @@
   </div>
 
   <script>
+const accessToken = localStorage.getItem("admin_access_token");
+
+if (!accessToken) {
+  window.location.href = "admin.html";
+}
     const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
     const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
