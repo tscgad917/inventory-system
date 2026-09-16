@@ -845,6 +845,15 @@ let notificationPeriod =
 let notificationRecipients =
   [];
 
+/*
+  通知類型：
+  pre  = 事前通知
+  day  = 盤點當日通知
+*/
+
+let notificationType =
+  "pre";
+
 
 /* ===== 登入檢查 ===== */
 
@@ -1302,7 +1311,38 @@ async function loadPeriods() {
           function() {
 
             openNotificationModal(
-              period
+              period,
+              "pre"
+            );
+
+          }
+        );
+
+
+        /* 盤點當日通知 */
+
+        const dayNotifyButton =
+          document.createElement(
+            "button"
+          );
+
+        dayNotifyButton.type =
+          "button";
+
+        dayNotifyButton.className =
+          "notify-button";
+
+        dayNotifyButton.textContent =
+          "盤點當日通知";
+
+
+        dayNotifyButton.addEventListener(
+          "click",
+          function() {
+
+            openNotificationModal(
+              period,
+              "day"
             );
 
           }
@@ -1319,6 +1359,10 @@ async function loadPeriods() {
 
         actions.appendChild(
           notifyButton
+        );
+
+        actions.appendChild(
+          dayNotifyButton
         );
 
 
@@ -1817,22 +1861,42 @@ async function loadNotificationEmails() {
    ========================================================= */
 
 async function openNotificationModal(
-  period
+  period,
+  type = "pre"
 ) {
 
   notificationPeriod =
     period;
 
+  notificationType =
+    type;
+
   notificationRecipients =
     [];
 
 
-  notificationModalTitle.textContent =
-    "寄送 " +
-    formatPeriodMonth(
-      period.period_month
-    ) +
-    " 事前通知";
+  if (
+    notificationType ===
+    "day"
+  ) {
+
+    notificationModalTitle.textContent =
+      "寄送 " +
+      formatPeriodMonth(
+        period.period_month
+      ) +
+      " 盤點當日通知";
+
+  } else {
+
+    notificationModalTitle.textContent =
+      "寄送 " +
+      formatPeriodMonth(
+        period.period_month
+      ) +
+      " 事前通知";
+
+  }
 
 
   recipientList.innerHTML =
@@ -2220,6 +2284,9 @@ function closeNotificationModal() {
   notificationRecipients =
     [];
 
+  notificationType =
+    "pre";
+
 }
 
 
@@ -2314,32 +2381,90 @@ function openEmailDraft() {
     notificationPeriod.count_date;
 
 
-  const subject =
-    "庫存盤點事前通知－" +
-    periodText;
+  let subject =
+    "";
+
+  let body =
+    "";
 
 
-  const body =
-    "各營業單位您好：\n\n" +
+  /* =====================================================
+     事前通知
+     保留原本已確認的通知內容
+     ===================================================== */
 
-    "本社 " +
-    periodText +
-    "庫存盤點日期為 " +
-    countDate +
-    "。\n\n" +
+  if (
+    notificationType ===
+    "pre"
+  ) {
 
-    "建議貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報；系統於盤點開放日即可進行填報。\n\n" +
+    subject =
+      "庫存盤點事前通知－" +
+      periodText;
 
-    "庫存盤點系統：\n" +
-    window.location.origin +
-    "/inventory-system/\n\n" +
 
-    "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+    body =
+      "各營業單位您好：\n\n" +
 
-    "如有盤點作業相關問題，請洽總務課。\n\n" +
+      "本社 " +
+      periodText +
+      "庫存盤點日期為 " +
+      countDate +
+      "。\n\n" +
 
-    "淡水信用合作社\n" +
-    "總務課";
+      "建議貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報；系統於盤點開放日即可進行填報。\n\n" +
+
+      "庫存盤點系統：\n" +
+      window.location.origin +
+      "/inventory-system/\n\n" +
+
+      "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+
+      "如有盤點作業相關問題，請洽總務課。\n\n" +
+
+      "淡水信用合作社\n" +
+      "總務課";
+
+  }
+
+
+  /* =====================================================
+     盤點當日通知
+     ===================================================== */
+
+  if (
+    notificationType ===
+    "day"
+  ) {
+
+    subject =
+      "庫存盤點當日通知－" +
+      periodText;
+
+
+    body =
+      "各營業單位您好：\n\n" +
+
+      "本社 " +
+      periodText +
+      "庫存盤點日期為今日（" +
+      countDate +
+      "）。\n\n" +
+
+      "請貴單位於今日完成庫存盤點填報，建議於今日 16:30 後登入庫存盤點系統進行盤點；系統於盤點日即可進行填報。\n\n" +
+
+      "庫存盤點系統：\n" +
+      window.location.origin +
+      "/inventory-system/\n\n" +
+
+      "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+
+      "如有盤點作業相關問題，請洽總務課。\n\n" +
+
+      "淡水信用合作社\n" +
+      "總務課";
+
+  }
 
 
   /*
