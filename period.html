@@ -22,8 +22,6 @@
       color: #26332c;
     }
 
-    /* ===== Header ===== */
-
     .page-header {
       background: #14532d;
       color: white;
@@ -48,8 +46,6 @@
       font-weight: 600;
       letter-spacing: 0.04em;
     }
-
-    /* ===== Main ===== */
 
     .container {
       max-width: 820px;
@@ -76,8 +72,6 @@
       line-height: 1.7;
     }
 
-    /* ===== Card ===== */
-
     .card {
       background: #ffffff;
       border: 1px solid #dfe7e1;
@@ -95,8 +89,6 @@
       font-weight: 600;
       color: #245337;
     }
-
-    /* ===== Form ===== */
 
     .form-grid {
       display: grid;
@@ -159,8 +151,6 @@
       line-height: 1.5;
     }
 
-    /* ===== Buttons ===== */
-
     .button-group {
       display: flex;
       gap: 10px;
@@ -171,7 +161,8 @@
     .secondary-button,
     .back-button,
     .edit-button,
-    .delete-button {
+    .delete-button,
+    .notify-button {
       font-family: inherit;
       cursor: pointer;
       border-radius: 8px;
@@ -219,8 +210,6 @@
       box-shadow: none;
     }
 
-    /* ===== Status ===== */
-
     .status {
       margin-top: 18px;
       padding: 12px 14px;
@@ -231,8 +220,6 @@
       font-size: 13px;
       line-height: 1.6;
     }
-
-    /* ===== Period List ===== */
 
     .period-list {
       margin-top: 30px;
@@ -301,10 +288,12 @@
       gap: 10px;
       padding-top: 14px;
       border-top: 1px solid #e8ede9;
+      flex-wrap: wrap;
     }
 
     .edit-button,
-    .delete-button {
+    .delete-button,
+    .notify-button {
       padding: 9px 16px;
       font-size: 14px;
     }
@@ -331,7 +320,17 @@
       border-color: #d0aaaa;
     }
 
-    /* ===== Back ===== */
+    .notify-button {
+      border: 1px solid #a9c5b1;
+      background: #edf6ef;
+      color: #17613a;
+      font-weight: 600;
+    }
+
+    .notify-button:hover {
+      background: #e1f0e5;
+      border-color: #8fb39a;
+    }
 
     .back-area {
       margin-top: 28px;
@@ -352,7 +351,152 @@
       border-color: #aebbb2;
     }
 
-    /* ===== Mobile ===== */
+    /* ===== 通知視窗 ===== */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(28, 42, 34, 0.38);
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 12px;
+      padding: 26px;
+      box-shadow: 0 10px 30px rgba(31, 55, 40, 0.16);
+    }
+
+    .modal-title {
+      margin: 0 0 8px;
+      color: #245337;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-description {
+      margin: 0 0 18px;
+      color: #68756d;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .recipient-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .recipient-count {
+      font-size: 13px;
+      color: #68756d;
+    }
+
+    .select-all-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      font-size: 14px;
+      color: #34443a;
+      cursor: pointer;
+    }
+
+    .recipient-list {
+      border: 1px solid #dfe7e1;
+      border-radius: 8px;
+      background: #fafcfb;
+      padding: 8px;
+    }
+
+    .recipient-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .recipient-item:hover {
+      background: #f0f5f1;
+    }
+
+    .recipient-item input {
+      width: auto;
+      margin-top: 3px;
+    }
+
+    .recipient-text {
+      min-width: 0;
+    }
+
+    .recipient-unit {
+      display: block;
+      color: #34443a;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .recipient-email {
+      display: block;
+      margin-top: 2px;
+      color: #7b867f;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .modal-cancel,
+    .modal-confirm {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-cancel {
+      border: 1px solid #c6d0c9;
+      background: #ffffff;
+      color: #536159;
+    }
+
+    .modal-confirm {
+      border: none;
+      background: #17613a;
+      color: #ffffff;
+    }
+
+    .modal-confirm:hover {
+      background: #124f2f;
+    }
+
+    .modal-cancel:hover {
+      background: #f5f7f5;
+    }
 
     @media (max-width: 650px) {
 
@@ -404,8 +548,17 @@
       }
 
       .edit-button,
-      .delete-button {
+      .delete-button,
+      .notify-button {
         width: 100%;
+      }
+
+      .modal {
+        padding: 20px;
+      }
+
+      .modal-actions {
+        flex-direction: column;
       }
     }
   </style>
@@ -571,8 +724,6 @@
   </section>
 
 
-  <!-- 返回 -->
-
   <div class="back-area">
 
     <button
@@ -586,6 +737,85 @@
   </div>
 
 </main>
+
+
+<!-- 通知收件者視窗 -->
+
+<div
+  class="modal-overlay"
+  id="notificationModal"
+>
+
+  <div class="modal">
+
+    <h2
+      class="modal-title"
+      id="notificationModalTitle"
+    >
+      寄送事前通知
+    </h2>
+
+    <p class="modal-description">
+      請選擇本次通知的收件者。預設選取全部單位，確認後將開啟一封已填妥收件者、主旨及內容的 Email。
+    </p>
+
+
+    <div class="recipient-header">
+
+      <label class="select-all-label">
+
+        <input
+          type="checkbox"
+          id="selectAllRecipients"
+          checked
+        >
+
+        全選
+
+      </label>
+
+
+      <span
+        class="recipient-count"
+        id="recipientCount"
+      >
+        已選取 0 個收件者
+      </span>
+
+    </div>
+
+
+    <div
+      class="recipient-list"
+      id="recipientList"
+    >
+      正在讀取通知信箱……
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-cancel"
+        id="notificationCancelButton"
+      >
+        取消
+      </button>
+
+      <button
+        type="button"
+        class="modal-confirm"
+        id="notificationConfirmButton"
+      >
+        確認並開啟 Email
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
 
 <script>
@@ -606,6 +836,17 @@ const accessToken =
 let editingId = null;
 
 
+/* ===== 通知暫存資料 ===== */
+
+let notificationPeriod =
+  null;
+
+let notificationRecipients =
+  [];
+
+
+/* ===== 登入檢查 ===== */
+
 if (!accessToken) {
 
   window.location.href =
@@ -613,6 +854,8 @@ if (!accessToken) {
 
 }
 
+
+/* ===== 原有 DOM ===== */
 
 const periodMonthInput =
   document.getElementById(
@@ -659,6 +902,48 @@ const backButton =
     "backButton"
   );
 
+
+/* ===== 通知 DOM ===== */
+
+const notificationModal =
+  document.getElementById(
+    "notificationModal"
+  );
+
+const notificationModalTitle =
+  document.getElementById(
+    "notificationModalTitle"
+  );
+
+const recipientList =
+  document.getElementById(
+    "recipientList"
+  );
+
+const recipientCount =
+  document.getElementById(
+    "recipientCount"
+  );
+
+const selectAllRecipients =
+  document.getElementById(
+    "selectAllRecipients"
+  );
+
+const notificationCancelButton =
+  document.getElementById(
+    "notificationCancelButton"
+  );
+
+const notificationConfirmButton =
+  document.getElementById(
+    "notificationConfirmButton"
+  );
+
+
+/* =========================================================
+   讀取盤點期間
+   ========================================================= */
 
 async function loadPeriods() {
 
@@ -994,12 +1279,45 @@ async function loadPeriods() {
         );
 
 
+        /* 寄送事前通知 */
+
+        const notifyButton =
+          document.createElement(
+            "button"
+          );
+
+        notifyButton.type =
+          "button";
+
+        notifyButton.className =
+          "notify-button";
+
+        notifyButton.textContent =
+          "寄送事前通知";
+
+
+        notifyButton.addEventListener(
+          "click",
+          function() {
+
+            openNotificationModal(
+              period
+            );
+
+          }
+        );
+
+
         actions.appendChild(
           editButton
         );
 
         actions.appendChild(
           deleteButton
+        );
+
+        actions.appendChild(
+          notifyButton
         );
 
 
@@ -1031,6 +1349,10 @@ async function loadPeriods() {
 
 }
 
+
+/* =========================================================
+   編輯
+   ========================================================= */
 
 function startEdit(period) {
 
@@ -1078,6 +1400,10 @@ function startEdit(period) {
 
 }
 
+
+/* =========================================================
+   儲存
+   ========================================================= */
 
 async function savePeriod() {
 
@@ -1214,6 +1540,10 @@ async function savePeriod() {
 }
 
 
+/* =========================================================
+   修改
+   ========================================================= */
+
 async function updatePeriod(
   id,
   countDate,
@@ -1307,6 +1637,10 @@ async function updatePeriod(
 }
 
 
+/* =========================================================
+   取消編輯
+   ========================================================= */
+
 function cancelEdit() {
 
   clearForm();
@@ -1348,6 +1682,10 @@ function clearForm() {
 
 }
 
+
+/* =========================================================
+   刪除
+   ========================================================= */
 
 async function deletePeriod(id) {
 
@@ -1422,6 +1760,689 @@ async function deletePeriod(id) {
 
 }
 
+
+/* =========================================================
+   讀取 17 個通知信箱
+   ========================================================= */
+
+async function loadNotificationEmails() {
+
+  const response =
+    await fetch(
+      SUPABASE_URL +
+      "/rest/v1/unit_notification_emails" +
+      "?select=id,unit_id,email,is_active,units(name)" +
+      "&is_active=eq.true" +
+      "&order=unit_id.asc",
+      {
+        method: "GET",
+
+        headers: {
+          "apikey":
+            SUPABASE_KEY,
+
+          "Authorization":
+            "Bearer " +
+            accessToken
+        }
+      }
+    );
+
+
+  if (!response.ok) {
+
+    const errorText =
+      await response.text();
+
+    console.error(
+      "通知信箱讀取失敗：",
+      errorText
+    );
+
+    throw new Error(
+      "通知信箱資料讀取失敗。"
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/* =========================================================
+   開啟通知視窗
+   ========================================================= */
+
+async function openNotificationModal(
+  period
+) {
+
+  notificationPeriod =
+    period;
+
+  notificationRecipients =
+    [];
+
+
+  notificationModalTitle.textContent =
+    "寄送 " +
+    formatPeriodMonth(
+      period.period_month
+    ) +
+    " 事前通知";
+
+
+  recipientList.innerHTML =
+    "正在讀取通知信箱……";
+
+
+  recipientCount.textContent =
+    "已選取 0 個收件者";
+
+
+  selectAllRecipients.checked =
+    true;
+
+
+  notificationModal.classList.add(
+    "show"
+  );
+
+
+  try {
+
+    const rows =
+      await loadNotificationEmails();
+
+
+    notificationRecipients =
+      rows;
+
+
+    renderRecipients();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    recipientList.textContent =
+      "通知信箱讀取失敗，請確認資料庫設定。";
+
+  }
+
+}
+
+
+/* =========================================================
+   顯示收件者
+   ========================================================= */
+
+function renderRecipients() {
+
+  recipientList.innerHTML =
+    "";
+
+
+  if (
+    notificationRecipients.length ===
+    0
+  ) {
+
+    recipientList.textContent =
+      "目前沒有可用的通知信箱。";
+
+    updateRecipientCount();
+
+    return;
+
+  }
+
+
+  notificationRecipients.forEach(
+    function(recipient) {
+
+      const label =
+        document.createElement(
+          "label"
+        );
+
+      label.className =
+        "recipient-item";
+
+
+      const checkbox =
+        document.createElement(
+          "input"
+        );
+
+      checkbox.type =
+        "checkbox";
+
+      checkbox.className =
+        "recipient-checkbox";
+
+      checkbox.checked =
+        true;
+
+      checkbox.dataset.id =
+        recipient.id;
+
+
+      checkbox.addEventListener(
+        "change",
+        function() {
+
+          updateSelectAllState();
+
+          updateRecipientCount();
+
+        }
+      );
+
+
+      const text =
+        document.createElement(
+          "span"
+        );
+
+      text.className =
+        "recipient-text";
+
+
+      const unit =
+        document.createElement(
+          "span"
+        );
+
+      unit.className =
+        "recipient-unit";
+
+      unit.textContent =
+        getUnitName(
+          recipient
+        );
+
+
+      const email =
+        document.createElement(
+          "span"
+        );
+
+      email.className =
+        "recipient-email";
+
+      email.textContent =
+        recipient.email;
+
+
+      text.appendChild(
+        unit
+      );
+
+      text.appendChild(
+        email
+      );
+
+
+      label.appendChild(
+        checkbox
+      );
+
+      label.appendChild(
+        text
+      );
+
+
+      recipientList.appendChild(
+        label
+      );
+
+    }
+  );
+
+
+  updateRecipientCount();
+
+}
+
+
+/* =========================================================
+   取得單位名稱
+   ========================================================= */
+
+function getUnitName(
+  recipient
+) {
+
+  if (
+    recipient.units &&
+    recipient.units.name
+  ) {
+
+    return recipient.units.name;
+
+  }
+
+
+  const unitNames = {
+
+    1: "總務課",
+    2: "營業部",
+    3: "水碓分社",
+    4: "竹圍分社",
+    5: "英專分社",
+    6: "義山分社",
+    7: "三芝分社",
+    8: "八里分社",
+    9: "成州分社",
+    10: "五股分社",
+    11: "萬金分社",
+    12: "新莊分社",
+    13: "泰山分社",
+    14: "林口分社",
+    15: "板橋分社",
+    16: "蘆洲分社",
+    17: "三重分社"
+
+  };
+
+
+  return (
+    unitNames[
+      recipient.unit_id
+    ] ||
+    "未命名單位"
+  );
+
+}
+
+
+/* =========================================================
+   格式化月份
+   ========================================================= */
+
+function formatPeriodMonth(
+  value
+) {
+
+  if (!value) {
+    return "";
+  }
+
+
+  const text =
+    String(value).substring(
+      0,
+      7
+    );
+
+
+  const parts =
+    text.split("-");
+
+
+  if (
+    parts.length !== 2
+  ) {
+
+    return text;
+
+  }
+
+
+  return (
+    parts[0] +
+    "年" +
+    Number(parts[1]) +
+    "月"
+  );
+
+}
+
+
+/* =========================================================
+   全選
+   ========================================================= */
+
+selectAllRecipients.addEventListener(
+  "change",
+  function() {
+
+    const checkboxes =
+      document.querySelectorAll(
+        ".recipient-checkbox"
+      );
+
+
+    checkboxes.forEach(
+      function(checkbox) {
+
+        checkbox.checked =
+          selectAllRecipients.checked;
+
+      }
+    );
+
+
+    updateRecipientCount();
+
+  }
+);
+
+
+/* =========================================================
+   更新全選狀態
+   ========================================================= */
+
+function updateSelectAllState() {
+
+  const checkboxes =
+    Array.from(
+      document.querySelectorAll(
+        ".recipient-checkbox"
+      )
+    );
+
+
+  if (
+    checkboxes.length ===
+    0
+  ) {
+
+    selectAllRecipients.checked =
+      false;
+
+    selectAllRecipients.indeterminate =
+      false;
+
+    return;
+
+  }
+
+
+  const checkedCount =
+    checkboxes.filter(
+      checkbox =>
+        checkbox.checked
+    ).length;
+
+
+  selectAllRecipients.checked =
+    checkedCount ===
+    checkboxes.length;
+
+
+  selectAllRecipients.indeterminate =
+    checkedCount > 0 &&
+    checkedCount <
+      checkboxes.length;
+
+}
+
+
+/* =========================================================
+   更新收件者數量
+   ========================================================= */
+
+function updateRecipientCount() {
+
+  const checkedCount =
+    document.querySelectorAll(
+      ".recipient-checkbox:checked"
+    ).length;
+
+
+  recipientCount.textContent =
+    "已選取 " +
+    checkedCount +
+    " 個收件者";
+
+}
+
+
+/* =========================================================
+   關閉通知視窗
+   ========================================================= */
+
+function closeNotificationModal() {
+
+  notificationModal.classList.remove(
+    "show"
+  );
+
+  notificationPeriod =
+    null;
+
+  notificationRecipients =
+    [];
+
+}
+
+
+/* =========================================================
+   建立 Email 草稿
+   ========================================================= */
+
+function openEmailDraft() {
+
+  if (!notificationPeriod) {
+
+    return;
+
+  }
+
+
+  const selectedCheckboxes =
+    Array.from(
+      document.querySelectorAll(
+        ".recipient-checkbox:checked"
+      )
+    );
+
+
+  if (
+    selectedCheckboxes.length ===
+    0
+  ) {
+
+    alert(
+      "請至少選擇一個收件者。"
+    );
+
+    return;
+
+  }
+
+
+  const selectedIds =
+    selectedCheckboxes.map(
+      checkbox =>
+        Number(
+          checkbox.dataset.id
+        )
+    );
+
+
+  const selectedRecipients =
+    notificationRecipients.filter(
+      recipient =>
+        selectedIds.includes(
+          Number(
+            recipient.id
+          )
+        )
+    );
+
+
+  const emails =
+    selectedRecipients
+      .map(
+        recipient =>
+          recipient.email
+      )
+      .filter(
+        email =>
+          email
+      );
+
+
+  if (
+    emails.length ===
+    0
+  ) {
+
+    alert(
+      "目前沒有有效的收件者 Email。"
+    );
+
+    return;
+
+  }
+
+
+  const periodText =
+    formatPeriodMonth(
+      notificationPeriod.period_month
+    );
+
+
+  const countDate =
+    notificationPeriod.count_date;
+
+
+  const subject =
+    "庫存盤點事前通知－" +
+    periodText;
+
+
+  const body =
+    "各單位您好：\n\n" +
+
+    "本社 " +
+    periodText +
+    "庫存盤點日期為 " +
+    countDate +
+    "。\n\n" +
+
+    "請貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報。\n\n" +
+
+    "庫存盤點系統：\n" +
+    window.location.origin +
+    "/inventory-system/\n\n" +
+
+    "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+
+    "如有盤點作業相關問題，請洽總務課。\n\n" +
+
+    "淡水信用合作社\n" +
+    "總務課";
+
+
+  const mailto =
+    "mailto:" +
+    emails.join(",") +
+    "?subject=" +
+    encodeURIComponent(
+      subject
+    ) +
+    "&body=" +
+    encodeURIComponent(
+      body
+    );
+
+
+  window.location.href =
+    mailto;
+
+}
+
+
+/* =========================================================
+   通知按鈕
+   ========================================================= */
+
+notificationConfirmButton.addEventListener(
+  "click",
+  function() {
+
+    const selectedCount =
+      document.querySelectorAll(
+        ".recipient-checkbox:checked"
+      ).length;
+
+
+    if (
+      selectedCount ===
+      0
+    ) {
+
+      alert(
+        "請至少選擇一個收件者。"
+      );
+
+      return;
+
+    }
+
+
+    const confirmed =
+      confirm(
+        "本次將寄送通知給 " +
+        selectedCount +
+        " 個收件者，是否確認？"
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+
+    openEmailDraft();
+
+  }
+);
+
+
+/* =========================================================
+   取消通知
+   ========================================================= */
+
+notificationCancelButton.addEventListener(
+  "click",
+  closeNotificationModal
+);
+
+
+/* =========================================================
+   點擊遮罩關閉
+   ========================================================= */
+
+notificationModal.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      notificationModal
+    ) {
+
+      closeNotificationModal();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   原有按鈕
+   ========================================================= */
 
 saveButton.addEventListener(
   "click",
