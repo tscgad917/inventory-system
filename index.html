@@ -1,212 +1,823 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>庫存盤點系統</title>
 
   <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+
     body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
+
       margin: 0;
-      padding: 20px;
-      background: #f5f6f8;
+      padding: 0;
+
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+
+      background: #f3f6f3;
+
       color: #333;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    /* =====================================================
+       Header
+       ===================================================== */
+
+    .top-header {
+
+      background: #14532d;
+
+      color: white;
+
+      padding: 18px 20px;
+
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
-    h1 {
-      text-align: center;
-      margin-top: 0;
-      margin-bottom: 25px;
+
+    .top-header-inner {
+
+      max-width: 760px;
+
+      margin: 0 auto;
     }
+
+
+    .brand-name {
+
+      font-size: 15px;
+
+      opacity: 0.92;
+
+      letter-spacing: 0.5px;
+
+      margin-bottom: 3px;
+    }
+
+
+    .brand-title {
+
+      font-size: 20px;
+
+      font-weight: 700;
+
+      letter-spacing: 1px;
+    }
+
+
+    /* =====================================================
+       Main
+       ===================================================== */
+
+    .container {
+
+      max-width: 760px;
+
+      margin: 0 auto;
+
+      padding: 30px 20px 48px;
+    }
+
+
+    .page-heading {
+
+      margin-bottom: 22px;
+    }
+
+
+    .page-heading h1 {
+
+      margin: 0 0 6px;
+
+      color: #14532d;
+
+      font-size: 26px;
+
+      font-weight: 700;
+
+      letter-spacing: 0.5px;
+    }
+
+
+    .page-heading p {
+
+      margin: 0;
+
+      color: #666;
+
+      font-size: 14px;
+
+      line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       Status
+       ===================================================== */
 
     .status {
-      padding: 12px;
+
+      padding: 14px 16px;
+
       margin-bottom: 20px;
-      border-radius: 6px;
+
+      border-radius: 9px;
+
+      border: 1px solid #dfe6e1;
+
       text-align: center;
-      line-height: 1.6;
-      background: #f5f5f5;
-      color: #555;
+
+      line-height: 1.7;
+
+      background: #f8faf8;
+
+      color: #666;
+
+      font-size: 14px;
     }
+
 
     .status.open {
-      background: #eaf7ea;
-      color: #287a28;
+
+      background: #edf6ef;
+
+      border-color: #d4e8d8;
+
+      color: #315b3c;
     }
+
 
     .status.closed {
-      background: #f8eeee;
-      color: #a33;
+
+      background: #fbf0ef;
+
+      border-color: #eed6d3;
+
+      color: #8a4540;
     }
 
-    label {
-      display: block;
-      margin-top: 18px;
-      margin-bottom: 6px;
-      font-weight: bold;
+
+    /* =====================================================
+       Form Card
+       ===================================================== */
+
+    .form-card {
+
+      background: white;
+
+      border: 1px solid #e2e8e3;
+
+      border-radius: 12px;
+
+      box-shadow:
+        0 2px 8px rgba(20, 83, 45, 0.05);
+
+      padding: 24px;
     }
+
+
+    .section-title {
+
+      margin: 0 0 18px;
+
+      color: #14532d;
+
+      font-size: 18px;
+
+      font-weight: 700;
+    }
+
+
+    /* =====================================================
+       Form Fields
+       ===================================================== */
+
+    .field {
+
+      margin-bottom: 20px;
+    }
+
+
+    .field label {
+
+      display: block;
+
+      margin-bottom: 7px;
+
+      color: #444;
+
+      font-size: 14px;
+
+      font-weight: 600;
+    }
+
 
     select,
     input {
+
       width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+
+      min-height: 44px;
+
+      padding: 9px 12px;
+
+      font-family: inherit;
+
+      font-size: 15px;
+
+      color: #333;
+
+      background: white;
+
+      border: 1px solid #cfd8d1;
+
+      border-radius: 7px;
+
+      outline: none;
     }
 
-    .item {
-      margin-top: 18px;
-    }
 
-    .item-name {
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
+    select {
 
-    button {
-      width: 100%;
-      margin-top: 28px;
-      padding: 12px;
-      font-size: 17px;
-      border: none;
-      border-radius: 6px;
       cursor: pointer;
-      background: #333;
-      color: white;
     }
 
-    button:hover {
-      opacity: 0.9;
+
+    select:focus,
+    input:focus {
+
+      border-color: #39835a;
+
+      box-shadow:
+        0 0 0 3px rgba(57, 131, 90, 0.10);
     }
 
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-      opacity: 1;
+
+    input::placeholder {
+
+      color: #aaa;
     }
 
-    .note {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #666;
+
+    /* =====================================================
+       Inventory Section
+       ===================================================== */
+
+    .inventory-section {
+
+      margin-top: 26px;
+
+      padding-top: 22px;
+
+      border-top: 1px solid #e5eae6;
+    }
+
+
+    .inventory-title {
+
+      margin: 0 0 5px;
+
+      color: #14532d;
+
+      font-size: 17px;
+
+      font-weight: 700;
+    }
+
+
+    .inventory-description {
+
+      margin: 0 0 18px;
+
+      color: #777;
+
+      font-size: 13px;
+
       line-height: 1.6;
     }
 
+
+    .item {
+
+      padding: 15px 16px;
+
+      margin-bottom: 10px;
+
+      background: #f8faf8;
+
+      border: 1px solid #e1e8e2;
+
+      border-radius: 8px;
+    }
+
+
+    .item:last-child {
+
+      margin-bottom: 0;
+    }
+
+
+    .item-name {
+
+      margin-bottom: 8px;
+
+      color: #444;
+
+      font-size: 14px;
+
+      font-weight: 600;
+    }
+
+
+    .item input {
+
+      background: white;
+    }
+
+
+    /* =====================================================
+       Submit
+       ===================================================== */
+
+    .submit-area {
+
+      margin-top: 26px;
+
+      padding-top: 22px;
+
+      border-top: 1px solid #e5eae6;
+    }
+
+
+    button {
+
+      width: 100%;
+
+      min-height: 46px;
+
+      padding: 11px 16px;
+
+      font-family: inherit;
+
+      font-size: 16px;
+
+      font-weight: 600;
+
+      border: none;
+
+      border-radius: 7px;
+
+      cursor: pointer;
+
+      background: #14532d;
+
+      color: white;
+
+      transition:
+        background 0.15s ease,
+        opacity 0.15s ease;
+    }
+
+
+    button:hover {
+
+      background: #104325;
+    }
+
+
+    button:disabled {
+
+      background: #9ca9a0;
+
+      cursor: not-allowed;
+
+      opacity: 1;
+    }
+
+
+    .note {
+
+      margin-top: 14px;
+
+      padding: 12px 14px;
+
+      background: #f5f7f5;
+
+      border-radius: 7px;
+
+      color: #666;
+
+      font-size: 13px;
+
+      line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       Disabled
+       ===================================================== */
+
     #formArea.disabled {
+
       opacity: 0.55;
+
       pointer-events: none;
     }
+
+
+    /* =====================================================
+       Mobile
+       ===================================================== */
+
+    @media (max-width: 600px) {
+
+      .top-header {
+
+        padding: 16px 18px;
+      }
+
+
+      .brand-title {
+
+        font-size: 18px;
+      }
+
+
+      .container {
+
+        padding:
+          24px 14px 40px;
+      }
+
+
+      .page-heading h1 {
+
+        font-size: 23px;
+      }
+
+
+      .form-card {
+
+        padding: 18px;
+      }
+
+
+      .item {
+
+        padding: 14px;
+      }
+
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
-  <div class="container">
 
-    <h1>庫存盤點系統</h1>
+  <!-- =====================================================
+       Header
+       ===================================================== -->
 
-    <div id="status" class="status">
+  <header class="top-header">
+
+    <div class="top-header-inner">
+
+      <div class="brand-name">
+        淡水信用合作社
+      </div>
+
+      <div class="brand-title">
+        庫存盤點系統
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       Main
+       ===================================================== -->
+
+  <main class="container">
+
+
+    <div class="page-heading">
+
+      <h1>
+        庫存盤點
+      </h1>
+
+      <p>
+        請依實際庫存數量填寫本次盤點資料，確認內容無誤後再送出。
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         盤點狀態
+         =================================================== -->
+
+    <div
+      id="status"
+      class="status"
+    >
       正在確認本次盤點期間……
     </div>
 
-    <div id="formArea">
 
-      <label for="unit">盤點單位</label>
-      <select id="unit">
-        <option value="">請選擇單位</option>
-        <option value="1">總務課</option>
-        <option value="2">營業部</option>
-        <option value="3">水碓分社</option>
-        <option value="4">竹圍分社</option>
-        <option value="5">英專分社</option>
-        <option value="6">義山分社</option>
-        <option value="7">三芝分社</option>
-        <option value="8">八里分社</option>
-        <option value="9">成州分社</option>
-        <option value="10">五股分社</option>
-        <option value="11">萬金分社</option>
-        <option value="12">新莊分社</option>
-        <option value="13">泰山分社</option>
-        <option value="14">林口分社</option>
-        <option value="15">板橋分社</option>
-        <option value="16">蘆洲分社</option>
-        <option value="17">三重分社</option>
-      </select>
+    <!-- ===================================================
+         表單
+         =================================================== -->
 
-      <label for="name">盤點人員</label>
-      <input
-        type="text"
-        id="name"
-        placeholder="請輸入姓名"
-      >
+    <div
+      id="formArea"
+      class="form-card"
+    >
 
-      <div class="item">
-        <div class="item-name">櫃員機色帶(長)</div>
-        <input type="number" id="T" min="0" placeholder="請輸入數量">
+
+      <h2 class="section-title">
+        盤點資料
+      </h2>
+
+
+      <!-- =================================================
+           基本資料
+           ================================================= -->
+
+      <div class="field">
+
+        <label for="unit">
+          盤點單位
+        </label>
+
+        <select id="unit">
+
+          <option value="">
+            請選擇單位
+          </option>
+
+          <option value="1">
+            總務課
+          </option>
+
+          <option value="2">
+            營業部
+          </option>
+
+          <option value="3">
+            水碓分社
+          </option>
+
+          <option value="4">
+            竹圍分社
+          </option>
+
+          <option value="5">
+            英專分社
+          </option>
+
+          <option value="6">
+            義山分社
+          </option>
+
+          <option value="7">
+            三芝分社
+          </option>
+
+          <option value="8">
+            八里分社
+          </option>
+
+          <option value="9">
+            成州分社
+          </option>
+
+          <option value="10">
+            五股分社
+          </option>
+
+          <option value="11">
+            萬金分社
+          </option>
+
+          <option value="12">
+            新莊分社
+          </option>
+
+          <option value="13">
+            泰山分社
+          </option>
+
+          <option value="14">
+            林口分社
+          </option>
+
+          <option value="15">
+            板橋分社
+          </option>
+
+          <option value="16">
+            蘆洲分社
+          </option>
+
+          <option value="17">
+            三重分社
+          </option>
+
+        </select>
+
       </div>
 
-      <div class="item">
-        <div class="item-name">報表機色帶(小)</div>
-        <input type="number" id="R" min="0" placeholder="請輸入數量">
+
+      <div class="field">
+
+        <label for="name">
+          盤點人員
+        </label>
+
+        <input
+          type="text"
+          id="name"
+          placeholder="請輸入姓名"
+        >
+
       </div>
 
-      <div class="item">
-        <div class="item-name">ATM色帶(長)</div>
-        <input type="number" id="AP" min="0" placeholder="請輸入數量">
+
+      <!-- =================================================
+           庫存數量
+           ================================================= -->
+
+      <div class="inventory-section">
+
+        <h3 class="inventory-title">
+          各項庫存數量
+        </h3>
+
+        <p class="inventory-description">
+          請依實際盤點結果填寫各項耗材數量，數量為 0 時請直接填寫「0」。
+        </p>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            櫃員機色帶（長）
+          </div>
+
+          <input
+            type="number"
+            id="T"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            報表機色帶（小）
+          </div>
+
+          <input
+            type="number"
+            id="R"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            ATM 色帶（長）
+          </div>
+
+          <input
+            type="number"
+            id="AP"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            ATM 色帶（小）
+          </div>
+
+          <input
+            type="number"
+            id="AR"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            ATM 紙捲（餘額證明）
+          </div>
+
+          <input
+            type="number"
+            id="AB"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
+
+        <div class="item">
+
+          <div class="item-name">
+            ATM 紙捲（敘時）
+          </div>
+
+          <input
+            type="number"
+            id="AN"
+            min="0"
+            placeholder="請輸入數量"
+          >
+
+        </div>
+
       </div>
 
-      <div class="item">
-        <div class="item-name">ATM色帶(小)</div>
-        <input type="number" id="AR" min="0" placeholder="請輸入數量">
+
+      <!-- =================================================
+           送出
+           ================================================= -->
+
+      <div class="submit-area">
+
+        <button
+          type="button"
+          id="submitButton"
+          onclick="submitForm()"
+          disabled
+        >
+          送出盤點資料
+        </button>
+
+
+        <div class="note">
+          ※ 請確認盤點單位、盤點人員及各項庫存數量均填寫正確後再送出。
+        </div>
+
       </div>
 
-      <div class="item">
-        <div class="item-name">ATM紙捲(餘額證明)</div>
-        <input type="number" id="AB" min="0" placeholder="請輸入數量">
-      </div>
-
-      <div class="item">
-        <div class="item-name">ATM紙捲(敘時)</div>
-        <input type="number" id="AN" min="0" placeholder="請輸入數量">
-      </div>
-
-      <button
-        type="button"
-        id="submitButton"
-        onclick="submitForm()"
-        disabled
-      >
-        送出盤點資料
-      </button>
-
-      <div class="note">
-        ※ 請確認盤點單位、盤點人員及各項庫存數量均填寫正確後再送出。
-      </div>
 
     </div>
 
-  </div>
+
+  </main>
+
 
 <script>
+
 
   const SUPABASE_URL =
     "https://onebxqajsiqmhfcizaxl.supabase.co";
 
+
   const SUPABASE_KEY =
     "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
 
   let currentPeriod = null;
 
@@ -217,15 +828,34 @@
 
   function getToday() {
 
-    const today = new Date();
+    const today =
+      new Date();
+
 
     return (
+
       today.getFullYear() +
+
       "-" +
-      String(today.getMonth() + 1).padStart(2, "0") +
+
+      String(
+        today.getMonth() + 1
+      ).padStart(
+        2,
+        "0"
+      ) +
+
       "-" +
-      String(today.getDate()).padStart(2, "0")
+
+      String(
+        today.getDate()
+      ).padStart(
+        2,
+        "0"
+      )
+
     );
+
   }
 
 
@@ -235,28 +865,48 @@
 
   async function checkInventoryPeriod() {
 
+
     const status =
-      document.getElementById("status");
+      document.getElementById(
+        "status"
+      );
+
 
     const formArea =
-      document.getElementById("formArea");
+      document.getElementById(
+        "formArea"
+      );
+
 
     const submitButton =
-      document.getElementById("submitButton");
+      document.getElementById(
+        "submitButton"
+      );
 
-    const today = getToday();
+
+    const today =
+      getToday();
 
 
     try {
 
+
       const url =
         SUPABASE_URL +
+
         "/rest/v1/inventory_periods" +
+
         "?select=period_month,count_date,is_open" +
+
         "&count_date=eq." +
+
         today +
+
         "&apikey=" +
-        encodeURIComponent(SUPABASE_KEY);
+
+        encodeURIComponent(
+          SUPABASE_KEY
+        );
 
 
       const controller =
@@ -264,53 +914,75 @@
 
 
       const timeout =
-        setTimeout(function () {
+        setTimeout(
+          function () {
 
-          controller.abort();
+            controller.abort();
 
-        }, 10000);
+          },
+          10000
+        );
 
 
       const response =
-        await fetch(url, {
+        await fetch(
+          url,
+          {
 
-          method: "GET",
+            method:
+              "GET",
 
-          headers: {
-            "apikey": SUPABASE_KEY
-          },
+            headers: {
 
-          signal: controller.signal
+              "apikey":
+                SUPABASE_KEY
 
-        });
+            },
+
+            signal:
+              controller.signal
+
+          }
+        );
 
 
-      clearTimeout(timeout);
+      clearTimeout(
+        timeout
+      );
 
 
       if (!response.ok) {
 
+
         const errorText =
           await response.text();
+
 
         console.error(
           "inventory_periods API error:",
           errorText
         );
 
+
         status.className =
           "status closed";
 
+
         status.textContent =
           "盤點期間資料讀取失敗，請通知總務課處理。";
+
 
         formArea.classList.add(
           "disabled"
         );
 
-        submitButton.disabled = true;
+
+        submitButton.disabled =
+          true;
+
 
         return;
+
       }
 
 
@@ -326,21 +998,30 @@
 
       // 今天沒有設定為盤點日
 
-      if (periods.length === 0) {
+      if (
+        periods.length === 0
+      ) {
+
 
         status.className =
           "status closed";
 
+
         status.textContent =
           "目前非盤點期間，暫不開放盤點。";
+
 
         formArea.classList.add(
           "disabled"
         );
 
-        submitButton.disabled = true;
+
+        submitButton.disabled =
+          true;
+
 
         return;
+
       }
 
 
@@ -350,21 +1031,30 @@
 
       // 今天是盤點日，但尚未開放
 
-      if (!period.is_open) {
+      if (
+        !period.is_open
+      ) {
+
 
         status.className =
           "status closed";
 
+
         status.textContent =
           "本日為盤點日，但目前尚未開放盤點。";
+
 
         formArea.classList.add(
           "disabled"
         );
 
-        submitButton.disabled = true;
+
+        submitButton.disabled =
+          true;
+
 
         return;
+
       }
 
 
@@ -377,6 +1067,7 @@
       status.className =
         "status open";
 
+
       status.textContent =
         "本日為盤點日，現在可以填寫及送出盤點資料。";
 
@@ -385,6 +1076,7 @@
         "disabled"
       );
 
+
       submitButton.disabled =
         false;
 
@@ -392,6 +1084,7 @@
 
 
     catch (error) {
+
 
       console.error(
         "checkInventoryPeriod error:",
@@ -403,15 +1096,22 @@
         "status closed";
 
 
-      if (error.name === "AbortError") {
+      if (
+        error.name ===
+        "AbortError"
+      ) {
+
 
         status.textContent =
           "盤點期間資料讀取逾時，請通知總務課處理。";
 
+
       } else {
+
 
         status.textContent =
           "系統連線失敗，請稍後再試。";
+
       }
 
 
@@ -419,8 +1119,10 @@
         "disabled"
       );
 
+
       submitButton.disabled =
         true;
+
     }
 
   }
@@ -440,38 +1142,52 @@
       !currentPeriod.is_open
     ) {
 
+
       alert(
         "目前非開放盤點期間，無法送出資料。"
       );
 
+
       return;
+
     }
 
 
     const unitId =
-      document.getElementById("unit").value;
+      document.getElementById(
+        "unit"
+      ).value;
+
 
     const name =
-      document.getElementById("name").value.trim();
+      document.getElementById(
+        "name"
+      ).value.trim();
 
 
     if (!unitId) {
+
 
       alert(
         "請選擇盤點單位"
       );
 
+
       return;
+
     }
 
 
     if (!name) {
 
+
       alert(
         "請輸入盤點人員姓名"
       );
 
+
       return;
+
     }
 
 
@@ -480,10 +1196,18 @@
 
 
     const itemCodes =
-      ["T", "R", "AP", "AR", "AB", "AN"];
+      [
+        "T",
+        "R",
+        "AP",
+        "AR",
+        "AB",
+        "AN"
+      ];
 
 
-    const quantities = [];
+    const quantities =
+      [];
 
 
     for (
@@ -492,35 +1216,47 @@
       i++
     ) {
 
+
       const value =
         document.getElementById(
           itemCodes[i]
         ).value;
 
 
-      if (value === "") {
+      if (
+        value === ""
+      ) {
+
 
         alert(
           "請填寫全部 6 項庫存數量"
         );
 
+
         return;
+
       }
 
 
-      if (Number(value) < 0) {
+      if (
+        Number(value) < 0
+      ) {
+
 
         alert(
           "庫存數量不可小於 0"
         );
 
+
         return;
+
       }
 
 
       quantities.push(
         Number(value)
       );
+
     }
 
 
@@ -532,14 +1268,29 @@
 
     const data =
       itemIds.map(
-        function (itemId, index) {
+        function (
+          itemId,
+          index
+        ) {
+
 
           return {
-            count_date: countDate,
-            unit_id: Number(unitId),
-            item_id: itemId,
-            quantity: quantities[index],
-            submitted_by: name
+
+            count_date:
+              countDate,
+
+            unit_id:
+              Number(unitId),
+
+            item_id:
+              itemId,
+
+            quantity:
+              quantities[index],
+
+            submitted_by:
+              name
+
           };
 
         }
@@ -555,19 +1306,24 @@
     submitButton.disabled =
       true;
 
+
     submitButton.textContent =
       "送出中……";
 
 
     try {
 
+
       const response =
         await fetch(
+
           SUPABASE_URL +
           "/rest/v1/monthly_counts",
+
           {
 
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
 
@@ -587,16 +1343,23 @@
             },
 
             body:
-              JSON.stringify(data)
+              JSON.stringify(
+                data
+              )
 
           }
+
         );
 
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
+
 
         const errorText =
           await response.text();
+
 
         console.error(
           errorText
@@ -604,28 +1367,36 @@
 
 
         if (
-          response.status === 409
+          response.status ===
+          409
         ) {
+
 
           alert(
             "此單位本次盤點資料已經送出，請勿重複提交。"
           );
 
+
         } else {
+
 
           alert(
             "送出失敗，請通知總務課處理。"
           );
+
         }
 
 
         submitButton.disabled =
           false;
 
+
         submitButton.textContent =
           "送出盤點資料";
 
+
         return;
+
       }
 
 
@@ -638,26 +1409,32 @@
 
       document.getElementById(
         "unit"
-      ).value = "";
+      ).value =
+        "";
+
 
       document.getElementById(
         "name"
-      ).value = "";
+      ).value =
+        "";
 
 
       for (
         const code of itemCodes
       ) {
 
+
         document.getElementById(
           code
-        ).value = "";
+        ).value =
+          "";
 
       }
 
 
       submitButton.disabled =
         false;
+
 
       submitButton.textContent =
         "送出盤點資料";
@@ -666,6 +1443,7 @@
 
 
     catch (error) {
+
 
       console.error(
         error
@@ -680,8 +1458,10 @@
       submitButton.disabled =
         false;
 
+
       submitButton.textContent =
         "送出盤點資料";
+
     }
 
   }
@@ -693,8 +1473,8 @@
 
   checkInventoryPeriod();
 
+
 </script>
 
 </body>
 </html>
-```
