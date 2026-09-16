@@ -6,154 +6,374 @@
   <title>庫存盤點系統｜後台登入</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #f5f6f8;
-      color: #333;
+      min-height: 100vh;
+      background: #f3f6f3;
+      color: #26332c;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-header {
+      background: #14532d;
+      color: white;
+      padding: 22px 24px;
+      box-shadow: 0 2px 8px rgba(20, 83, 45, 0.12);
+    }
+
+    .header-inner {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .system-name {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      opacity: 0.88;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .login-area {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 20px;
     }
 
     .container {
-      max-width: 420px;
-      margin: 80px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 460px;
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 14px;
+      padding: 38px 40px 40px;
+      box-shadow: 0 4px 14px rgba(31, 55, 40, 0.07);
     }
 
-    h1 {
-      text-align: center;
-      margin-top: 0;
+    .login-heading {
       margin-bottom: 30px;
+    }
+
+    .login-heading h1 {
+      margin: 0 0 8px;
+      font-size: 25px;
+      font-weight: 600;
+      color: #174c2d;
+      letter-spacing: 0.03em;
+    }
+
+    .login-heading p {
+      margin: 0;
+      color: #748078;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      margin-top: 18px;
-      margin-bottom: 6px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #34443a;
     }
 
     input {
       width: 100%;
-      box-sizing: border-box;
-      padding: 11px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 13px 14px;
+      font-family: inherit;
+      font-size: 15px;
+      color: #26332c;
+      background: #ffffff;
+      border: 1px solid #cfd9d2;
+      border-radius: 8px;
+      outline: none;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    input::placeholder {
+      color: #a1aaa4;
+    }
+
+    input:focus {
+      border-color: #57916c;
+      box-shadow: 0 0 0 3px rgba(87, 145, 108, 0.12);
     }
 
     button {
       width: 100%;
-      margin-top: 28px;
-      padding: 12px;
-      font-size: 17px;
+      margin-top: 8px;
+      padding: 14px 18px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      background: #333;
+      background: #17613a;
       color: white;
+      transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
     button:hover {
-      opacity: 0.9;
+      background: #124f2f;
+      box-shadow: 0 3px 8px rgba(23, 97, 58, 0.18);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .notice {
+      margin-top: 22px;
+      padding: 12px 14px;
+      background: #edf5ef;
+      border: 1px solid #d8e8dc;
+      border-radius: 8px;
+      color: #5f7065;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+
+      .page-header {
+        padding: 18px 20px;
+      }
+
+      .header-title {
+        font-size: 20px;
+      }
+
+      .login-area {
+        padding: 32px 16px;
+      }
+
+      .container {
+        padding: 30px 24px 32px;
+        border-radius: 12px;
+      }
+
+      .login-heading h1 {
+        font-size: 23px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+  <header class="page-header">
+    <div class="header-inner">
 
-    <h1>總務課管理後台</h1>
+      <div class="system-name">
+        淡水信用合作社
+      </div>
 
-    <label for="email">Email</label>
-    <input
-      type="email"
-      id="email"
-      placeholder="請輸入管理帳號"
-    >
+      <div class="header-title">
+        庫存盤點系統
+      </div>
 
-    <label for="password">密碼</label>
-    <input
-      type="password"
-      id="password"
-      placeholder="請輸入密碼"
-    >
+    </div>
+  </header>
 
-    <button type="button" onclick="login()">
-      登入
-    </button>
 
-  </div>
+  <main class="login-area">
+
+    <div class="container">
+
+      <div class="login-heading">
+
+        <h1>總務課管理後台</h1>
+
+        <p>
+          請使用管理帳號登入，以進行庫存盤點相關管理作業。
+        </p>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="email">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          placeholder="請輸入管理帳號"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="password">
+          密碼
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          placeholder="請輸入密碼"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        onclick="login()"
+      >
+        登入管理後台
+      </button>
+
+
+      <div class="notice">
+        本系統僅供總務課管理作業使用，請使用核准之管理帳號登入。
+      </div>
+
+    </div>
+
+  </main>
+
 
   <script>
-    const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+    const SUPABASE_URL =
+      "https://onebxqajsiqmhfcizaxl.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
 
     async function login() {
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
 
       if (!email || !password) {
-        alert("請輸入 Email 及密碼");
+
+        alert(
+          "請輸入 Email 及密碼"
+        );
+
         return;
       }
 
+
       try {
 
-        const response = await fetch(
-          SUPABASE_URL + "/auth/v1/token?grant_type=password",
-          {
-            method: "POST",
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              email: email,
-              password: password
-            })
-          }
-        );
+        const response =
+          await fetch(
+            SUPABASE_URL +
+            "/auth/v1/token?grant_type=password",
+            {
+              method: "POST",
 
-        const result = await response.json();
+              headers: {
+                "apikey":
+                  SUPABASE_KEY,
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  email: email,
+                  password: password
+                })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
 
         if (!response.ok) {
-          alert("登入失敗，請確認帳號及密碼。");
+
+          alert(
+            "登入失敗，請確認帳號及密碼。"
+          );
+
           console.error(result);
+
           return;
         }
 
+
         // 暫存登入資訊
-       localStorage.setItem(
-  "admin_access_token",
-  result.access_token
-);
+        localStorage.setItem(
+          "admin_access_token",
+          result.access_token
+        );
 
-localStorage.setItem(
-  "admin_refresh_token",
-  result.refresh_token
-);
+        localStorage.setItem(
+          "admin_refresh_token",
+          result.refresh_token
+        );
 
-localStorage.setItem(
-  "admin_email",
-  email
-);
+        localStorage.setItem(
+          "admin_email",
+          email
+        );
 
-       alert("登入成功！");
-window.location.href = "admin-home.html";
+
+        alert("登入成功！");
+
+        window.location.href =
+          "admin-home.html";
+
 
       } catch (error) {
 
         console.error(error);
-        alert("系統連線失敗，請稍後再試。");
+
+        alert(
+          "系統連線失敗，請稍後再試。"
+        );
 
       }
+
     }
+
   </script>
 
 </body>
