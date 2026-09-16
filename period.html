@@ -6,514 +6,1448 @@
   <title>盤點期間設定｜庫存盤點系統</title>
 
   <style>
-    body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f6f8;
-      color: #333;
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f6f3;
+      color: #26332c;
+    }
+
+    /* ===== Header ===== */
+
+    .page-header {
+      background: #14532d;
+      color: white;
+      padding: 22px 24px;
+      box-shadow: 0 2px 8px rgba(20, 83, 45, 0.12);
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .system-name {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      opacity: 0.88;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== Main ===== */
 
     .container {
-      max-width: 700px;
-      margin: 40px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      max-width: 820px;
+      margin: 38px auto 60px;
+      padding: 0 24px;
     }
 
-    h1 {
-      text-align: center;
-      margin-top: 0;
+    .page-intro {
+      margin-bottom: 24px;
+    }
+
+    .page-intro h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 600;
+      color: #174c2d;
+      letter-spacing: 0.03em;
     }
 
     .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
+      margin: 0;
+      color: #6d7971;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ===== Card ===== */
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px rgba(31, 55, 40, 0.05);
+    }
+
+    .card-title {
+      margin: 0 0 22px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e4ebe6;
+      font-size: 18px;
+      font-weight: 600;
+      color: #245337;
+    }
+
+    /* ===== Form ===== */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 22px;
+    }
+
+    .form-group {
+      min-width: 0;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
     }
 
     label {
       display: block;
-      margin-top: 18px;
-      margin-bottom: 6px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #34443a;
     }
 
     input,
     select {
       width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 12px 13px;
+      font-family: inherit;
+      font-size: 15px;
+      color: #26332c;
+      background: #ffffff;
+      border: 1px solid #cfd9d2;
+      border-radius: 8px;
+      outline: none;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      font-size: 17px;
-      border: none;
-      border-radius: 6px;
-      background: #333;
-      color: white;
-      cursor: pointer;
+    input::placeholder {
+      color: #a1aaa4;
     }
 
-    button:hover {
-      opacity: 0.9;
+    input:focus,
+    select:focus {
+      border-color: #57916c;
+      box-shadow: 0 0 0 3px rgba(87, 145, 108, 0.12);
     }
 
-    button:disabled {
-      background: #aaa;
+    input:disabled {
+      background: #f1f4f2;
+      color: #78837c;
       cursor: not-allowed;
     }
 
-    .back-button {
-      background: #777;
-      margin-top: 30px;
+    .helper-text {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #818b84;
+      line-height: 1.5;
     }
 
-    .cancel-button {
-      background: #777;
+    /* ===== Buttons ===== */
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .back-button,
+    .edit-button,
+    .delete-button {
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    .primary-button {
+      flex: 1;
+      padding: 13px 18px;
+      border: none;
+      background: #17613a;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .primary-button:hover {
+      background: #124f2f;
+      box-shadow: 0 3px 8px rgba(23, 97, 58, 0.18);
+    }
+
+    .secondary-button {
+      flex: 0 0 120px;
+      padding: 13px 18px;
+      border: 1px solid #bfcac2;
+      background: #ffffff;
+      color: #536159;
+      font-size: 15px;
+      font-weight: 500;
       display: none;
     }
 
+    .secondary-button:hover {
+      background: #f4f7f4;
+      border-color: #9eaea3;
+    }
+
+    button:disabled {
+      background: #aeb7b1;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ===== Status ===== */
+
     .status {
-      margin-top: 20px;
-      padding: 12px;
-      border-radius: 6px;
-      text-align: center;
-      background: #f5f5f5;
-      color: #555;
+      margin-top: 18px;
+      padding: 12px 14px;
+      border: 1px solid #d8e8dc;
+      border-radius: 8px;
+      background: #edf5ef;
+      color: #5f7065;
+      font-size: 13px;
       line-height: 1.6;
     }
 
+    /* ===== Period List ===== */
+
     .period-list {
-      margin-top: 35px;
+      margin-top: 30px;
     }
 
-    .period-list h2 {
-      font-size: 20px;
-      margin-bottom: 15px;
+    .period-list-title {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #245337;
     }
 
     .period-row {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 10px;
+      padding: 20px;
       margin-bottom: 12px;
-      background: #fafafa;
+      box-shadow: 0 2px 6px rgba(31, 55, 40, 0.04);
     }
 
-    .period-row div {
-      margin-bottom: 7px;
+    .period-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      min-width: 0;
+    }
+
+    .info-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #7b867f;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: #34443a;
+      line-height: 1.5;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     .open {
-      color: #287a28;
-      font-weight: bold;
+      background: #e6f2e9;
+      color: #17613a;
     }
 
     .closed {
-      color: #a33;
-      font-weight: bold;
+      background: #f1f2f1;
+      color: #707872;
+    }
+
+    .period-actions {
+      display: flex;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid #e8ede9;
+    }
+
+    .edit-button,
+    .delete-button {
+      padding: 9px 16px;
+      font-size: 14px;
     }
 
     .edit-button {
-      background: #555;
-      margin-top: 15px;
-      padding: 9px;
-      font-size: 15px;
+      border: 1px solid #a9c5b1;
+      background: #f5f9f6;
+      color: #28603d;
+    }
+
+    .edit-button:hover {
+      background: #eaf3ed;
+      border-color: #8fb39a;
     }
 
     .delete-button {
-      background: #999;
-      margin-top: 10px;
-      padding: 9px;
+      border: 1px solid #decaca;
+      background: #fffafa;
+      color: #9a5f5f;
+    }
+
+    .delete-button:hover {
+      background: #fdf1f1;
+      border-color: #d0aaaa;
+    }
+
+    /* ===== Back ===== */
+
+    .back-area {
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    .back-button {
+      width: 100%;
+      padding: 13px 18px;
+      border: 1px solid #c6d0c9;
+      background: #ffffff;
+      color: #536159;
       font-size: 15px;
+    }
+
+    .back-button:hover {
+      background: #f5f7f5;
+      border-color: #aebbb2;
+    }
+
+    /* ===== Mobile ===== */
+
+    @media (max-width: 650px) {
+
+      .page-header {
+        padding: 18px 20px;
+      }
+
+      .header-title {
+        font-size: 20px;
+      }
+
+      .container {
+        margin-top: 28px;
+        padding: 0 16px;
+      }
+
+      .page-intro h1 {
+        font-size: 23px;
+      }
+
+      .card {
+        padding: 22px 18px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .form-group.full {
+        grid-column: auto;
+      }
+
+      .period-info {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .secondary-button {
+        flex: auto;
+        width: 100%;
+      }
+
+      .period-actions {
+        flex-direction: column;
+      }
+
+      .edit-button,
+      .delete-button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<header class="page-header">
+  <div class="header-inner">
 
-  <h1>盤點期間設定</h1>
+    <div class="system-name">
+      淡水信用合作社
+    </div>
 
-  <div class="subtitle">
-    庫存盤點系統｜總務課管理後台
+    <div class="header-title">
+      庫存盤點系統
+    </div>
+
+  </div>
+</header>
+
+
+<main class="container">
+
+  <div class="page-intro">
+
+    <h1>
+      盤點期間設定
+    </h1>
+
+    <p class="subtitle">
+      設定各月份實際盤點日期及盤點開放狀態。
+    </p>
+
   </div>
 
-  <label for="periodMonth">盤點月份</label>
-  <input type="month" id="periodMonth">
 
-  <label for="countDate">實際盤點日</label>
-  <input type="date" id="countDate">
+  <!-- 新增／編輯區 -->
 
-  <label for="isOpen">開放狀態</label>
-  <select id="isOpen">
-    <option value="false">未開放</option>
-    <option value="true">開放</option>
-  </select>
+  <section class="card">
 
-  <label for="note">備註</label>
-  <input
-    type="text"
-    id="note"
-    placeholder="例如：11/1假日，改於11/2盤點"
-  >
+    <h2 class="card-title">
+      盤點期間資料
+    </h2>
 
-  <button type="button" id="saveButton">
-    儲存盤點期間
-  </button>
 
-  <button type="button" id="cancelButton" class="cancel-button">
-    取消編輯
-  </button>
+    <div class="form-grid">
 
-  <div id="status" class="status">
-    請輸入盤點期間資料。
-  </div>
+      <div class="form-group">
 
-  <div class="period-list">
+        <label for="periodMonth">
+          盤點月份
+        </label>
 
-    <h2>已設定的盤點期間</h2>
+        <input
+          type="month"
+          id="periodMonth"
+        >
+
+        <div class="helper-text">
+          請選擇本次盤點所屬月份。
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="countDate">
+          實際盤點日
+        </label>
+
+        <input
+          type="date"
+          id="countDate"
+        >
+
+        <div class="helper-text">
+          請設定實際執行盤點的日期。
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="isOpen">
+          開放狀態
+        </label>
+
+        <select id="isOpen">
+
+          <option value="false">
+            未開放
+          </option>
+
+          <option value="true">
+            開放
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="note">
+          備註
+        </label>
+
+        <input
+          type="text"
+          id="note"
+          placeholder="例如：11/1假日，改於11/2盤點"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="button-group">
+
+      <button
+        type="button"
+        id="saveButton"
+        class="primary-button"
+      >
+        儲存盤點期間
+      </button>
+
+      <button
+        type="button"
+        id="cancelButton"
+        class="secondary-button"
+      >
+        取消編輯
+      </button>
+
+    </div>
+
+
+    <div id="status" class="status">
+      請輸入盤點期間資料。
+    </div>
+
+  </section>
+
+
+  <!-- 已設定期間 -->
+
+  <section class="period-list">
+
+    <h2 class="period-list-title">
+      已設定的盤點期間
+    </h2>
 
     <div id="periodList">
       正在讀取……
     </div>
 
+  </section>
+
+
+  <!-- 返回 -->
+
+  <div class="back-area">
+
+    <button
+      type="button"
+      class="back-button"
+      id="backButton"
+    >
+      返回管理首頁
+    </button>
+
   </div>
 
-  <button type="button" class="back-button" id="backButton">
-    返回管理首頁
-  </button>
+</main>
 
-</div>
 
 <script>
-const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
-const accessToken = localStorage.getItem("admin_access_token");
+const SUPABASE_URL =
+  "https://onebxqajsiqmhfcizaxl.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+
+
+const accessToken =
+  localStorage.getItem(
+    "admin_access_token"
+  );
+
 
 let editingId = null;
 
+
 if (!accessToken) {
-  window.location.href = "admin.html";
+
+  window.location.href =
+    "admin.html";
+
 }
 
-const periodMonthInput = document.getElementById("periodMonth");
-const countDateInput = document.getElementById("countDate");
-const isOpenInput = document.getElementById("isOpen");
-const noteInput = document.getElementById("note");
-const saveButton = document.getElementById("saveButton");
-const cancelButton = document.getElementById("cancelButton");
-const statusBox = document.getElementById("status");
-const periodList = document.getElementById("periodList");
-const backButton = document.getElementById("backButton");
+
+const periodMonthInput =
+  document.getElementById(
+    "periodMonth"
+  );
+
+const countDateInput =
+  document.getElementById(
+    "countDate"
+  );
+
+const isOpenInput =
+  document.getElementById(
+    "isOpen"
+  );
+
+const noteInput =
+  document.getElementById(
+    "note"
+  );
+
+const saveButton =
+  document.getElementById(
+    "saveButton"
+  );
+
+const cancelButton =
+  document.getElementById(
+    "cancelButton"
+  );
+
+const statusBox =
+  document.getElementById(
+    "status"
+  );
+
+const periodList =
+  document.getElementById(
+    "periodList"
+  );
+
+const backButton =
+  document.getElementById(
+    "backButton"
+  );
 
 
 async function loadPeriods() {
+
   try {
-    const response = await fetch(
-      SUPABASE_URL +
-      "/rest/v1/inventory_periods" +
-      "?select=id,period_month,count_date,is_open,note" +
-      "&order=period_month.asc",
-      {
-        method: "GET",
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods" +
+        "?select=id,period_month,count_date,is_open,note" +
+        "&order=period_month.asc",
+        {
+          method: "GET",
+
+          headers: {
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              accessToken
+          }
         }
-      }
-    );
+      );
+
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("讀取失敗：", errorText);
-      periodList.textContent = "盤點期間資料讀取失敗。";
+
+      const errorText =
+        await response.text();
+
+      console.error(
+        "讀取失敗：",
+        errorText
+      );
+
+      periodList.textContent =
+        "盤點期間資料讀取失敗。";
+
       return;
     }
 
-    const periods = await response.json();
+
+    const periods =
+      await response.json();
+
 
     periodList.innerHTML = "";
 
+
     if (periods.length === 0) {
-      periodList.textContent = "目前尚未設定盤點期間。";
+
+      periodList.textContent =
+        "目前尚未設定盤點期間。";
+
       return;
     }
 
-    periods.forEach(function(period) {
-      const row = document.createElement("div");
-      row.className = "period-row";
 
-      const monthDiv = document.createElement("div");
-      monthDiv.textContent = "盤點月份：" + period.period_month;
+    periods.forEach(
+      function(period) {
 
-      const dateDiv = document.createElement("div");
-      dateDiv.textContent = "實際盤點日：" + period.count_date;
+        const row =
+          document.createElement(
+            "div"
+          );
 
-      const statusDiv = document.createElement("div");
+        row.className =
+          "period-row";
 
-      const statusLabel = document.createElement("strong");
-      statusLabel.textContent = "狀態：";
 
-      const statusText = document.createElement("span");
-      statusText.textContent = period.is_open ? "開放" : "未開放";
-      statusText.className = period.is_open ? "open" : "closed";
+        const periodInfo =
+          document.createElement(
+            "div"
+          );
 
-      statusDiv.appendChild(statusLabel);
-      statusDiv.appendChild(statusText);
+        periodInfo.className =
+          "period-info";
 
-      const noteDiv = document.createElement("div");
-      noteDiv.textContent = "備註：" + (period.note || "－");
 
-      const editButton = document.createElement("button");
-      editButton.type = "button";
-      editButton.className = "edit-button";
-      editButton.textContent = "編輯";
+        /* 盤點月份 */
 
-      editButton.addEventListener("click", function() {
-        startEdit(period);
-      });
+        const monthItem =
+          document.createElement(
+            "div"
+          );
 
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.className = "delete-button";
-      deleteButton.textContent = "刪除此設定";
+        monthItem.className =
+          "info-item";
 
-      deleteButton.addEventListener("click", function() {
-        deletePeriod(period.id);
-      });
+        const monthLabel =
+          document.createElement(
+            "span"
+          );
 
-      row.appendChild(monthDiv);
-      row.appendChild(dateDiv);
-      row.appendChild(statusDiv);
-      row.appendChild(noteDiv);
-      row.appendChild(editButton);
-      row.appendChild(deleteButton);
+        monthLabel.className =
+          "info-label";
 
-      periodList.appendChild(row);
-    });
+        monthLabel.textContent =
+          "盤點月份";
+
+        const monthValue =
+          document.createElement(
+            "div"
+          );
+
+        monthValue.className =
+          "info-value";
+
+        monthValue.textContent =
+          period.period_month;
+
+
+        monthItem.appendChild(
+          monthLabel
+        );
+
+        monthItem.appendChild(
+          monthValue
+        );
+
+
+        /* 實際盤點日 */
+
+        const dateItem =
+          document.createElement(
+            "div"
+          );
+
+        dateItem.className =
+          "info-item";
+
+        const dateLabel =
+          document.createElement(
+            "span"
+          );
+
+        dateLabel.className =
+          "info-label";
+
+        dateLabel.textContent =
+          "實際盤點日";
+
+        const dateValue =
+          document.createElement(
+            "div"
+          );
+
+        dateValue.className =
+          "info-value";
+
+        dateValue.textContent =
+          period.count_date;
+
+
+        dateItem.appendChild(
+          dateLabel
+        );
+
+        dateItem.appendChild(
+          dateValue
+        );
+
+
+        /* 狀態 */
+
+        const statusItem =
+          document.createElement(
+            "div"
+          );
+
+        statusItem.className =
+          "info-item";
+
+        const statusLabel =
+          document.createElement(
+            "span"
+          );
+
+        statusLabel.className =
+          "info-label";
+
+        statusLabel.textContent =
+          "開放狀態";
+
+        const statusBadge =
+          document.createElement(
+            "span"
+          );
+
+        statusBadge.textContent =
+          period.is_open
+            ? "開放"
+            : "未開放";
+
+        statusBadge.className =
+          "status-badge " +
+          (
+            period.is_open
+              ? "open"
+              : "closed"
+          );
+
+
+        statusItem.appendChild(
+          statusLabel
+        );
+
+        statusItem.appendChild(
+          statusBadge
+        );
+
+
+        /* 備註 */
+
+        const noteItem =
+          document.createElement(
+            "div"
+          );
+
+        noteItem.className =
+          "info-item";
+
+        const noteLabel =
+          document.createElement(
+            "span"
+          );
+
+        noteLabel.className =
+          "info-label";
+
+        noteLabel.textContent =
+          "備註";
+
+        const noteValue =
+          document.createElement(
+            "div"
+          );
+
+        noteValue.className =
+          "info-value";
+
+        noteValue.textContent =
+          period.note || "－";
+
+
+        noteItem.appendChild(
+          noteLabel
+        );
+
+        noteItem.appendChild(
+          noteValue
+        );
+
+
+        periodInfo.appendChild(
+          monthItem
+        );
+
+        periodInfo.appendChild(
+          dateItem
+        );
+
+        periodInfo.appendChild(
+          statusItem
+        );
+
+        periodInfo.appendChild(
+          noteItem
+        );
+
+
+        /* 操作按鈕 */
+
+        const actions =
+          document.createElement(
+            "div"
+          );
+
+        actions.className =
+          "period-actions";
+
+
+        const editButton =
+          document.createElement(
+            "button"
+          );
+
+        editButton.type =
+          "button";
+
+        editButton.className =
+          "edit-button";
+
+        editButton.textContent =
+          "編輯";
+
+
+        editButton.addEventListener(
+          "click",
+          function() {
+
+            startEdit(period);
+
+          }
+        );
+
+
+        const deleteButton =
+          document.createElement(
+            "button"
+          );
+
+        deleteButton.type =
+          "button";
+
+        deleteButton.className =
+          "delete-button";
+
+        deleteButton.textContent =
+          "刪除此設定";
+
+
+        deleteButton.addEventListener(
+          "click",
+          function() {
+
+            deletePeriod(
+              period.id
+            );
+
+          }
+        );
+
+
+        actions.appendChild(
+          editButton
+        );
+
+        actions.appendChild(
+          deleteButton
+        );
+
+
+        row.appendChild(
+          periodInfo
+        );
+
+        row.appendChild(
+          actions
+        );
+
+
+        periodList.appendChild(
+          row
+        );
+
+      }
+    );
+
 
   } catch (error) {
+
     console.error(error);
-    periodList.textContent = "系統連線失敗，請稍後再試。";
+
+    periodList.textContent =
+      "系統連線失敗，請稍後再試。";
+
   }
+
 }
 
 
 function startEdit(period) {
-  editingId = period.id;
 
-  periodMonthInput.value = period.period_month.substring(0, 7);
-  periodMonthInput.disabled = true;
+  editingId =
+    period.id;
 
-  countDateInput.value = period.count_date;
-  isOpenInput.value = period.is_open ? "true" : "false";
-  noteInput.value = period.note || "";
 
-  saveButton.textContent = "儲存修改";
-  cancelButton.style.display = "block";
+  periodMonthInput.value =
+    period.period_month.substring(
+      0,
+      7
+    );
 
-  statusBox.textContent = "目前正在編輯盤點期間。";
+  periodMonthInput.disabled =
+    true;
+
+
+  countDateInput.value =
+    period.count_date;
+
+  isOpenInput.value =
+    period.is_open
+      ? "true"
+      : "false";
+
+  noteInput.value =
+    period.note || "";
+
+
+  saveButton.textContent =
+    "儲存修改";
+
+  cancelButton.style.display =
+    "block";
+
+
+  statusBox.textContent =
+    "目前正在編輯盤點期間。";
+
 
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
+
 }
 
 
 async function savePeriod() {
-  const periodMonth = periodMonthInput.value;
-  const countDate = countDateInput.value;
-  const isOpen = isOpenInput.value === "true";
-  const note = noteInput.value.trim();
+
+  const periodMonth =
+    periodMonthInput.value;
+
+  const countDate =
+    countDateInput.value;
+
+  const isOpen =
+    isOpenInput.value ===
+    "true";
+
+  const note =
+    noteInput.value.trim();
+
 
   if (!periodMonth) {
-    statusBox.textContent = "請選擇盤點月份。";
+
+    statusBox.textContent =
+      "請選擇盤點月份。";
+
     return;
   }
+
 
   if (!countDate) {
-    statusBox.textContent = "請設定實際盤點日。";
+
+    statusBox.textContent =
+      "請設定實際盤點日。";
+
     return;
   }
 
+
   if (editingId !== null) {
+
     await updatePeriod(
       editingId,
       countDate,
       isOpen,
       note
     );
+
     return;
   }
 
+
   const data = {
-    period_month: periodMonth + "-01",
-    count_date: countDate,
-    is_open: isOpen,
-    note: note || null
+
+    period_month:
+      periodMonth + "-01",
+
+    count_date:
+      countDate,
+
+    is_open:
+      isOpen,
+
+    note:
+      note || null
+
   };
 
+
   try {
-    const response = await fetch(
-      SUPABASE_URL + "/rest/v1/inventory_periods",
-      {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify(data)
-      }
-    );
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods",
+        {
+          method: "POST",
+
+          headers: {
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              accessToken,
+
+            "Content-Type":
+              "application/json",
+
+            "Prefer":
+              "return=minimal"
+          },
+
+          body:
+            JSON.stringify(
+              data
+            )
+        }
+      );
+
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("新增失敗：", errorText);
-      statusBox.textContent = "新增失敗：" + errorText;
+
+      const errorText =
+        await response.text();
+
+      console.error(
+        "新增失敗：",
+        errorText
+      );
+
+      statusBox.textContent =
+        "新增失敗：" +
+        errorText;
+
       return;
     }
 
-    statusBox.textContent = "盤點期間已成功儲存。";
+
+    statusBox.textContent =
+      "盤點期間已成功儲存。";
+
 
     clearForm();
+
     await loadPeriods();
 
+
   } catch (error) {
+
     console.error(error);
-    statusBox.textContent = "系統連線失敗，請稍後再試。";
+
+    statusBox.textContent =
+      "系統連線失敗，請稍後再試。";
+
   }
+
 }
 
 
-async function updatePeriod(id, countDate, isOpen, note) {
+async function updatePeriod(
+  id,
+  countDate,
+  isOpen,
+  note
+) {
+
   const data = {
-    count_date: countDate,
-    is_open: isOpen,
-    note: note || null
+
+    count_date:
+      countDate,
+
+    is_open:
+      isOpen,
+
+    note:
+      note || null
+
   };
 
+
   try {
-    const response = await fetch(
-      SUPABASE_URL +
-      "/rest/v1/inventory_periods?id=eq." +
-      id,
-      {
-        method: "PATCH",
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify(data)
-      }
-    );
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods?id=eq." +
+        id,
+        {
+          method: "PATCH",
+
+          headers: {
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              accessToken,
+
+            "Content-Type":
+              "application/json",
+
+            "Prefer":
+              "return=minimal"
+          },
+
+          body:
+            JSON.stringify(
+              data
+            )
+        }
+      );
+
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("修改失敗：", errorText);
-      statusBox.textContent = "修改失敗：" + errorText;
+
+      const errorText =
+        await response.text();
+
+      console.error(
+        "修改失敗：",
+        errorText
+      );
+
+      statusBox.textContent =
+        "修改失敗：" +
+        errorText;
+
       return;
     }
 
-    statusBox.textContent = "盤點期間已成功修改。";
+
+    statusBox.textContent =
+      "盤點期間已成功修改。";
+
 
     clearForm();
+
     await loadPeriods();
 
+
   } catch (error) {
+
     console.error(error);
-    statusBox.textContent = "系統連線失敗，請稍後再試。";
+
+    statusBox.textContent =
+      "系統連線失敗，請稍後再試。";
+
   }
+
 }
 
 
 function cancelEdit() {
+
   clearForm();
-  statusBox.textContent = "已取消編輯。";
+
+  statusBox.textContent =
+    "已取消編輯。";
+
 }
 
 
 function clearForm() {
-  editingId = null;
 
-  periodMonthInput.value = "";
-  periodMonthInput.disabled = false;
+  editingId =
+    null;
 
-  countDateInput.value = "";
-  isOpenInput.value = "false";
-  noteInput.value = "";
 
-  saveButton.textContent = "儲存盤點期間";
-  cancelButton.style.display = "none";
+  periodMonthInput.value =
+    "";
+
+  periodMonthInput.disabled =
+    false;
+
+
+  countDateInput.value =
+    "";
+
+  isOpenInput.value =
+    "false";
+
+  noteInput.value =
+    "";
+
+
+  saveButton.textContent =
+    "儲存盤點期間";
+
+  cancelButton.style.display =
+    "none";
+
 }
 
 
 async function deletePeriod(id) {
-  const confirmed = confirm(
-    "確定要刪除這筆盤點期間設定嗎？"
-  );
+
+  const confirmed =
+    confirm(
+      "確定要刪除這筆盤點期間設定嗎？"
+    );
+
 
   if (!confirmed) {
     return;
   }
 
+
   try {
-    const response = await fetch(
-      SUPABASE_URL +
-      "/rest/v1/inventory_periods?id=eq." +
-      id,
-      {
-        method: "DELETE",
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + accessToken
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/inventory_periods?id=eq." +
+        id,
+        {
+          method: "DELETE",
+
+          headers: {
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              accessToken
+          }
         }
-      }
-    );
+      );
+
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("刪除失敗：", errorText);
-      alert("刪除失敗，請通知總務課處理。");
+
+      const errorText =
+        await response.text();
+
+      console.error(
+        "刪除失敗：",
+        errorText
+      );
+
+      alert(
+        "刪除失敗，請通知總務課處理。"
+      );
+
       return;
     }
 
-    alert("盤點期間已刪除。");
+
+    alert(
+      "盤點期間已刪除。"
+    );
+
 
     await loadPeriods();
 
+
   } catch (error) {
+
     console.error(error);
-    alert("系統連線失敗，請稍後再試。");
+
+    alert(
+      "系統連線失敗，請稍後再試。"
+    );
+
   }
+
 }
 
 
-saveButton.addEventListener("click", savePeriod);
+saveButton.addEventListener(
+  "click",
+  savePeriod
+);
 
-cancelButton.addEventListener("click", cancelEdit);
 
-backButton.addEventListener("click", function() {
-  window.location.href = "admin-home.html";
-});
+cancelButton.addEventListener(
+  "click",
+  cancelEdit
+);
+
+
+backButton.addEventListener(
+  "click",
+  function() {
+
+    window.location.href =
+      "admin-home.html";
+
+  }
+);
+
 
 loadPeriods();
+
 </script>
 
 </body>
