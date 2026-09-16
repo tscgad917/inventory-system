@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 
 <html lang="zh-Hant">
@@ -337,7 +336,7 @@
 
       padding: 18px 20px;
 
-      margin-bottom: 8px;
+      margin-bottom: 20px;
     }
 
 
@@ -362,6 +361,106 @@
       font-size: 13px;
 
       line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       Fax notification
+       ===================================================== */
+
+    .fax-notification {
+
+      margin-top: 16px;
+
+      padding-top: 16px;
+
+      border-top: 1px solid #d4e8d8;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 16px;
+
+      flex-wrap: wrap;
+    }
+
+
+    .fax-notification-info {
+
+      color: #4f5f53;
+
+      font-size: 13px;
+
+      line-height: 1.7;
+
+      flex: 1;
+
+      min-width: 240px;
+    }
+
+
+    .fax-notification-info strong {
+
+      color: #315b3c;
+    }
+
+
+    .fax-button {
+
+      min-height: 40px;
+
+      padding: 9px 16px;
+
+      border: 1px solid #14532d;
+
+      border-radius: 7px;
+
+      background: #14532d;
+
+      color: white;
+
+      font-family: inherit;
+
+      font-size: 14px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+    }
+
+
+    .fax-button:hover {
+
+      background: #0f4224;
+
+      border-color: #0f4224;
+    }
+
+
+    .fax-button:disabled {
+
+      background: #eef1ef;
+
+      border-color: #d5dcd7;
+
+      color: #8a938d;
+
+      cursor: not-allowed;
+    }
+
+
+    .fax-button:disabled:hover {
+
+      background: #eef1ef;
+
+      border-color: #d5dcd7;
     }
 
 
@@ -678,6 +777,20 @@
           0 10px 12px;
       }
 
+
+      .fax-notification {
+
+        align-items: stretch;
+
+        flex-direction: column;
+      }
+
+
+      .fax-button {
+
+        width: 100%;
+      }
+
     }
 
   </style>
@@ -828,6 +941,32 @@
         class="pending-units"
       ></div>
 
+
+      <!-- =================================================
+           未盤點傳真通知
+           ================================================= -->
+
+      <div class="fax-notification">
+
+        <div
+          id="faxNotificationInfo"
+          class="fax-notification-info"
+        >
+          盤點當日 16:45 後，可產生未盤點傳真通知。
+        </div>
+
+
+        <button
+          id="faxNotificationButton"
+          class="fax-button"
+          type="button"
+          disabled
+        >
+          產生未盤點傳真通知 PDF
+        </button>
+
+      </div>
+
     </section>
 
 
@@ -871,6 +1010,120 @@
 
 
     let inventoryData = [];
+
+
+    // =====================================================
+    // 盤點期間資料
+    // =====================================================
+
+    let inventoryPeriods = [];
+
+
+    // =====================================================
+    // 取得台灣當地日期
+    //
+    // 使用瀏覽器當地時間，避免 UTC 日期造成日期偏移。
+    // =====================================================
+
+    function getLocalDateString() {
+
+      const now =
+        new Date();
+
+
+      const year =
+        now.getFullYear();
+
+
+      const month =
+        String(
+          now.getMonth() + 1
+        ).padStart(
+          2,
+          "0"
+        );
+
+
+      const day =
+        String(
+          now.getDate()
+        ).padStart(
+          2,
+          "0"
+        );
+
+
+      return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+      );
+
+    }
+
+
+    // =====================================================
+    // 判斷目前是否已經到 16:45
+    // =====================================================
+
+    function isAfter1645() {
+
+      const now =
+        new Date();
+
+
+      const hour =
+        now.getHours();
+
+
+      const minute =
+        now.getMinutes();
+
+
+      return (
+        hour > 16 ||
+        (
+          hour === 16 &&
+          minute >= 45
+        )
+      );
+
+    }
+
+
+    // =====================================================
+    // 取得指定月份的盤點期間
+    // =====================================================
+
+    function getSelectedPeriod(
+      selectedMonth
+    ) {
+
+      return inventoryPeriods.find(
+        period => {
+
+          if (
+            !period.period_month
+          ) {
+
+            return false;
+
+          }
+
+
+          return String(
+            period.period_month
+          ).substring(
+            0,
+            7
+          ) === selectedMonth;
+
+        }
+      );
+
+    }
 
 
     // =====================================================
@@ -926,7 +1179,7 @@
         }
 
 
-        const periods =
+        inventoryPeriods =
           await periodResponse.json();
 
 
@@ -987,10 +1240,12 @@
         // =================================================
 
         const periodMonths =
-          periods
+          inventoryPeriods
             .map(period => {
 
-              if (!period.period_month) {
+              if (
+                !period.period_month
+              ) {
 
                 return null;
 
@@ -1014,7 +1269,9 @@
           inventoryData
             .map(row => {
 
-              if (!row.count_date) {
+              if (
+                !row.count_date
+              ) {
 
                 return null;
 
@@ -1184,6 +1441,8 @@
             '<div class="no-data">目前尚未建立盤點期間。</div>';
 
 
+          updateFaxNotificationButton();
+
           return;
 
         }
@@ -1248,6 +1507,115 @@
         selectedUnit
       );
 
+
+      updateFaxNotificationButton();
+
+    }
+
+
+    // =====================================================
+    // 取得指定月份的所有單位
+    //
+    // 固定以目前系統既有單位為準。
+    // =====================================================
+
+    function getAllUnits() {
+
+      return [
+        ...new Set(
+          inventoryData
+            .map(
+              row =>
+                row.unit_name
+            )
+            .filter(
+              unit =>
+                unit
+            )
+        )
+      ];
+
+    }
+
+
+    // =====================================================
+    // 取得指定月份的盤點資料
+    // =====================================================
+
+    function getMonthData(
+      selectedMonth
+    ) {
+
+      return inventoryData.filter(
+        row =>
+          row.count_date &&
+          row.count_date.substring(
+            0,
+            7
+          ) === selectedMonth
+      );
+
+    }
+
+
+    // =====================================================
+    // 判斷單位是否完成盤點
+    //
+    // 6 項全部有 counted_quantity
+    // 才算完成。
+    // =====================================================
+
+    function isUnitCompleted(
+      monthData,
+      unit
+    ) {
+
+      const unitRows =
+        monthData.filter(
+          row =>
+            row.unit_name ===
+            unit
+        );
+
+
+      return (
+        unitRows.length === 6 &&
+        unitRows.every(
+          row =>
+            row.counted_quantity !==
+            null
+        )
+      );
+
+    }
+
+
+    // =====================================================
+    // 取得指定月份未盤點單位
+    // =====================================================
+
+    function getPendingUnits(
+      selectedMonth
+    ) {
+
+      const monthData =
+        getMonthData(
+          selectedMonth
+        );
+
+
+      const allUnits =
+        getAllUnits();
+
+
+      return allUnits.filter(
+        unit =>
+          !isUnitCompleted(
+            monthData,
+            unit
+          )
+      );
+
     }
 
 
@@ -1261,58 +1629,22 @@
 
 
       const monthData =
-        inventoryData.filter(
-          row =>
-            row.count_date &&
-            row.count_date.substring(
-              0,
-              7
-            ) === selectedMonth
+        getMonthData(
+          selectedMonth
         );
 
 
-      // =================================================
-      // 所有單位固定以系統既有單位為準
-      // =================================================
-
       const allUnits =
-        [
-          ...new Set(
-            inventoryData
-              .map(
-                row =>
-                  row.unit_name
-              )
-              .filter(
-                unit =>
-                  unit
-              )
-          )
-        ];
+        getAllUnits();
 
 
       const completedUnits =
         allUnits.filter(
-          unit => {
-
-            const unitRows =
-              monthData.filter(
-                row =>
-                  row.unit_name ===
-                  unit
-              );
-
-
-            return (
-              unitRows.length === 6 &&
-              unitRows.every(
-                row =>
-                  row.counted_quantity !==
-                  null
-              )
-            );
-
-          }
+          unit =>
+            isUnitCompleted(
+              monthData,
+              unit
+            )
         );
 
 
@@ -1376,6 +1708,232 @@
 
 
     // =====================================================
+    // 更新未盤點傳真通知按鈕
+    //
+    // 本階段只做「判定」，
+    // 尚未真正產生 PDF。
+    // =====================================================
+
+    function updateFaxNotificationButton() {
+
+      const button =
+        document.getElementById(
+          "faxNotificationButton"
+        );
+
+
+      const info =
+        document.getElementById(
+          "faxNotificationInfo"
+        );
+
+
+      const selectedMonth =
+        document.getElementById(
+          "monthSelect"
+        ).value;
+
+
+      const period =
+        getSelectedPeriod(
+          selectedMonth
+        );
+
+
+      // =================================================
+      // 沒有盤點期間
+      // =================================================
+
+      if (!period) {
+
+        button.disabled =
+          true;
+
+        info.textContent =
+          "目前沒有對應的盤點期間。";
+
+        return;
+
+      }
+
+
+      const today =
+        getLocalDateString();
+
+
+      // =================================================
+      // 不是當日盤點日
+      // =================================================
+
+      if (
+        period.count_date !==
+        today
+      ) {
+
+        button.disabled =
+          true;
+
+        info.textContent =
+          `本月份盤點日為 ${period.count_date}，僅限盤點當日 16:45 後產生未盤點通知。`;
+
+        return;
+
+      }
+
+
+      // =================================================
+      // 尚未到 16:45
+      // =================================================
+
+      if (
+        !isAfter1645()
+      ) {
+
+        button.disabled =
+          true;
+
+        info.textContent =
+          "盤點當日 16:45 後，才可產生未盤點傳真通知。";
+
+        return;
+
+      }
+
+
+      // =================================================
+      // 16:45 後
+      // =================================================
+
+      const pendingUnits =
+        getPendingUnits(
+          selectedMonth
+        );
+
+
+      if (
+        pendingUnits.length === 0
+      ) {
+
+        button.disabled =
+          true;
+
+        info.innerHTML =
+          "<strong>截至目前，所有單位均已完成盤點。</strong>";
+
+        return;
+
+      }
+
+
+      button.disabled =
+        false;
+
+
+      info.innerHTML =
+        `<strong>截至 16:45 後尚未完成盤點：</strong>${pendingUnits.join("、")}`;
+
+    }
+
+
+    // =====================================================
+    // 點擊未盤點傳真通知
+    //
+    // 本階段先確認判定結果。
+    // 下一階段再接 PDF + QR Code。
+    // =====================================================
+
+    document.getElementById(
+      "faxNotificationButton"
+    ).onclick =
+      function() {
+
+        const selectedMonth =
+          document.getElementById(
+            "monthSelect"
+          ).value;
+
+
+        const period =
+          getSelectedPeriod(
+            selectedMonth
+          );
+
+
+        if (!period) {
+
+          alert(
+            "目前沒有對應的盤點期間。"
+          );
+
+          return;
+
+        }
+
+
+        const today =
+          getLocalDateString();
+
+
+        if (
+          period.count_date !==
+          today
+        ) {
+
+          alert(
+            "未盤點傳真通知僅限盤點當日產生。"
+          );
+
+          return;
+
+        }
+
+
+        if (
+          !isAfter1645()
+        ) {
+
+          alert(
+            "未盤點傳真通知須於盤點當日 16:45 後產生。"
+          );
+
+          return;
+
+        }
+
+
+        const pendingUnits =
+          getPendingUnits(
+            selectedMonth
+          );
+
+
+        if (
+          pendingUnits.length === 0
+        ) {
+
+          alert(
+            "截至目前，所有單位均已完成盤點，無需產生未盤點通知。"
+          );
+
+          updateFaxNotificationButton();
+
+          return;
+
+        }
+
+
+        alert(
+          "目前未盤點單位：\n\n" +
+          pendingUnits.join(
+            "、"
+          ) +
+          "\n\n未盤點單位判定正常。\n\n下一階段將在此處產生統一格式的傳真通知 PDF。"
+        );
+
+      };
+
+
+    // =====================================================
     // 顯示單位
     // =====================================================
 
@@ -1396,13 +1954,8 @@
 
 
       const monthData =
-        inventoryData.filter(
-          row =>
-            row.count_date &&
-            row.count_date.substring(
-              0,
-              7
-            ) === selectedMonth
+        getMonthData(
+          selectedMonth
         );
 
 
@@ -1833,4 +2386,3 @@
 </body>
 
 </html>
-```
