@@ -332,6 +332,18 @@
       border-color: #8fb39a;
     }
 
+    .notify-button:disabled {
+      background: #eef1ef;
+      border-color: #d5dcd7;
+      color: #8a938d;
+      cursor: not-allowed;
+    }
+
+    .notify-button:disabled:hover {
+      background: #eef1ef;
+      border-color: #d5dcd7;
+    }
+
     .back-area {
       margin-top: 28px;
       text-align: center;
@@ -349,6 +361,153 @@
     .back-button:hover {
       background: #f5f7f5;
       border-color: #aebbb2;
+    }
+
+    /* ===== 通知視窗 ===== */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(28, 42, 34, 0.38);
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 12px;
+      padding: 26px;
+      box-shadow: 0 10px 30px rgba(31, 55, 40, 0.16);
+    }
+
+    .modal-title {
+      margin: 0 0 8px;
+      color: #245337;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-description {
+      margin: 0 0 18px;
+      color: #68756d;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .recipient-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .recipient-count {
+      font-size: 13px;
+      color: #68756d;
+    }
+
+    .select-all-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      font-size: 14px;
+      color: #34443a;
+      cursor: pointer;
+    }
+
+    .recipient-list {
+      border: 1px solid #dfe7e1;
+      border-radius: 8px;
+      background: #fafcfb;
+      padding: 8px;
+    }
+
+    .recipient-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .recipient-item:hover {
+      background: #f0f5f1;
+    }
+
+    .recipient-item input {
+      width: auto;
+      margin-top: 3px;
+    }
+
+    .recipient-text {
+      min-width: 0;
+    }
+
+    .recipient-unit {
+      display: block;
+      color: #34443a;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .recipient-email {
+      display: block;
+      margin-top: 2px;
+      color: #7b867f;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .modal-cancel,
+    .modal-confirm {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-cancel {
+      border: 1px solid #c6d0c9;
+      background: #ffffff;
+      color: #536159;
+    }
+
+    .modal-confirm {
+      border: none;
+      background: #17613a;
+      color: #ffffff;
+    }
+
+    .modal-confirm:hover {
+      background: #124f2f;
+    }
+
+    .modal-cancel:hover {
+      background: #f5f7f5;
     }
 
     @media (max-width: 650px) {
@@ -404,6 +563,14 @@
       .delete-button,
       .notify-button {
         width: 100%;
+      }
+
+      .modal {
+        padding: 20px;
+      }
+
+      .modal-actions {
+        flex-direction: column;
       }
     }
   </style>
@@ -584,6 +751,86 @@
 </main>
 
 
+<!-- 通知收件者視窗 -->
+
+<div
+  class="modal-overlay"
+  id="notificationModal"
+>
+
+  <div class="modal">
+
+    <h2
+      class="modal-title"
+      id="notificationModalTitle"
+    >
+      寄送事前通知
+    </h2>
+
+    <p class="modal-description">
+      請選擇本次通知的收件者。預設選取全部單位，確認後將開啟 SCU Webmail 撰寫郵件頁面。
+      請先確認瀏覽器已登入您的職位信箱。
+    </p>
+
+
+    <div class="recipient-header">
+
+      <label class="select-all-label">
+
+        <input
+          type="checkbox"
+          id="selectAllRecipients"
+          checked
+        >
+
+        全選
+
+      </label>
+
+
+      <span
+        class="recipient-count"
+        id="recipientCount"
+      >
+        已選取 0 個收件者
+      </span>
+
+    </div>
+
+
+    <div
+      class="recipient-list"
+      id="recipientList"
+    >
+      正在讀取通知信箱……
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="modal-cancel"
+        id="notificationCancelButton"
+      >
+        取消
+      </button>
+
+      <button
+        type="button"
+        class="modal-confirm"
+        id="notificationConfirmButton"
+      >
+        確認並開啟 Email
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
 
 const SUPABASE_URL =
@@ -602,6 +849,24 @@ const accessToken =
 let editingId = null;
 
 
+/* ===== 通知暫存資料 ===== */
+
+let notificationPeriod =
+  null;
+
+let notificationRecipients =
+  [];
+
+/*
+  通知類型：
+  pre  = 事前通知
+  day  = 盤點當日通知
+*/
+
+let notificationType =
+  "pre";
+
+
 /* ===== 登入檢查 ===== */
 
 if (!accessToken) {
@@ -612,7 +877,47 @@ if (!accessToken) {
 }
 
 
-/* ===== DOM ===== */
+/* =========================================================
+   取得目前日期
+   格式：YYYY-MM-DD
+   ========================================================= */
+
+function getLocalDateString() {
+
+  const now =
+    new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return (
+    year +
+    "-" +
+    month +
+    "-" +
+    day
+  );
+
+}
+
+
+/* ===== 原有 DOM ===== */
 
 const periodMonthInput =
   document.getElementById(
@@ -657,6 +962,44 @@ const periodList =
 const backButton =
   document.getElementById(
     "backButton"
+  );
+
+
+/* ===== 通知 DOM ===== */
+
+const notificationModal =
+  document.getElementById(
+    "notificationModal"
+  );
+
+const notificationModalTitle =
+  document.getElementById(
+    "notificationModalTitle"
+  );
+
+const recipientList =
+  document.getElementById(
+    "recipientList"
+  );
+
+const recipientCount =
+  document.getElementById(
+    "recipientCount"
+  );
+
+const selectAllRecipients =
+  document.getElementById(
+    "selectAllRecipients"
+  );
+
+const notificationCancelButton =
+  document.getElementById(
+    "notificationCancelButton"
+  );
+
+const notificationConfirmButton =
+  document.getElementById(
+    "notificationConfirmButton"
   );
 
 
@@ -720,6 +1063,20 @@ async function loadPeriods() {
 
       return;
     }
+
+
+    /*
+      取得今天日期。
+
+      事前通知：
+      今天 <= 盤點日才可以發送。
+
+      盤點當日通知：
+      今天必須等於盤點日才可以發送。
+    */
+
+    const today =
+      getLocalDateString();
 
 
     periods.forEach(
@@ -998,7 +1355,18 @@ async function loadPeriods() {
         );
 
 
-        /* 事前通知 */
+        /* =====================================================
+           寄送事前通知
+
+           今天在盤點日前：
+             可以發送
+
+           今天等於盤點日：
+             可以發送
+
+           今天已經超過盤點日：
+             停用
+           ===================================================== */
 
         const notifyButton =
           document.createElement(
@@ -1015,20 +1383,46 @@ async function loadPeriods() {
           "寄送事前通知";
 
 
-        notifyButton.addEventListener(
-          "click",
-          function() {
+        if (
+          today >
+          period.count_date
+        ) {
 
-            sendNotification(
-              period,
-              "pre"
-            );
+          notifyButton.disabled =
+            true;
 
-          }
-        );
+          notifyButton.title =
+            "盤點日已過，無法再發送事前通知。";
+
+        } else {
+
+          notifyButton.addEventListener(
+            "click",
+            function() {
+
+              openNotificationModal(
+                period,
+                "pre"
+              );
+
+            }
+          );
+
+        }
 
 
-        /* 盤點當日通知 */
+        /* =====================================================
+           盤點當日通知
+
+           只有今天等於盤點日：
+             可以發送
+
+           尚未到盤點日：
+             停用
+
+           已經超過盤點日：
+             停用
+           ===================================================== */
 
         const dayNotifyButton =
           document.createElement(
@@ -1045,17 +1439,45 @@ async function loadPeriods() {
           "盤點當日通知";
 
 
-        dayNotifyButton.addEventListener(
-          "click",
-          function() {
+        if (
+          today !==
+          period.count_date
+        ) {
 
-            sendNotification(
-              period,
-              "day"
-            );
+          dayNotifyButton.disabled =
+            true;
+
+
+          if (
+            today <
+            period.count_date
+          ) {
+
+            dayNotifyButton.title =
+              "尚未到盤點日，無法發送盤點當日通知。";
+
+          } else {
+
+            dayNotifyButton.title =
+              "盤點日已過，無法發送盤點當日通知。";
 
           }
-        );
+
+        } else {
+
+          dayNotifyButton.addEventListener(
+            "click",
+            function() {
+
+              openNotificationModal(
+                period,
+                "day"
+              );
+
+            }
+          );
+
+        }
 
 
         actions.appendChild(
@@ -1566,6 +1988,316 @@ async function loadNotificationEmails() {
 
 
 /* =========================================================
+   開啟通知視窗
+   ========================================================= */
+
+async function openNotificationModal(
+  period,
+  type = "pre"
+) {
+
+  /*
+    再次確認日期限制。
+
+    即使按鈕事件被其他方式觸發，
+    這裡仍要再次檢查，避免繞過日期限制。
+  */
+
+  const today =
+    getLocalDateString();
+
+
+  if (
+    type === "pre" &&
+    today >
+    period.count_date
+  ) {
+
+    alert(
+      "盤點日已過，無法再發送事前通知。"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    type === "day" &&
+    today !==
+    period.count_date
+  ) {
+
+    alert(
+      "盤點當日通知僅限設定的盤點日當天發送。"
+    );
+
+    return;
+
+  }
+
+
+  notificationPeriod =
+    period;
+
+  notificationType =
+    type;
+
+  notificationRecipients =
+    [];
+
+
+  if (
+    notificationType ===
+    "day"
+  ) {
+
+    notificationModalTitle.textContent =
+      "寄送 " +
+      formatPeriodMonth(
+        period.period_month
+      ) +
+      " 盤點當日通知";
+
+  } else {
+
+    notificationModalTitle.textContent =
+      "寄送 " +
+      formatPeriodMonth(
+        period.period_month
+      ) +
+      " 事前通知";
+
+  }
+
+
+  recipientList.innerHTML =
+    "正在讀取通知信箱……";
+
+
+  recipientCount.textContent =
+    "已選取 0 個收件者";
+
+
+  selectAllRecipients.checked =
+    true;
+
+
+  notificationModal.classList.add(
+    "show"
+  );
+
+
+  try {
+
+    const rows =
+      await loadNotificationEmails();
+
+
+    notificationRecipients =
+      rows;
+
+
+    renderRecipients();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    recipientList.textContent =
+      "通知信箱讀取失敗，請確認資料庫設定。";
+
+  }
+
+}
+
+
+/* =========================================================
+   顯示收件者
+   ========================================================= */
+
+function renderRecipients() {
+
+  recipientList.innerHTML =
+    "";
+
+
+  if (
+    notificationRecipients.length ===
+    0
+  ) {
+
+    recipientList.textContent =
+      "目前沒有可用的通知信箱。";
+
+    updateRecipientCount();
+
+    return;
+
+  }
+
+
+  notificationRecipients.forEach(
+    function(recipient) {
+
+      const label =
+        document.createElement(
+          "label"
+        );
+
+      label.className =
+        "recipient-item";
+
+
+      const checkbox =
+        document.createElement(
+          "input"
+        );
+
+      checkbox.type =
+        "checkbox";
+
+      checkbox.className =
+        "recipient-checkbox";
+
+      checkbox.checked =
+        true;
+
+      checkbox.dataset.id =
+        recipient.id;
+
+
+      checkbox.addEventListener(
+        "change",
+        function() {
+
+          updateSelectAllState();
+
+          updateRecipientCount();
+
+        }
+      );
+
+
+      const text =
+        document.createElement(
+          "span"
+        );
+
+      text.className =
+        "recipient-text";
+
+
+      const unit =
+        document.createElement(
+          "span"
+        );
+
+      unit.className =
+        "recipient-unit";
+
+      unit.textContent =
+        getUnitName(
+          recipient
+        );
+
+
+      const email =
+        document.createElement(
+          "span"
+        );
+
+      email.className =
+        "recipient-email";
+
+      email.textContent =
+        recipient.email;
+
+
+      text.appendChild(
+        unit
+      );
+
+      text.appendChild(
+        email
+      );
+
+
+      label.appendChild(
+        checkbox
+      );
+
+      label.appendChild(
+        text
+      );
+
+
+      recipientList.appendChild(
+        label
+      );
+
+    }
+  );
+
+
+  updateRecipientCount();
+
+}
+
+
+/* =========================================================
+   取得單位名稱
+   ========================================================= */
+
+function getUnitName(
+  recipient
+) {
+
+  if (
+    recipient.units &&
+    recipient.units.name
+  ) {
+
+    return recipient.units.name;
+
+  }
+
+
+  const unitNames = {
+
+    1: "總務課",
+    2: "營業部",
+    3: "水碓分社",
+    4: "竹圍分社",
+    5: "英專分社",
+    6: "義山分社",
+    7: "三芝分社",
+    8: "八里分社",
+    9: "成州分社",
+    10: "五股分社",
+    11: "萬金分社",
+    12: "新莊分社",
+    13: "泰山分社",
+    14: "林口分社",
+    15: "板橋分社",
+    16: "蘆洲分社",
+    17: "三重分社"
+
+  };
+
+
+  return (
+    unitNames[
+      recipient.unit_id
+    ] ||
+    "未命名單位"
+  );
+
+}
+
+
+/* =========================================================
    格式化月份
    ========================================================= */
 
@@ -1609,244 +2341,418 @@ function formatPeriodMonth(
 
 
 /* =========================================================
-   發送通知
-   pre = 事前通知
-   day = 盤點當日通知
+   全選
    ========================================================= */
 
-async function sendNotification(
-  period,
-  type
-) {
+selectAllRecipients.addEventListener(
+  "change",
+  function() {
 
-  const periodText =
-    formatPeriodMonth(
-      period.period_month
+    const checkboxes =
+      document.querySelectorAll(
+        ".recipient-checkbox"
+      );
+
+
+    checkboxes.forEach(
+      function(checkbox) {
+
+        checkbox.checked =
+          selectAllRecipients.checked;
+
+      }
     );
 
 
-  let notificationName =
-    "";
-
-  if (type === "pre") {
-
-    notificationName =
-      periodText +
-      "事前通知";
-
-  } else {
-
-    notificationName =
-      periodText +
-      "盤點當日通知";
+    updateRecipientCount();
 
   }
+);
 
 
-  const confirmed =
-    confirm(
-      "確定要寄送「" +
-      notificationName +
-      "」給全部 17 個營業單位嗎？"
+/* =========================================================
+   更新全選狀態
+   ========================================================= */
+
+function updateSelectAllState() {
+
+  const checkboxes =
+    Array.from(
+      document.querySelectorAll(
+        ".recipient-checkbox"
+      )
     );
 
 
-  if (!confirmed) {
+  if (
+    checkboxes.length ===
+    0
+  ) {
+
+    selectAllRecipients.checked =
+      false;
+
+    selectAllRecipients.indeterminate =
+      false;
 
     return;
 
   }
 
 
-  try {
-
-    /*
-      每次寄送前重新讀取資料庫，
-      並確認目前有完整的 17 個有效信箱。
-    */
-
-    const recipients =
-      await loadNotificationEmails();
+  const checkedCount =
+    checkboxes.filter(
+      checkbox =>
+        checkbox.checked
+    ).length;
 
 
-    if (
-      !Array.isArray(
-        recipients
-      ) ||
-      recipients.length !== 17
-    ) {
-
-      alert(
-        "目前通知信箱資料不是完整的 17 個單位，為避免漏發通知，本次不開啟 Email。"
-      );
-
-      return;
-
-    }
+  selectAllRecipients.checked =
+    checkedCount ===
+    checkboxes.length;
 
 
-    const emails =
-      recipients
-        .map(
-          recipient =>
-            recipient.email
-        )
-        .filter(
-          email =>
-            email
-        );
+  selectAllRecipients.indeterminate =
+    checkedCount > 0 &&
+    checkedCount <
+      checkboxes.length;
+
+}
 
 
-    if (
-      emails.length !== 17
-    ) {
+/* =========================================================
+   更新收件者數量
+   ========================================================= */
 
-      alert(
-        "17 個單位的通知信箱資料不完整，為避免漏發通知，本次不開啟 Email。"
-      );
+function updateRecipientCount() {
 
-      return;
-
-    }
-
-
-    const countDate =
-      period.count_date;
+  const checkedCount =
+    document.querySelectorAll(
+      ".recipient-checkbox:checked"
+    ).length;
 
 
-    let subject =
-      "";
+  recipientCount.textContent =
+    "已選取 " +
+    checkedCount +
+    " 個收件者";
 
-    let body =
-      "";
-
-
-    /* =====================================================
-       事前通知
-       保留原本已確認的通知內容
-       ===================================================== */
-
-    if (
-      type === "pre"
-    ) {
-
-      subject =
-        "庫存盤點事前通知－" +
-        periodText;
+}
 
 
-      body =
-        "各營業單位您好：\n\n" +
+/* =========================================================
+   關閉通知視窗
+   ========================================================= */
 
-        "本社 " +
-        periodText +
-        "庫存盤點日期為 " +
-        countDate +
-        "。\n\n" +
+function closeNotificationModal() {
 
-        "建議貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報；系統於盤點開放日即可進行填報。\n\n" +
+  notificationModal.classList.remove(
+    "show"
+  );
 
-        "庫存盤點系統：\n" +
-        window.location.origin +
-        "/inventory-system/\n\n" +
+  notificationPeriod =
+    null;
 
-        "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+  notificationRecipients =
+    [];
 
-        "如有盤點作業相關問題，請洽總務課。\n\n" +
+  notificationType =
+    "pre";
 
-        "淡水信用合作社\n" +
-        "總務課";
-
-    }
+}
 
 
-    /* =====================================================
-       盤點當日通知
-       ===================================================== */
+/* =========================================================
+   建立 SCU Webmail 郵件草稿
+   ========================================================= */
 
-    if (
-      type === "day"
-    ) {
+function openEmailDraft() {
 
-      subject =
-        "庫存盤點當日通知－" +
-        periodText;
+  if (!notificationPeriod) {
 
-
-      body =
-        "各營業單位您好：\n\n" +
-
-        "本社 " +
-        periodText +
-        "庫存盤點日期為今日（" +
-        countDate +
-        "）。\n\n" +
-
-        "請貴單位於今日完成庫存盤點填報，建議於今日 16:30 後登入庫存盤點系統進行盤點。\n\n" +
-
-        "庫存盤點系統：\n" +
-        window.location.origin +
-        "/inventory-system/\n\n" +
-
-        "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
-
-        "如有盤點作業相關問題，請洽總務課。\n\n" +
-
-        "淡水信用合作社\n" +
-        "總務課";
-
-    }
-
-
-    /*
-      SCU Webmail 撰寫郵件頁面
-      必須先登入 Webmail。
-    */
-
-    const composeUrl =
-      "https://mail.scu.org.tw/" +
-      "?_task=mail" +
-      "&_action=compose" +
-      "&to=" +
-      encodeURIComponent(
-        emails.join(",")
-      ) +
-      "&subject=" +
-      encodeURIComponent(
-        subject
-      ) +
-      "&body=" +
-      encodeURIComponent(
-        body
-      );
-
-
-    /*
-      開啟新的 Webmail 分頁，
-      保留目前庫存系統頁面。
-    */
-
-    window.open(
-      composeUrl,
-      "_blank"
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "通知寄送處理失敗：",
-      error
-    );
-
-
-    alert(
-      "通知信箱資料讀取失敗，為避免漏發通知，本次不開啟 Email。"
-    );
+    return;
 
   }
 
+
+  const selectedCheckboxes =
+    Array.from(
+      document.querySelectorAll(
+        ".recipient-checkbox:checked"
+      )
+    );
+
+
+  if (
+    selectedCheckboxes.length ===
+    0
+  ) {
+
+    alert(
+      "請至少選擇一個收件者。"
+    );
+
+    return;
+
+  }
+
+
+  const selectedIds =
+    selectedCheckboxes.map(
+      checkbox =>
+        Number(
+          checkbox.dataset.id
+        )
+    );
+
+
+  const selectedRecipients =
+    notificationRecipients.filter(
+      recipient =>
+        selectedIds.includes(
+          Number(
+            recipient.id
+          )
+        )
+    );
+
+
+  const emails =
+    selectedRecipients
+      .map(
+        recipient =>
+          recipient.email
+      )
+      .filter(
+        email =>
+          email
+      );
+
+
+  if (
+    emails.length ===
+    0
+  ) {
+
+    alert(
+      "目前沒有有效的收件者 Email。"
+    );
+
+    return;
+
+  }
+
+
+  const periodText =
+    formatPeriodMonth(
+      notificationPeriod.period_month
+    );
+
+
+  const countDate =
+    notificationPeriod.count_date;
+
+
+  let subject =
+    "";
+
+  let body =
+    "";
+
+
+  /* =====================================================
+     事前通知
+     保留原本已確認的通知內容
+     ===================================================== */
+
+  if (
+    notificationType ===
+    "pre"
+  ) {
+
+    subject =
+      "庫存盤點事前通知－" +
+      periodText;
+
+
+    body =
+      "各營業單位您好：\n\n" +
+
+      "本社 " +
+      periodText +
+      "庫存盤點日期為 " +
+      countDate +
+      "。\n\n" +
+
+      "建議貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報；系統於盤點開放日即可進行填報。\n\n" +
+
+      "庫存盤點系統：\n" +
+      window.location.origin +
+      "/inventory-system/\n\n" +
+
+      "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+
+      "如有盤點作業相關問題，請洽總務課。\n\n" +
+
+      "淡水信用合作社\n" +
+      "總務課";
+
+  }
+
+
+  /* =====================================================
+     盤點當日通知
+     ===================================================== */
+
+  if (
+    notificationType ===
+    "day"
+  ) {
+
+    subject =
+      "庫存盤點當日通知－" +
+      periodText;
+
+
+    body =
+      "各營業單位您好：\n\n" +
+
+      "本社 " +
+      periodText +
+      "庫存盤點日期為今日（" +
+      countDate +
+      "）。\n\n" +
+
+      "請貴單位於今日完成庫存盤點填報，建議於今日 16:30 後登入庫存盤點系統進行盤點。\n\n" +
+
+      "庫存盤點系統：\n" +
+      window.location.origin +
+      "/inventory-system/\n\n" +
+
+      "請依系統畫面填報各項耗材庫存數量，完成後送出即可。\n\n" +
+
+      "如有盤點作業相關問題，請洽總務課。\n\n" +
+
+      "淡水信用合作社\n" +
+      "總務課";
+
+  }
+
+
+  /*
+    SCU Webmail 撰寫郵件頁面
+    必須先登入 Webmail。
+  */
+
+  const composeUrl =
+    "https://mail.scu.org.tw/" +
+    "?_task=mail" +
+    "&_action=compose" +
+    "&to=" +
+    encodeURIComponent(
+      emails.join(",")
+    ) +
+    "&subject=" +
+    encodeURIComponent(
+      subject
+    ) +
+    "&body=" +
+    encodeURIComponent(
+      body
+    );
+
+
+  /*
+    開啟新的 Webmail 分頁，
+    保留目前庫存系統頁面。
+  */
+
+  window.open(
+    composeUrl,
+    "_blank"
+  );
+
 }
+
+
+/* =========================================================
+   通知按鈕
+   ========================================================= */
+
+notificationConfirmButton.addEventListener(
+  "click",
+  function() {
+
+    const selectedCount =
+      document.querySelectorAll(
+        ".recipient-checkbox:checked"
+      ).length;
+
+
+    if (
+      selectedCount ===
+      0
+    ) {
+
+      alert(
+        "請至少選擇一個收件者。"
+      );
+
+      return;
+
+    }
+
+
+    const confirmed =
+      confirm(
+        "本次將寄送通知給 " +
+        selectedCount +
+        " 個收件者，是否確認？"
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+
+    openEmailDraft();
+
+  }
+);
+
+
+/* =========================================================
+   取消通知
+   ========================================================= */
+
+notificationCancelButton.addEventListener(
+  "click",
+  closeNotificationModal
+);
+
+
+/* =========================================================
+   點擊遮罩關閉
+   ========================================================= */
+
+notificationModal.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      notificationModal
+    ) {
+
+      closeNotificationModal();
+
+    }
+
+  }
+);
 
 
 /* =========================================================
