@@ -3,230 +3,700 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>耗材配送登錄</title>
+  <title>耗材配送登錄｜庫存盤點系統</title>
 
   <style>
-    body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f6f8;
-      color: #333;
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f6f3;
+      color: #26332c;
+    }
+
+    /* ===== Header ===== */
+
+    .page-header {
+      background: #14532d;
+      color: white;
+      padding: 22px 24px;
+      box-shadow: 0 2px 8px rgba(20, 83, 45, 0.12);
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .system-name {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      opacity: 0.88;
+      margin-bottom: 5px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== Main ===== */
 
     .container {
-      max-width: 600px;
-      margin: 40px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      max-width: 700px;
+      margin: 38px auto 60px;
+      padding: 0 24px;
     }
 
-    h1 {
-      text-align: center;
-      margin-top: 0;
-      margin-bottom: 25px;
+    .page-intro {
+      margin-bottom: 24px;
+    }
+
+    .page-intro h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 600;
+      color: #174c2d;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #6d7971;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ===== Card ===== */
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #dfe7e1;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(31, 55, 40, 0.05);
+    }
+
+    .card-title {
+      margin: 0 0 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e4ebe6;
+      font-size: 18px;
+      font-weight: 600;
+      color: #245337;
+    }
+
+    /* ===== Form ===== */
+
+    .form-group {
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      margin-top: 18px;
-      margin-bottom: 6px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #34443a;
     }
 
     select,
     input {
       width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 12px 13px;
+      font-family: inherit;
+      font-size: 15px;
+      color: #26332c;
+      background: #ffffff;
+      border: 1px solid #cfd9d2;
+      border-radius: 8px;
+      outline: none;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: #57916c;
+      box-shadow: 0 0 0 3px rgba(87, 145, 108, 0.12);
+    }
+
+    input::placeholder {
+      color: #a1aaa4;
     }
 
     .fixed-unit {
-      padding: 10px;
-      background: #f1f1f1;
-      border-radius: 6px;
+      padding: 12px 13px;
+      background: #f0f4f1;
+      border: 1px solid #dce5df;
+      border-radius: 8px;
+      color: #4e5e54;
+      font-size: 15px;
     }
 
-    button {
+    .helper-text {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #818b84;
+      line-height: 1.5;
+    }
+
+    /* ===== Buttons ===== */
+
+    .primary-button {
       width: 100%;
-      margin-top: 25px;
-      padding: 12px;
-      font-size: 17px;
+      margin-top: 8px;
+      padding: 14px 18px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      background: #333;
+      background: #17613a;
       color: white;
+      transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .primary-button:hover {
+      background: #124f2f;
+      box-shadow: 0 3px 8px rgba(23, 97, 58, 0.18);
     }
 
-    .back {
-      background: #777;
+    .back-button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 13px 18px;
+      font-family: inherit;
+      font-size: 15px;
+      border: 1px solid #c6d0c9;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #ffffff;
+      color: #536159;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+    }
+
+    .back-button:hover {
+      background: #f5f7f5;
+      border-color: #aebbb2;
+    }
+
+    /* ===== Notice ===== */
+
+    .notice {
+      margin-top: 22px;
+      padding: 12px 14px;
+      background: #edf5ef;
+      border: 1px solid #d8e8dc;
+      border-radius: 8px;
+      color: #5f7065;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ===== Mobile ===== */
+
+    @media (max-width: 600px) {
+
+      .page-header {
+        padding: 18px 20px;
+      }
+
+      .header-title {
+        font-size: 20px;
+      }
+
+      .container {
+        margin-top: 28px;
+        padding: 0 16px;
+      }
+
+      .page-intro h1 {
+        font-size: 23px;
+      }
+
+      .card {
+        padding: 24px 20px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+<header class="page-header">
 
-    <h1>耗材配送登錄</h1>
+  <div class="header-inner">
 
-    <label>配送單位</label>
-    <div class="fixed-unit">
-      總務課
+    <div class="system-name">
+      淡水信用合作社
     </div>
 
-    <label for="date">配送日期</label>
-    <input type="date" id="date">
-
-    <label for="unit">領用單位</label>
-    <select id="unit">
-      <option value="">請選擇單位</option>
-      <option value="2">營業部</option>
-      <option value="3">水碓分社</option>
-      <option value="4">竹圍分社</option>
-      <option value="5">英專分社</option>
-      <option value="6">義山分社</option>
-      <option value="7">三芝分社</option>
-      <option value="8">八里分社</option>
-      <option value="9">成州分社</option>
-      <option value="10">五股分社</option>
-      <option value="11">萬金分社</option>
-      <option value="12">新莊分社</option>
-      <option value="13">泰山分社</option>
-      <option value="14">林口分社</option>
-      <option value="15">板橋分社</option>
-      <option value="16">蘆洲分社</option>
-      <option value="17">三重分社</option>
-    </select>
-
-    <label for="item">耗材項目</label>
-    <select id="item">
-      <option value="">請選擇耗材</option>
-      <option value="1">櫃員機色帶(長)</option>
-      <option value="2">報表機色帶(小)</option>
-      <option value="3">ATM色帶(長)</option>
-      <option value="4">ATM色帶(小)</option>
-      <option value="5">ATM紙捲(餘額證明)</option>
-      <option value="6">ATM紙捲(敘時)</option>
-    </select>
-
-    <label for="quantity">配送數量</label>
-    <input
-      type="number"
-      id="quantity"
-      min="1"
-      placeholder="請輸入配送數量"
-    >
-
-    <button type="button" onclick="submitDelivery()">
-      送出配送資料
-    </button>
-
-    <button
-      type="button"
-      class="back"
-      onclick="location.href='admin-home.html'"
-    >
-      返回後台
-    </button>
+    <div class="header-title">
+      庫存盤點系統
+    </div>
 
   </div>
 
-  <script>
-const accessToken = localStorage.getItem("admin_access_token");
+</header>
+
+
+<main class="container">
+
+  <div class="page-intro">
+
+    <h1>
+      耗材配送登錄
+    </h1>
+
+    <p class="subtitle">
+      登錄總務課配送至各營業單位之耗材資料。
+    </p>
+
+  </div>
+
+
+  <section class="card">
+
+    <h2 class="card-title">
+      配送資料
+    </h2>
+
+
+    <!-- 配送單位 -->
+
+    <div class="form-group">
+
+      <label>
+        配送單位
+      </label>
+
+      <div class="fixed-unit">
+        總務課
+      </div>
+
+    </div>
+
+
+    <!-- 配送日期 -->
+
+    <div class="form-group">
+
+      <label for="date">
+        配送日期
+      </label>
+
+      <input
+        type="date"
+        id="date"
+      >
+
+    </div>
+
+
+    <!-- 領用單位 -->
+
+    <div class="form-group">
+
+      <label for="unit">
+        領用單位
+      </label>
+
+      <select id="unit">
+
+        <option value="">
+          請選擇單位
+        </option>
+
+        <option value="2">
+          營業部
+        </option>
+
+        <option value="3">
+          水碓分社
+        </option>
+
+        <option value="4">
+          竹圍分社
+        </option>
+
+        <option value="5">
+          英專分社
+        </option>
+
+        <option value="6">
+          義山分社
+        </option>
+
+        <option value="7">
+          三芝分社
+        </option>
+
+        <option value="8">
+          八里分社
+        </option>
+
+        <option value="9">
+          成州分社
+        </option>
+
+        <option value="10">
+          五股分社
+        </option>
+
+        <option value="11">
+          萬金分社
+        </option>
+
+        <option value="12">
+          新莊分社
+        </option>
+
+        <option value="13">
+          泰山分社
+        </option>
+
+        <option value="14">
+          林口分社
+        </option>
+
+        <option value="15">
+          板橋分社
+        </option>
+
+        <option value="16">
+          蘆洲分社
+        </option>
+
+        <option value="17">
+          三重分社
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- 耗材項目 -->
+
+    <div class="form-group">
+
+      <label for="item">
+        耗材項目
+      </label>
+
+      <select id="item">
+
+        <option value="">
+          請選擇耗材
+        </option>
+
+        <option value="1">
+          櫃員機色帶(長)
+        </option>
+
+        <option value="2">
+          報表機色帶(小)
+        </option>
+
+        <option value="3">
+          ATM色帶(長)
+        </option>
+
+        <option value="4">
+          ATM色帶(小)
+        </option>
+
+        <option value="5">
+          ATM紙捲(餘額證明)
+        </option>
+
+        <option value="6">
+          ATM紙捲(敘時)
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- 配送數量 -->
+
+    <div class="form-group">
+
+      <label for="quantity">
+        配送數量
+      </label>
+
+      <input
+        type="number"
+        id="quantity"
+        min="1"
+        placeholder="請輸入配送數量"
+      >
+
+      <div class="helper-text">
+        請輸入本次實際配送數量。
+      </div>
+
+    </div>
+
+
+    <!-- 送出 -->
+
+    <button
+      type="button"
+      class="primary-button"
+      onclick="submitDelivery()"
+    >
+      送出配送資料
+    </button>
+
+
+    <!-- 返回 -->
+
+    <button
+      type="button"
+      class="back-button"
+      onclick="location.href='admin-home.html'"
+    >
+      返回管理首頁
+    </button>
+
+
+    <div class="notice">
+      請確認配送日期、領用單位、耗材項目及數量無誤後，再送出配送資料。
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+const accessToken =
+  localStorage.getItem(
+    "admin_access_token"
+  );
+
 
 if (!accessToken) {
-  window.location.href = "admin.html";
+
+  window.location.href =
+    "admin.html";
+
 }
-    const SUPABASE_URL = "https://onebxqajsiqmhfcizaxl.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
-    // 預設今天
-    document.getElementById("date").value =
-      new Date().toISOString().split("T")[0];
 
-    async function submitDelivery() {
+const SUPABASE_URL =
+  "https://onebxqajsiqmhfcizaxl.supabase.co";
 
-      const date = document.getElementById("date").value;
-      const unitId = document.getElementById("unit").value;
-      const itemId = document.getElementById("item").value;
-      const quantity = document.getElementById("quantity").value;
 
-      if (!date) {
-        alert("請選擇配送日期");
-        return;
-      }
+const SUPABASE_KEY =
+  "sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 
-      if (!unitId) {
-        alert("請選擇領用單位");
-        return;
-      }
 
-      if (!itemId) {
-        alert("請選擇耗材項目");
-        return;
-      }
+// 預設今天
+document.getElementById(
+  "date"
+).value =
+  new Date()
+    .toISOString()
+    .split("T")[0];
 
-      if (!quantity || Number(quantity) <= 0) {
-        alert("請輸入正確的配送數量");
-        return;
-      }
 
-      const data = {
-        delivery_date: date,
-        from_unit_id: 1,
-        to_unit_id: Number(unitId),
-        item_id: Number(itemId),
-        quantity: Number(quantity)
-      };
+async function submitDelivery() {
 
-      try {
+  const date =
+    document
+      .getElementById("date")
+      .value;
 
-        const response = await fetch(
-          SUPABASE_URL + "/rest/v1/deliveries",
-          {
-            method: "POST",
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Authorization": "Bearer " + accessToken,
-              "Content-Type": "application/json",
-              "Prefer": "return=minimal"
-            },
-            body: JSON.stringify(data)
-          }
-        );
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(errorText);
-          alert("配送資料送出失敗。");
-          return;
+  const unitId =
+    document
+      .getElementById("unit")
+      .value;
+
+
+  const itemId =
+    document
+      .getElementById("item")
+      .value;
+
+
+  const quantity =
+    document
+      .getElementById("quantity")
+      .value;
+
+
+  if (!date) {
+
+    alert(
+      "請選擇配送日期"
+    );
+
+    return;
+  }
+
+
+  if (!unitId) {
+
+    alert(
+      "請選擇領用單位"
+    );
+
+    return;
+  }
+
+
+  if (!itemId) {
+
+    alert(
+      "請選擇耗材項目"
+    );
+
+    return;
+  }
+
+
+  if (
+    !quantity ||
+    Number(quantity) <= 0
+  ) {
+
+    alert(
+      "請輸入正確的配送數量"
+    );
+
+    return;
+  }
+
+
+  const data = {
+
+    delivery_date:
+      date,
+
+    from_unit_id:
+      1,
+
+    to_unit_id:
+      Number(unitId),
+
+    item_id:
+      Number(itemId),
+
+    quantity:
+      Number(quantity)
+
+  };
+
+
+  try {
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/rest/v1/deliveries",
+        {
+          method: "POST",
+
+          headers: {
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              accessToken,
+
+            "Content-Type":
+              "application/json",
+
+            "Prefer":
+              "return=minimal"
+
+          },
+
+          body:
+            JSON.stringify(
+              data
+            )
+
         }
+      );
 
-        alert("配送資料已成功登錄！");
 
-        document.getElementById("unit").value = "";
-        document.getElementById("item").value = "";
-        document.getElementById("quantity").value = "";
+    if (!response.ok) {
 
-      } catch (error) {
+      const errorText =
+        await response.text();
 
-        console.error(error);
-        alert("系統連線失敗，請稍後再試。");
+      console.error(
+        errorText
+      );
 
-      }
+      alert(
+        "配送資料送出失敗。"
+      );
+
+      return;
     }
-  </script>
+
+
+    alert(
+      "配送資料已成功登錄！"
+    );
+
+
+    document.getElementById(
+      "unit"
+    ).value = "";
+
+
+    document.getElementById(
+      "item"
+    ).value = "";
+
+
+    document.getElementById(
+      "quantity"
+    ).value = "";
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    alert(
+      "系統連線失敗，請稍後再試。"
+    );
+
+  }
+
+}
+
+</script>
 
 </body>
 </html>
