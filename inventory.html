@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 
 <html lang="zh-Hant">
@@ -399,6 +400,83 @@
       font-size: 13px;
 
       line-height: 1.7;
+    }
+
+
+    .fax-unit-list {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(180px, 1fr));
+
+      gap: 8px 14px;
+
+      margin-bottom: 14px;
+
+      padding: 13px 14px;
+
+      background: white;
+
+      border: 1px solid #d7e5da;
+
+      border-radius: 8px;
+    }
+
+
+    .fax-unit-item {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      min-height: 34px;
+
+      padding: 5px 6px;
+
+      border-radius: 6px;
+
+      color: #444;
+
+      font-size: 14px;
+
+      cursor: pointer;
+    }
+
+
+    .fax-unit-item:hover {
+
+      background: #f3f7f4;
+    }
+
+
+    .fax-unit-item input {
+
+      width: 17px;
+
+      height: 17px;
+
+      margin: 0;
+
+      accent-color: #14532d;
+
+      cursor: pointer;
+
+      flex-shrink: 0;
+    }
+
+
+    .fax-empty {
+
+      padding: 12px;
+
+      color: #666;
+
+      font-size: 13px;
+
+      text-align: center;
     }
 
 
@@ -938,6 +1016,13 @@
       }
 
 
+      .fax-unit-list {
+
+        grid-template-columns: 1fr;
+
+      }
+
+
       .unit-header {
 
         padding: 14px;
@@ -1134,8 +1219,19 @@
           id="faxNotificationInfo"
           class="fax-notification-info"
         >
-          盤點當日 16:45 後，可產生未盤點傳真通知。
+          盤點當日 16:45 後，可選擇未盤點單位並產生傳真通知。
         </div>
+
+
+        <!-- =================================================
+             未盤點單位勾選區
+             ================================================= -->
+
+        <div
+          id="faxUnitList"
+          class="fax-unit-list"
+          style="display: none;"
+        ></div>
 
 
         <button
@@ -1913,7 +2009,7 @@
 
 
     // =====================================================
-    // 更新未盤點傳真通知按鈕
+    // 更新未盤點傳真通知區
     // =====================================================
 
     function updateFaxNotificationButton() {
@@ -1930,9 +2026,16 @@
         );
 
 
+      const unitList =
+        document.getElementById(
+          "faxUnitList"
+        );
+
+
       if (
         !button ||
-        !info
+        !info ||
+        !unitList
       ) {
 
         return;
@@ -1942,6 +2045,14 @@
 
       button.disabled =
         true;
+
+
+      unitList.innerHTML =
+        "";
+
+
+      unitList.style.display =
+        "none";
 
 
       const selectedMonth =
@@ -2020,7 +2131,7 @@
       ) {
 
         info.textContent =
-          "盤點當日 16:45 後，才可產生未盤點傳真通知。";
+          "盤點當日 16:45 後，才可選擇未盤點單位並產生通知。";
 
 
         return;
@@ -2052,15 +2163,121 @@
 
 
       // =================================================
-      // 尚有未完成單位
+      // 顯示未盤點單位勾選清單
       // =================================================
 
       info.textContent =
-        `截至 16:45 後，尚有 ${pendingUnits.length} 個單位未完成盤點：${pendingUnits.join("、")}。`;
+        `截至 16:45 後，尚有 ${pendingUnits.length} 個單位未完成盤點，請勾選本次需要傳真的單位。`;
+
+
+      pendingUnits.forEach(
+        unit => {
+
+          const label =
+            document.createElement(
+              "label"
+            );
+
+
+          label.className =
+            "fax-unit-item";
+
+
+          const checkbox =
+            document.createElement(
+              "input"
+            );
+
+
+          checkbox.type =
+            "checkbox";
+
+
+          checkbox.value =
+            unit;
+
+
+          checkbox.addEventListener(
+            "change",
+            updateFaxButtonState
+          );
+
+
+          const text =
+            document.createElement(
+              "span"
+            );
+
+
+          text.textContent =
+            unit;
+
+
+          label.appendChild(
+            checkbox
+          );
+
+
+          label.appendChild(
+            text
+          );
+
+
+          unitList.appendChild(
+            label
+          );
+
+        }
+      );
+
+
+      unitList.style.display =
+        "grid";
+
+
+      updateFaxButtonState();
+
+    }
+
+
+    // =====================================================
+    // 判斷是否至少勾選一個單位
+    // =====================================================
+
+    function updateFaxButtonState() {
+
+      const button =
+        document.getElementById(
+          "faxNotificationButton"
+        );
+
+
+      const checked =
+        document.querySelectorAll(
+          "#faxUnitList input[type='checkbox']:checked"
+        );
 
 
       button.disabled =
-        false;
+        checked.length === 0;
+
+    }
+
+
+    // =====================================================
+    // 取得使用者勾選的未盤點單位
+    // =====================================================
+
+    function getSelectedFaxUnits() {
+
+      return [
+        ...document.querySelectorAll(
+          "#faxUnitList input[type='checkbox']:checked"
+        )
+      ].map(
+        checkbox =>
+          checkbox.value
+      );
 
     }
 
@@ -2656,6 +2873,11 @@
 
     // =====================================================
     // 產生未盤點傳真通知 PDF
+    //
+    // 注意：
+    // 本功能固定只產生「一頁」PDF。
+    // 使用者在網頁上自行勾選需要傳真的單位。
+    // PDF 本身不顯示單位名稱或傳真號碼。
     // =====================================================
 
     async function generateFaxNotificationPDF() {
@@ -2670,6 +2892,28 @@
         document.getElementById(
           "monthSelect"
         ).value;
+
+
+      // =================================================
+      // 取得使用者勾選的單位
+      // =================================================
+
+      const selectedFaxUnits =
+        getSelectedFaxUnits();
+
+
+      if (
+        selectedFaxUnits.length === 0
+      ) {
+
+        alert(
+          "請先勾選本次需要傳真的未盤點單位。"
+        );
+
+
+        return;
+
+      }
 
 
       // =================================================
@@ -2741,21 +2985,33 @@
 
 
       // =================================================
-      // 重新取得最新未盤點單位
+      // 再次確認勾選的單位目前仍屬未完成
+      //
+      // 避免使用者勾選後，該單位又完成盤點，
+      // 產生不必要的通知。
       // =================================================
 
-      const pendingUnits =
+      const currentPendingUnits =
         getPendingUnits(
           selectedMonth
         );
 
 
+      const invalidSelectedUnits =
+        selectedFaxUnits.filter(
+          unit =>
+            !currentPendingUnits.includes(
+              unit
+            )
+        );
+
+
       if (
-        pendingUnits.length === 0
+        invalidSelectedUnits.length > 0
       ) {
 
         alert(
-          "截至目前，所有單位均已完成本月份庫存盤點，無須產生傳真通知。"
+          "部分勾選單位目前已完成盤點，請重新確認後再產生通知。"
         );
 
 
@@ -2826,70 +3082,51 @@
 
 
         // =================================================
-        // 每一個未完成單位建立一頁
+        // 只建立「一頁」PDF
         //
-        // 注意：
-        // PDF 頁面不顯示單位名稱。
-        // 頁數與未完成單位數量相同。
+        // 不論勾選幾個單位，
+        // PDF 都只有一頁。
         // =================================================
 
-        for (
-          let i = 0;
-          i < pendingUnits.length;
-          i++
-        ) {
-
-
-          const page =
-            await createPDFPage(
-              countDate
-            );
-
-
-          const canvas =
-            await html2canvas(
-              page,
-              {
-                scale:
-                  2,
-
-                useCORS:
-                  true,
-
-                backgroundColor:
-                  "#ffffff"
-              }
-            );
-
-
-          const imageData =
-            canvas.toDataURL(
-              "image/jpeg",
-              0.95
-            );
-
-
-          if (
-            i > 0
-          ) {
-
-            pdf.addPage();
-
-          }
-
-
-          pdf.addImage(
-            imageData,
-            "JPEG",
-            0,
-            0,
-            210,
-            297,
-            undefined,
-            "FAST"
+        const page =
+          await createPDFPage(
+            countDate
           );
 
-        }
+
+        const canvas =
+          await html2canvas(
+            page,
+            {
+              scale:
+                2,
+
+              useCORS:
+                true,
+
+              backgroundColor:
+                "#ffffff"
+            }
+          );
+
+
+        const imageData =
+          canvas.toDataURL(
+            "image/jpeg",
+            0.95
+          );
+
+
+        pdf.addImage(
+          imageData,
+          "JPEG",
+          0,
+          0,
+          210,
+          297,
+          undefined,
+          "FAST"
+        );
 
 
         // =================================================
@@ -2914,7 +3151,7 @@
         document.getElementById(
           "faxNotificationInfo"
         ).textContent =
-          `已產生通知 PDF，共 ${pendingUnits.length} 頁；每一頁對應一個尚未完成盤點的單位。`;
+          `已產生 1 頁通知 PDF，本次選擇 ${selectedFaxUnits.length} 個單位傳真。`;
 
 
       } catch (error) {
@@ -3004,3 +3241,4 @@
 </body>
 
 </html>
+```
