@@ -756,7 +756,8 @@
     </h2>
 
     <p class="modal-description">
-      請選擇本次通知的收件者。預設選取全部單位，確認後將開啟一封已填妥收件者、主旨及內容的 Email。
+      請選擇本次通知的收件者。預設選取全部單位，確認後將開啟 SCU Webmail 撰寫郵件頁面。
+      請先確認瀏覽器已登入您的職位信箱。
     </p>
 
 
@@ -2223,7 +2224,7 @@ function closeNotificationModal() {
 
 
 /* =========================================================
-   建立 Email 草稿
+   建立 SCU Webmail 郵件草稿
    ========================================================= */
 
 function openEmailDraft() {
@@ -2327,7 +2328,7 @@ function openEmailDraft() {
     countDate +
     "。\n\n" +
 
-    "請貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報。\n\n" +
+    "建議貴單位於盤點當日 16:30 後登入庫存盤點系統完成庫存盤點填報；系統於盤點開放日即可進行填報。\n\n" +
 
     "庫存盤點系統：\n" +
     window.location.origin +
@@ -2341,10 +2342,20 @@ function openEmailDraft() {
     "總務課";
 
 
-  const mailto =
-    "mailto:" +
-    emails.join(",") +
-    "?subject=" +
+  /*
+    SCU Webmail 撰寫郵件頁面
+    必須先登入 Webmail。
+  */
+
+  const composeUrl =
+    "https://mail.scu.org.tw/" +
+    "?_task=mail" +
+    "&_action=compose" +
+    "&to=" +
+    encodeURIComponent(
+      emails.join(",")
+    ) +
+    "&subject=" +
     encodeURIComponent(
       subject
     ) +
@@ -2354,8 +2365,15 @@ function openEmailDraft() {
     );
 
 
-  window.location.href =
-    mailto;
+  /*
+    開啟新的 Webmail 分頁，
+    保留目前庫存系統頁面。
+  */
+
+  window.open(
+    composeUrl,
+    "_blank"
+  );
 
 }
 
