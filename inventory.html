@@ -1,224 +1,864 @@
+```html
 <!DOCTYPE html>
 
 <html lang="zh-Hant">
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>庫存統計</title>
 
   <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #f5f6f8;
+      padding: 0;
+
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+
+      background: #f3f6f3;
+
       color: #333;
     }
+
+
+    /* =====================================================
+       Header
+       ===================================================== */
+
+    .top-header {
+
+      background: #14532d;
+
+      color: white;
+
+      padding: 18px 24px;
+
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+
+    .top-header-inner {
+
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 20px;
+    }
+
+
+    .brand {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 3px;
+    }
+
+
+    .brand-name {
+
+      font-size: 15px;
+
+      opacity: 0.92;
+
+      letter-spacing: 0.5px;
+    }
+
+
+    .brand-title {
+
+      font-size: 20px;
+
+      font-weight: 700;
+
+      letter-spacing: 1px;
+    }
+
+
+    .header-label {
+
+      font-size: 13px;
+
+      opacity: 0.85;
+
+      white-space: nowrap;
+    }
+
+
+    /* =====================================================
+       Main
+       ===================================================== */
 
     .container {
+
       max-width: 1200px;
+
       margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      padding: 32px 24px 48px;
     }
 
-    h1 {
-      text-align: center;
-      margin-top: 0;
+
+    .page-heading {
+
+      margin-bottom: 24px;
     }
 
-    .back {
-      display: inline-block;
-      margin-bottom: 20px;
+
+    .page-heading h1 {
+
+      margin: 0 0 6px;
+
+      color: #14532d;
+
+      font-size: 28px;
+
+      font-weight: 700;
+
+      letter-spacing: 0.5px;
+    }
+
+
+    .page-heading p {
+
+      margin: 0;
+
+      color: #666;
+
+      font-size: 14px;
+
+      line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       Back link
+       ===================================================== */
+
+    .back-link {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      margin-bottom: 18px;
+
+      color: #14532d;
+
       text-decoration: none;
-      color: #333;
+
+      font-size: 14px;
+
+      font-weight: 600;
     }
 
-    .message {
-      margin: 20px 0;
-      padding: 12px;
-      background: #f5f5f5;
-      border-radius: 6px;
+
+    .back-link:hover {
+
+      text-decoration: underline;
     }
 
-    .filter-area {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin: 20px 0;
-      padding: 16px;
-      background: #f5f5f5;
-      border-radius: 8px;
+
+    /* =====================================================
+       Card
+       ===================================================== */
+
+    .card {
+
+      background: white;
+
+      border: 1px solid #e2e8e3;
+
+      border-radius: 12px;
+
+      box-shadow:
+        0 2px 8px rgba(20, 83, 45, 0.05);
+
+      padding: 22px;
+
+      margin-bottom: 20px;
     }
+
+
+    .card-title {
+
+      margin: 0 0 16px;
+
+      color: #14532d;
+
+      font-size: 18px;
+
+      font-weight: 700;
+    }
+
+
+    .card-description {
+
+      margin: -8px 0 18px;
+
+      color: #777;
+
+      font-size: 13px;
+
+      line-height: 1.6;
+    }
+
+
+    /* =====================================================
+       Filter
+       ===================================================== */
+
+    .filter-grid {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(240px, 1fr));
+
+      gap: 18px;
+    }
+
 
     .filter-item {
+
       display: flex;
-      align-items: center;
-      gap: 8px;
+
+      flex-direction: column;
+
+      gap: 7px;
     }
+
 
     .filter-item label {
-      font-weight: bold;
+
+      color: #444;
+
+      font-size: 14px;
+
+      font-weight: 600;
     }
+
 
     select {
-      padding: 8px 10px;
-      font-size: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+
+      width: 100%;
+
+      min-height: 42px;
+
+      padding: 9px 12px;
+
+      border: 1px solid #cfd8d1;
+
+      border-radius: 7px;
+
       background: white;
+
+      color: #333;
+
+      font-family: inherit;
+
+      font-size: 14px;
+
+      outline: none;
+
+      cursor: pointer;
     }
+
+
+    select:focus {
+
+      border-color: #39835a;
+
+      box-shadow:
+        0 0 0 3px rgba(57, 131, 90, 0.10);
+    }
+
+
+    /* =====================================================
+       Message
+       ===================================================== */
+
+    .message {
+
+      margin-bottom: 20px;
+
+      padding: 13px 16px;
+
+      background: #edf6ef;
+
+      border: 1px solid #d4e8d8;
+
+      border-radius: 8px;
+
+      color: #315b3c;
+
+      font-size: 14px;
+
+      line-height: 1.6;
+    }
+
+
+    /* =====================================================
+       Progress
+       ===================================================== */
+
+    .progress-card {
+
+      background: #edf6ef;
+
+      border: 1px solid #d4e8d8;
+
+      border-radius: 10px;
+
+      padding: 18px 20px;
+
+      margin-bottom: 8px;
+    }
+
 
     .count-progress {
-      margin: 20px 0 8px 0;
-      padding: 12px;
-      background: #f5f5f5;
-      border-radius: 6px;
+
+      color: #14532d;
+
+      font-size: 16px;
+
+      font-weight: 700;
+
+      line-height: 1.6;
+    }
+
+
+    .pending-units {
+
+      margin-top: 6px;
+
+      color: #666;
+
+      font-size: 13px;
+
+      line-height: 1.7;
+    }
+
+
+    /* =====================================================
+       Unit list
+       ===================================================== */
+
+    .unit-card {
+
+      background: white;
+
+      border: 1px solid #dfe6e1;
+
+      border-radius: 10px;
+
+      overflow: hidden;
+
+      margin-bottom: 12px;
+
+      box-shadow:
+        0 1px 5px rgba(20, 83, 45, 0.04);
+    }
+
+
+    .unit-header {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 16px;
+
+      padding: 15px 18px;
+
+      background: #f8faf8;
+
+      cursor: pointer;
+
+      user-select: none;
+
+      transition:
+        background 0.15s ease;
+    }
+
+
+    .unit-header:hover {
+
+      background: #f1f6f2;
+    }
+
+
+    .unit-info {
+
+      min-width: 0;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      flex-wrap: wrap;
+    }
+
+
+    .unit-title {
+
+      color: #14532d;
+
+      font-size: 16px;
+
+      font-weight: 700;
+    }
+
+
+    .unit-status {
+
+      padding: 4px 9px;
+
+      border-radius: 20px;
+
+      background: #e8f1ea;
+
+      color: #477052;
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      white-space: nowrap;
+    }
+
+
+    .unit-arrow {
+
+      flex-shrink: 0;
+
+      width: 28px;
+
+      height: 28px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #e8f1ea;
+
+      color: #14532d;
+
+      font-size: 12px;
+
       font-weight: bold;
     }
 
-    .pending-units {
-      margin-bottom: 20px;
-      padding: 10px 12px;
-      color: #555;
-    }
 
-    .unit-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      overflow: hidden;
+    .unit-content {
+
+      display: none;
+
+      padding: 0 16px 16px;
+
+      overflow-x: auto;
+
       background: white;
     }
 
-    .unit-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      cursor: pointer;
-      background: #f8f8f8;
-      user-select: none;
-    }
-
-    .unit-header:hover {
-      background: #f0f0f0;
-    }
-
-    .unit-title {
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .unit-status {
-      margin-left: 12px;
-      color: #666;
-      font-size: 14px;
-      font-weight: normal;
-    }
-
-    .unit-arrow {
-      font-size: 16px;
-      margin-left: 12px;
-    }
-
-    .unit-content {
-      display: none;
-      padding: 0 12px 12px 12px;
-      overflow-x: auto;
-    }
 
     .unit-content.open {
+
       display: block;
     }
 
+
+    /* =====================================================
+       Table
+       ===================================================== */
+
     table {
+
       width: 100%;
+
       min-width: 850px;
+
+      margin-top: 14px;
+
       border-collapse: collapse;
-      margin-top: 10px;
+
+      font-size: 14px;
     }
+
 
     th,
     td {
-      border: 1px solid #ddd;
-      padding: 10px;
+
+      border: 1px solid #dfe5e1;
+
+      padding: 11px 10px;
+
       text-align: center;
+
+      line-height: 1.5;
     }
+
 
     th {
-      background: #f0f0f0;
+
+      background: #edf4ef;
+
+      color: #315b3c;
+
+      font-weight: 700;
+
+      white-space: nowrap;
     }
+
+
+    td {
+
+      background: white;
+
+      color: #444;
+    }
+
+
+    tbody tr:hover td {
+
+      background: #fafcfb;
+    }
+
+
+    td:first-child {
+
+      text-align: left;
+
+      font-weight: 600;
+
+      color: #333;
+    }
+
 
     .number {
+
       text-align: right;
+
+      font-variant-numeric: tabular-nums;
     }
 
+
+    /* =====================================================
+       No data
+       ===================================================== */
+
     .no-data {
-      padding: 20px;
+
+      padding: 36px 20px;
+
+      background: white;
+
+      border: 1px solid #e1e7e2;
+
+      border-radius: 10px;
+
       text-align: center;
+
       color: #777;
+
+      font-size: 14px;
+
+      line-height: 1.7;
     }
+
+
+    /* =====================================================
+       Responsive
+       ===================================================== */
+
+    @media (max-width: 700px) {
+
+      .top-header {
+
+        padding: 16px 18px;
+      }
+
+
+      .top-header-inner {
+
+        align-items: flex-start;
+      }
+
+
+      .header-label {
+
+        display: none;
+      }
+
+
+      .container {
+
+        padding: 24px 14px 40px;
+      }
+
+
+      .page-heading h1 {
+
+        font-size: 24px;
+      }
+
+
+      .filter-grid {
+
+        grid-template-columns: 1fr;
+      }
+
+
+      .card {
+
+        padding: 18px;
+      }
+
+
+      .unit-header {
+
+        padding: 14px;
+      }
+
+
+      .unit-info {
+
+        gap: 8px;
+      }
+
+
+      .unit-title {
+
+        font-size: 15px;
+      }
+
+
+      .unit-status {
+
+        font-size: 11px;
+      }
+
+
+      .unit-content {
+
+        padding:
+          0 10px 12px;
+      }
+
+    }
+
   </style>
 
 </head>
 
+
 <body>
 
-  <div class="container">
 
-    <a href="admin-home.html" class="back">← 返回後台</a>
+  <!-- =====================================================
+       Header
+       ===================================================== -->
 
-    <h1>庫存統計</h1>
+  <header class="top-header">
 
-    <div class="filter-area">
+    <div class="top-header-inner">
 
-      <div class="filter-item">
-        <label for="monthSelect">
-          盤點月份：
-        </label>
+      <div class="brand">
 
-        <select id="monthSelect"></select>
+        <div class="brand-name">
+          淡水信用合作社
+        </div>
+
+        <div class="brand-title">
+          庫存盤點系統
+        </div>
+
       </div>
 
-      <div class="filter-item">
-        <label for="unitSelect">
-          查看單位：
-        </label>
 
-        <select id="unitSelect">
-          <option value="all">全部單位</option>
-        </select>
+      <div class="header-label">
+        總務課管理作業
       </div>
 
     </div>
 
-    <div id="message" class="message">
+  </header>
+
+
+  <!-- =====================================================
+       Main
+       ===================================================== -->
+
+  <main class="container">
+
+
+    <a
+      href="admin-home.html"
+      class="back-link"
+    >
+      ← 返回管理首頁
+    </a>
+
+
+    <div class="page-heading">
+
+      <h1>
+        庫存統計
+      </h1>
+
+      <p>
+        查看各月份各單位耗材盤點、配送、進貨及庫存統計結果。
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         篩選條件
+         =================================================== -->
+
+    <section class="card">
+
+      <h2 class="card-title">
+        查詢條件
+      </h2>
+
+      <p class="card-description">
+        請選擇盤點月份及查看單位。
+      </p>
+
+
+      <div class="filter-grid">
+
+
+        <div class="filter-item">
+
+          <label for="monthSelect">
+            盤點月份
+          </label>
+
+          <select id="monthSelect"></select>
+
+        </div>
+
+
+        <div class="filter-item">
+
+          <label for="unitSelect">
+            查看單位
+          </label>
+
+          <select id="unitSelect">
+
+            <option value="all">
+              全部單位
+            </option>
+
+          </select>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         系統訊息
+         =================================================== -->
+
+    <div
+      id="message"
+      class="message"
+    >
       資料載入中……
     </div>
 
-    <div id="countProgress" class="count-progress">
-      本月盤點進度：讀取中……
-    </div>
 
-    <div id="pendingUnits" class="pending-units">
-    </div>
+    <!-- ===================================================
+         盤點進度
+         =================================================== -->
 
-    <div id="unitContainer">
-    </div>
+    <section class="progress-card">
 
-  </div>
+      <div
+        id="countProgress"
+        class="count-progress"
+      >
+        本月盤點進度：讀取中……
+      </div>
+
+
+      <div
+        id="pendingUnits"
+        class="pending-units"
+      ></div>
+
+    </section>
+
+
+    <!-- ===================================================
+         單位資料
+         =================================================== -->
+
+    <div id="unitContainer"></div>
+
+
+  </main>
+
 
   <script>
 
+
+    // =====================================================
+    // 登入檢查
+    // =====================================================
+
     const accessToken =
-      localStorage.getItem("admin_access_token");
+      localStorage.getItem(
+        "admin_access_token"
+      );
 
 
     if (!accessToken) {
-      window.location.href = "admin.html";
+
+      window.location.href =
+        "admin.html";
+
     }
 
 
@@ -241,6 +881,7 @@
 
       try {
 
+
         // =================================================
         // 讀取盤點期間
         // =================================================
@@ -253,8 +894,12 @@
               method: "GET",
 
               headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": "Bearer " + accessToken
+                "apikey":
+                  SUPABASE_KEY,
+
+                "Authorization":
+                  "Bearer " +
+                  accessToken
               }
             }
           );
@@ -265,14 +910,19 @@
           const errorText =
             await periodResponse.text();
 
-          console.error(errorText);
+          console.error(
+            errorText
+          );
+
 
           document.getElementById(
             "message"
           ).textContent =
             "盤點期間資料讀取失敗。";
 
+
           return;
+
         }
 
 
@@ -292,8 +942,12 @@
               method: "GET",
 
               headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": "Bearer " + accessToken
+                "apikey":
+                  SUPABASE_KEY,
+
+                "Authorization":
+                  "Bearer " +
+                  accessToken
               }
             }
           );
@@ -304,14 +958,19 @@
           const errorText =
             await response.text();
 
-          console.error(errorText);
+          console.error(
+            errorText
+          );
+
 
           document.getElementById(
             "message"
           ).textContent =
             "庫存資料讀取失敗。";
 
+
           return;
+
         }
 
 
@@ -325,9 +984,6 @@
         // 月份來源：
         // 1. inventory_periods 已設定的月份
         // 2. inventory_expected 已存在的歷史盤點月份
-        //
-        // 這樣尚未產生盤點資料的月份也能出現，
-        // 同時保留沒有建立盤點期間的歷史月份。
         // =================================================
 
         const periodMonths =
@@ -335,15 +991,23 @@
             .map(period => {
 
               if (!period.period_month) {
+
                 return null;
+
               }
+
 
               return String(
                 period.period_month
-              ).substring(0, 7);
+              ).substring(
+                0,
+                7
+              );
 
             })
-            .filter(month => month);
+            .filter(
+              month => month
+            );
 
 
         const inventoryMonths =
@@ -351,15 +1015,23 @@
             .map(row => {
 
               if (!row.count_date) {
+
                 return null;
+
               }
+
 
               return String(
                 row.count_date
-              ).substring(0, 7);
+              ).substring(
+                0,
+                7
+              );
 
             })
-            .filter(month => month);
+            .filter(
+              month => month
+            );
 
 
         const months = [
@@ -376,53 +1048,74 @@
           );
 
 
-        monthSelect.innerHTML = "";
+        monthSelect.innerHTML =
+          "";
 
 
-        months.forEach(month => {
+        months.forEach(
+          month => {
 
-          const option =
-            document.createElement("option");
-
-
-          option.value = month;
-
-
-          const [year, monthNumber] =
-            month.split("-");
+            const option =
+              document.createElement(
+                "option"
+              );
 
 
-          option.textContent =
-            year + "年" +
-            Number(monthNumber) +
-            "月";
+            option.value =
+              month;
 
 
-          monthSelect.appendChild(option);
+            const [
+              year,
+              monthNumber
+            ] =
+              month.split("-");
 
-        });
+
+            option.textContent =
+              year +
+              "年" +
+              Number(
+                monthNumber
+              ) +
+              "月";
+
+
+            monthSelect.appendChild(
+              option
+            );
+
+          }
+        );
 
 
         // =================================================
         // 建立單位選單
         //
-        // 單位仍然以既有庫存資料為來源
-        // 不改變原本 9 月資料的呈現方式
+        // 單位仍以既有庫存資料為來源
         // =================================================
 
         const units = [];
 
 
-        inventoryData.forEach(row => {
+        inventoryData.forEach(
+          row => {
 
-          if (
-            row.unit_name &&
-            !units.includes(row.unit_name)
-          ) {
-            units.push(row.unit_name);
+            if (
+              row.unit_name &&
+              !units.includes(
+                row.unit_name
+              )
+            ) {
+
+              units.push(
+                row.unit_name
+              );
+
+            }
+
           }
-
-        });
+        );
 
 
         const unitSelect =
@@ -435,47 +1128,64 @@
           '<option value="all">全部單位</option>';
 
 
-        units.forEach(unit => {
+        units.forEach(
+          unit => {
 
-          const option =
-            document.createElement("option");
+            const option =
+              document.createElement(
+                "option"
+              );
 
 
-          option.value = unit;
-          option.textContent = unit;
+            option.value =
+              unit;
+
+            option.textContent =
+              unit;
 
 
-          unitSelect.appendChild(option);
+            unitSelect.appendChild(
+              option
+            );
 
-        });
+          }
+        );
 
 
         // =================================================
         // 沒有任何盤點期間
         // =================================================
 
-        if (months.length === 0) {
+        if (
+          months.length === 0
+        ) {
 
           document.getElementById(
             "message"
           ).textContent =
             "目前尚未建立任何盤點期間。";
 
+
           document.getElementById(
             "countProgress"
           ).textContent =
             "本月盤點進度：尚無資料";
 
+
           document.getElementById(
             "pendingUnits"
-          ).textContent = "";
+          ).textContent =
+            "";
+
 
           document.getElementById(
             "unitContainer"
           ).innerHTML =
             '<div class="no-data">目前尚未建立盤點期間。</div>';
 
+
           return;
+
         }
 
 
@@ -488,12 +1198,16 @@
 
         document.getElementById(
           "message"
-        ).style.display = "none";
+        ).style.display =
+          "none";
 
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         document.getElementById(
           "message"
@@ -510,6 +1224,7 @@
     // =====================================================
 
     function updatePage() {
+
 
       const selectedMonth =
         document.getElementById(
@@ -544,10 +1259,15 @@
       selectedMonth
     ) {
 
+
       const monthData =
-        inventoryData.filter(row =>
-          row.count_date &&
-          row.count_date.substring(0, 7) === selectedMonth
+        inventoryData.filter(
+          row =>
+            row.count_date &&
+            row.count_date.substring(
+              0,
+              7
+            ) === selectedMonth
         );
 
 
@@ -556,38 +1276,52 @@
       // =================================================
 
       const allUnits =
-        [...new Set(
-          inventoryData
-            .map(row =>
-              row.unit_name
-            )
-            .filter(unit =>
-              unit
-            )
-        )];
+        [
+          ...new Set(
+            inventoryData
+              .map(
+                row =>
+                  row.unit_name
+              )
+              .filter(
+                unit =>
+                  unit
+              )
+          )
+        ];
 
 
       const completedUnits =
-        allUnits.filter(unit => {
+        allUnits.filter(
+          unit => {
 
-          const unitRows =
-            monthData.filter(row =>
-              row.unit_name === unit
+            const unitRows =
+              monthData.filter(
+                row =>
+                  row.unit_name ===
+                  unit
+              );
+
+
+            return (
+              unitRows.length === 6 &&
+              unitRows.every(
+                row =>
+                  row.counted_quantity !==
+                  null
+              )
             );
 
-
-          return unitRows.length === 6 &&
-            unitRows.every(row =>
-              row.counted_quantity !== null
-            );
-
-        });
+          }
+        );
 
 
       const pendingUnits =
         allUnits.filter(
           unit =>
-            !completedUnits.includes(unit)
+            !completedUnits.includes(
+              unit
+            )
         );
 
 
@@ -595,7 +1329,10 @@
       // 尚未有任何資料的月份
       // =================================================
 
-      if (monthData.length === 0) {
+      if (
+        monthData.length === 0
+      ) {
+
 
         document.getElementById(
           "countProgress"
@@ -611,7 +1348,9 @@
               allUnits.join("、")
             : "目前尚無單位資料";
 
+
         return;
+
       }
 
 
@@ -645,19 +1384,25 @@
       selectedUnit
     ) {
 
+
       const container =
         document.getElementById(
           "unitContainer"
         );
 
 
-      container.innerHTML = "";
+      container.innerHTML =
+        "";
 
 
       const monthData =
-        inventoryData.filter(row =>
-          row.count_date &&
-          row.count_date.substring(0, 7) === selectedMonth
+        inventoryData.filter(
+          row =>
+            row.count_date &&
+            row.count_date.substring(
+              0,
+              7
+            ) === selectedMonth
         );
 
 
@@ -665,260 +1410,386 @@
       // 尚未有任何盤點資料
       // =================================================
 
-      if (monthData.length === 0) {
+      if (
+        monthData.length === 0
+      ) {
 
         container.innerHTML =
           '<div class="no-data">本月份尚無盤點資料。</div>';
 
+
         return;
+
       }
 
 
       // =================================================
       // 單位仍以該月份實際資料為準
-      // 保留原本 9 月資料的顯示方式
       // =================================================
 
       let units =
-        [...new Set(
-          monthData.map(row =>
-            row.unit_name
+        [
+          ...new Set(
+            monthData.map(
+              row =>
+                row.unit_name
+            )
           )
-        )];
+        ];
 
 
-      if (selectedUnit !== "all") {
+      if (
+        selectedUnit !==
+        "all"
+      ) {
 
         units =
-          units.filter(unit =>
-            unit === selectedUnit
+          units.filter(
+            unit =>
+              unit ===
+              selectedUnit
           );
 
       }
 
 
-      if (units.length === 0) {
+      if (
+        units.length === 0
+      ) {
 
         container.innerHTML =
           '<div class="no-data">目前沒有符合條件的資料。</div>';
 
+
         return;
+
       }
 
 
-      units.forEach(unit => {
+      units.forEach(
+        unit => {
 
-        const unitRows =
-          monthData.filter(row =>
-            row.unit_name === unit
+
+          const unitRows =
+            monthData.filter(
+              row =>
+                row.unit_name ===
+                unit
+            );
+
+
+          const completedCount =
+            unitRows.filter(
+              row =>
+                row.counted_quantity !==
+                null
+            ).length;
+
+
+          const totalCount =
+            6;
+
+
+          const completed =
+            completedCount ===
+            totalCount;
+
+
+          const card =
+            document.createElement(
+              "div"
+            );
+
+
+          card.className =
+            "unit-card";
+
+
+          // ===============================================
+          // 單位標題
+          // ===============================================
+
+          const header =
+            document.createElement(
+              "div"
+            );
+
+
+          header.className =
+            "unit-header";
+
+
+          const title =
+            document.createElement(
+              "div"
+            );
+
+
+          title.className =
+            "unit-info";
+
+
+          const unitTitle =
+            document.createElement(
+              "span"
+            );
+
+
+          unitTitle.className =
+            "unit-title";
+
+
+          unitTitle.textContent =
+            unit;
+
+
+          const unitStatus =
+            document.createElement(
+              "span"
+            );
+
+
+          unitStatus.className =
+            "unit-status";
+
+
+          unitStatus.textContent =
+            completed
+              ? `${completedCount} / ${totalCount} 已完成`
+              : `${completedCount} / ${totalCount} 尚未完成`;
+
+
+          title.appendChild(
+            unitTitle
           );
 
 
-        const completedCount =
-          unitRows.filter(row =>
-            row.counted_quantity !== null
-          ).length;
+          title.appendChild(
+            unitStatus
+          );
 
 
-        const totalCount = 6;
+          const arrow =
+            document.createElement(
+              "span"
+            );
 
 
-        const completed =
-          completedCount === totalCount;
+          arrow.className =
+            "unit-arrow";
 
 
-        const card =
-          document.createElement("div");
+          arrow.textContent =
+            "▶";
 
 
-        card.className =
-          "unit-card";
+          header.appendChild(
+            title
+          );
 
 
-        const header =
-          document.createElement("div");
+          header.appendChild(
+            arrow
+          );
 
 
-        header.className =
-          "unit-header";
+          // ===============================================
+          // 表格內容
+          // ===============================================
+
+          const content =
+            document.createElement(
+              "div"
+            );
 
 
-        const title =
-          document.createElement("div");
+          content.className =
+            "unit-content";
 
 
-        title.innerHTML = `
-          <span class="unit-title">
-            ${unit}
-          </span>
-
-          <span class="unit-status">
-            ${
-              completed
-                ? `${completedCount} / ${totalCount} 已完成`
-                : `${completedCount} / ${totalCount} 尚未完成`
-            }
-          </span>
-        `;
+          const table =
+            document.createElement(
+              "table"
+            );
 
 
-        const arrow =
-          document.createElement("span");
+          table.innerHTML = `
 
+            <thead>
 
-        arrow.className =
-          "unit-arrow";
+              <tr>
 
+                <th>耗材</th>
 
-        arrow.textContent =
-          "▶";
+                <th>月初盤點</th>
 
+                <th>配送異動</th>
 
-        header.appendChild(title);
-        header.appendChild(arrow);
+                <th>廠商進貨</th>
 
+                <th>應有庫存</th>
 
-        const content =
-          document.createElement("div");
+                <th>下月盤點</th>
 
+                <th>差異</th>
 
-        content.className =
-          "unit-content";
+              </tr>
 
+            </thead>
 
-        // ===============================================
-        // 建立該單位的表格
-        // ===============================================
+            <tbody></tbody>
 
-        const table =
-          document.createElement("table");
-
-
-        table.innerHTML = `
-          <thead>
-            <tr>
-              <th>耗材</th>
-              <th>月初盤點</th>
-              <th>配送異動</th>
-              <th>廠商進貨</th>
-              <th>應有庫存</th>
-              <th>下月盤點</th>
-              <th>差異</th>
-            </tr>
-          </thead>
-
-          <tbody></tbody>
-        `;
-
-
-        const tbody =
-          table.querySelector("tbody");
-
-
-        unitRows.forEach(row => {
-
-          const tr =
-            document.createElement("tr");
-
-
-          const countedText =
-            row.counted_quantity === null
-              ? "尚未盤點"
-              : row.counted_quantity;
-
-
-          const expectedText =
-            row.expected_quantity === null
-              ? "—"
-              : row.expected_quantity;
-
-
-          const nextCountedText =
-            row.next_counted_quantity === null
-              ? "尚未盤點"
-              : row.next_counted_quantity;
-
-
-          const differenceText =
-            row.inventory_difference === null
-              ? "—"
-              : row.inventory_difference;
-
-
-          tr.innerHTML = `
-            <td>${row.item_name}</td>
-
-            <td class="number">
-              ${countedText}
-            </td>
-
-            <td class="number">
-              ${row.delivery_adjustment}
-            </td>
-
-            <td class="number">
-              ${row.purchase_quantity}
-            </td>
-
-            <td class="number">
-              ${expectedText}
-            </td>
-
-            <td class="number">
-              ${nextCountedText}
-            </td>
-
-            <td class="number">
-              ${differenceText}
-            </td>
           `;
 
 
-          tbody.appendChild(tr);
-
-        });
-
-
-        content.appendChild(table);
+          const tbody =
+            table.querySelector(
+              "tbody"
+            );
 
 
-        // ===============================================
-        // 點擊展開／收合
-        // ===============================================
-
-        header.onclick =
-          function() {
-
-            const isOpen =
-              content.classList.contains("open");
+          unitRows.forEach(
+            row => {
 
 
-            if (isOpen) {
+              const tr =
+                document.createElement(
+                  "tr"
+                );
 
-              content.classList.remove("open");
 
-              arrow.textContent =
-                "▶";
+              const countedText =
+                row.counted_quantity ===
+                null
+                  ? "尚未盤點"
+                  : row.counted_quantity;
 
-            } else {
 
-              content.classList.add("open");
+              const expectedText =
+                row.expected_quantity ===
+                null
+                  ? "—"
+                  : row.expected_quantity;
 
-              arrow.textContent =
-                "▼";
+
+              const nextCountedText =
+                row.next_counted_quantity ===
+                null
+                  ? "尚未盤點"
+                  : row.next_counted_quantity;
+
+
+              const differenceText =
+                row.inventory_difference ===
+                null
+                  ? "—"
+                  : row.inventory_difference;
+
+
+              tr.innerHTML = `
+
+                <td>
+                  ${row.item_name}
+                </td>
+
+                <td class="number">
+                  ${countedText}
+                </td>
+
+                <td class="number">
+                  ${row.delivery_adjustment}
+                </td>
+
+                <td class="number">
+                  ${row.purchase_quantity}
+                </td>
+
+                <td class="number">
+                  ${expectedText}
+                </td>
+
+                <td class="number">
+                  ${nextCountedText}
+                </td>
+
+                <td class="number">
+                  ${differenceText}
+                </td>
+
+              `;
+
+
+              tbody.appendChild(
+                tr
+              );
 
             }
-
-          };
-
-
-        card.appendChild(header);
-        card.appendChild(content);
+          );
 
 
-        container.appendChild(card);
+          content.appendChild(
+            table
+          );
 
-      });
+
+          // ===============================================
+          // 點擊展開／收合
+          // ===============================================
+
+          header.onclick =
+            function() {
+
+
+              const isOpen =
+                content.classList.contains(
+                  "open"
+                );
+
+
+              if (
+                isOpen
+              ) {
+
+                content.classList.remove(
+                  "open"
+                );
+
+
+                arrow.textContent =
+                  "▶";
+
+
+              } else {
+
+                content.classList.add(
+                  "open"
+                );
+
+
+                arrow.textContent =
+                  "▼";
+
+              }
+
+            };
+
+
+          card.appendChild(
+            header
+          );
+
+
+          card.appendChild(
+            content
+          );
+
+
+          container.appendChild(
+            card
+          );
+
+        }
+      );
 
     }
 
@@ -960,4 +1831,6 @@
   </script>
 
 </body>
+
 </html>
+```
