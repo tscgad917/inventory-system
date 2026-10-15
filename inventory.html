@@ -1396,23 +1396,62 @@
     // 取得系統所有單位
     // =====================================================
 
-    function getAllUnits() {
+   ```javascript
+// =====================================================
+// 取得系統所有單位
+// 固定營業單位顯示順序
+// =====================================================
 
-      return [
-        ...new Set(
-          inventoryData
-            .map(
-              row =>
-                row.unit_name
-            )
-            .filter(
-              unit =>
-                unit
-            )
-        )
-      ];
+const UNIT_ORDER = [
+  "總務課",
+  "營業部",
+  "水碓分社",
+  "竹圍分社",
+  "英專分社",
+  "義山分社",
+  "三芝分社",
+  "八里分社",
+  "成州分社",
+    "五股分社",
+      "萬金分社",
+        "新莊分社",
+          "泰山分社",
+  "林口分社",
+  "板橋分社",
+  "蘆洲分社"
+    "三重分社",
+  // 請依照實際單位名稱及希望的順序繼續補齊
+];
 
+function getAllUnits() {
+
+  const allUnits = [
+    ...new Set(
+      inventoryData
+        .map(row => row.unit_name)
+        .filter(unit => unit)
+    )
+  ];
+
+  return allUnits.sort((a, b) => {
+
+    const indexA = UNIT_ORDER.indexOf(a);
+    const indexB = UNIT_ORDER.indexOf(b);
+
+    // 清單內的單位優先依指定順序排列
+    // 未列入清單的單位自動排在後面
+    if (indexA === -1 && indexB === -1) {
+      return a.localeCompare(b, "zh-Hant");
     }
+
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
+  });
+
+}
+```
 
 
     // =====================================================
