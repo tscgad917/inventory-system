@@ -1397,6 +1397,38 @@
     // =====================================================
 
    function getAllUnits() {
+     // 依單位 ID 排序（由小到大）
+const UNIT_ORDER = [
+  "總務課",
+  "營業部",
+  "水碓分社",
+  "竹圍分社",
+  "英專分社",
+  "義山分社",
+  "三芝分社",
+  "八里分社",
+  "成州分社",
+  "五股分社",
+  "萬金分社",
+  "新莊分社",
+  "泰山分社",
+  "林口分社",
+  "板橋分社",
+  "蘆洲分社",
+  "三重分社"
+];
+
+function sortUnitsById(units) {
+  return [...units].sort((a, b) => {
+    const indexA = UNIT_ORDER.indexOf(a);
+    const indexB = UNIT_ORDER.indexOf(b);
+
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
+  });
+}
   return [
     ...new Set(
       inventoryData
@@ -1755,7 +1787,7 @@ if (
           }
         );
 
-
+units.splice(0, units.length, ...sortUnitsById(units));
         const unitSelect =
           document.getElementById(
             "unitSelect"
@@ -2184,13 +2216,17 @@ if (
 
 
      
-let units = [
+let units = sortUnitsById([
   ...new Set(
     monthData
-      .filter(row => row.unit_name !== "69號辦公室")
+      .filter(
+        row =>
+          row.unit_name &&
+          row.unit_name !== "69號辦公室"
+      )
       .map(row => row.unit_name)
   )
-];
+]);
 
 
 
