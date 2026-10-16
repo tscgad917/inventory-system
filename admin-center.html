@@ -35,17 +35,17 @@ button{border:0;border-radius:8px;background:#17365d;color:white;padding:11px 18
 <div class="desc">請由下方選擇要管理的系統。請勿將管理頁面連結提供給未授權人員。</div>
 </section>
 <section class="grid">
-<a class="card" href="admin-home.html" onclick="sessionStorage.setItem('inventoryAdminEntryTicket','from-center')">
+<a class="card" href="admin-home.html?from=center" onclick="sessionStorage.setItem('inventoryAdminEntryTicket','from-center')">
 <div class="num">SYSTEM 01</div><div class="title">庫存盤點管理</div>
 <div class="desc">盤點期間設定、耗材配送、廠商進貨、盤點資料管理及庫存統計。</div>
 <span class="status">現有功能</span>
 </a>
-<a class="card" href="../supply-request/admin.html" onclick="sessionStorage.setItem('voucherAdminEntryTicket','from-center')">
+<a class="card" href="../supply-request/admin.html?from=center" onclick="sessionStorage.setItem('voucherAdminEntryTicket','from-center')">
 <div class="num">SYSTEM 02</div><div class="title">傳票耗材管理</div>
 <div class="desc">申請紀錄、彙總表及傳票耗材批次管理。</div>
 <span class="status">已接統一登入驗證</span>
 </a>
-<a class="card" href="../paper-demand-statistics/admin.html" onclick="sessionStorage.setItem('paperAdminEntryTicket','from-center')">
+<a class="card" href="../paper-demand-statistics/admin.html?from=center" onclick="sessionStorage.setItem('paperAdminEntryTicket','from-center')">
 <div class="num">SYSTEM 03</div><div class="title">紙張需求管理</div>
 <div class="desc">查看各季度、各單位申請紀錄，依季度或單位篩選。</div>
 <span class="status">管理頁已建立，待測試資料權限</span>
