@@ -359,7 +359,7 @@
       <button
         type="button"
         class="logout"
-        onclick="returnToAdminCenter()"
+        onclick="window.location.href='admin-center.html'"
       >
         返回統一管理中心
       </button>
@@ -402,9 +402,7 @@ async function checkAdminSession(){
 }
 checkAdminSession();
 
-function returnToAdminCenter(){
-  window.location.replace("admin-center.html");
-}
+
 })();
 </script>
 
