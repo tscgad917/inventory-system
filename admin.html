@@ -339,6 +339,12 @@
         }
 
 
+        // 僅允許核准的管理帳號進入管理中心
+        if (email.toLowerCase() !== "tscgad917@gmail.com") {
+          alert("此帳號未獲授權使用管理後台。");
+          return;
+        }
+
         // 暫存登入資訊
         localStorage.setItem(
           "admin_access_token",
@@ -359,7 +365,7 @@
         alert("登入成功！");
 
         window.location.href =
-          "admin-home.html";
+          "admin-center.html";
 
 
       } catch (error) {
