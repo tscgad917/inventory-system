@@ -404,12 +404,12 @@ const adminDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function checkAdminSession(){
   const {data,error}=await adminDb.auth.getSession();
   if(error||!data.session){
-    window.location.replace("admin.html");
+    window.location.replace("https://tscgad917.github.io/login/");
     return;
   }
   const user=await adminDb.auth.getUser();
   if(user.error||(user.data.user.email||"").toLowerCase()!=="tscgad917@gmail.com"){
-    window.location.replace("admin.html");
+    window.location.replace("https://tscgad917.github.io/login/");
   }
 }
 checkAdminSession();
