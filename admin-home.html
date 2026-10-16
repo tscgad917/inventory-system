@@ -371,6 +371,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+(function(){
 // 導覽限制：首次進入需由統一管理中心點選；同一分頁重新整理可繼續使用。
 // 這是前端導覽限制，不取代 Supabase 的身分驗證與 RLS 權限。
 const nav=performance.getEntriesByType("navigation")[0];
@@ -405,6 +406,7 @@ async function logout(){
   ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
   window.location.replace("admin.html");
 }
+})();
 </script>
 
 </body>
