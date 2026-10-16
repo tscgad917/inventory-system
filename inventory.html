@@ -1396,7 +1396,15 @@
     // 取得系統所有單位
     // =====================================================
 
-    function getAllUnits() {
+   function getAllUnits() {
+  return [
+    ...new Set(
+      inventoryData
+        .filter(row => row.unit_name && row.unit_name !== "69號辦公室")
+        .map(row => row.unit_name)
+    )
+  ];
+}
 
       return [
         ...new Set(
@@ -1746,12 +1754,13 @@
         inventoryData.forEach(
           row => {
 
-            if (
-              row.unit_name &&
-              !units.includes(
-                row.unit_name
-              )
-            ) {
+           
+if (
+  row.unit_name &&
+  row.unit_name !== "69號辦公室" &&
+  !units.includes(row.unit_name)
+) {
+
 
               units.push(
                 row.unit_name
@@ -2190,15 +2199,15 @@
       }
 
 
-      let units =
-        [
-          ...new Set(
-            monthData.map(
-              row =>
-                row.unit_name
-            )
-          )
-        ];
+     
+let units = [
+  ...new Set(
+    monthData
+      .filter(row => row.unit_name !== "69號辦公室")
+      .map(row => row.unit_name)
+  )
+];
+
 
 
       if (
