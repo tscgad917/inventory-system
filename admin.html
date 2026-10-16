@@ -298,7 +298,7 @@ async function login() {
     localStorage.setItem("admin_access_token", data.session.access_token);
     localStorage.setItem("admin_refresh_token", data.session.refresh_token);
     localStorage.setItem("admin_email", ALLOWED_EMAIL);
-    window.location.replace("admin-center.html");
+    window.location.href = "admin-center.html";
   } catch (error) {
     console.error("登入失敗：", error);
     alert("登入失敗：" + (error && error.message ? error.message : "請確認帳號、密碼及網路連線。"));
