@@ -380,7 +380,7 @@ const ticket=sessionStorage.getItem("inventoryAdminEntryTicket")==="from-center"
 const fromCenter=ticket;
 sessionStorage.removeItem("inventoryAdminEntryTicket");
 if(!fromCenter&&!(isReload&&sessionStorage.getItem("inventoryAdminTabAuthorized")==="yes")){
-  document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再點選「庫存盤點管理」。</p><a href="admin-center.html">返回統一管理中心</a></main>';
+  document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再由管理中心選擇「庫存盤點管理」。</p></main>';
 }else{
   sessionStorage.setItem("inventoryAdminTabAuthorized","yes");
 }
