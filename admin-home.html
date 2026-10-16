@@ -377,7 +377,7 @@
 const nav=performance.getEntriesByType("navigation")[0];
 const isReload=nav&&nav.type==="reload";
 const ticket=sessionStorage.getItem("inventoryAdminEntryTicket")==="from-center";
-const fromCenter=ticket||new URLSearchParams(window.location.search).get("from")==="center"||document.referrer.includes("/inventory-system/admin-center.html");
+const fromCenter=ticket;
 sessionStorage.removeItem("inventoryAdminEntryTicket");
 if(!fromCenter&&!(isReload&&sessionStorage.getItem("inventoryAdminTabAuthorized")==="yes")){
   document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再點選「庫存盤點管理」。</p><a href="admin-center.html">返回統一管理中心</a></main>';
