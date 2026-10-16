@@ -116,14 +116,14 @@ button:active{transform:translateY(1px)}
       note.style.color="#b91c1c";
       note.textContent="無法確認登入狀態："+(error&&error.message?error.message:String(error))+"。請返回登入入口重新登入。";
       $("welcomeTitle").parentNode.appendChild(note);
-      setTimeout(()=>window.location.replace("admin.html"),1800);
+      setTimeout(()=>window.location.replace("https://tscgad917.github.io/login/"),1800);
     }
   }
 
   $("logoutBtn").addEventListener("click",async function(){
     try{await db.auth.signOut();}catch(e){console.error("登出請求失敗",e);}
     ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
-    window.location.replace("admin.html");
+    window.location.replace("https://tscgad917.github.io/login/");
   });
 
   init();
