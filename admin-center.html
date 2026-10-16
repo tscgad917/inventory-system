@@ -123,7 +123,7 @@ button:active{transform:translateY(1px)}
   $("logoutBtn").addEventListener("click",async function(){
     try{await db.auth.signOut();}catch(e){console.error("登出請求失敗",e);}
     ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
-    window.location.replace("https://tscgad917.github.io/login/");
+    window.location.replace("https://tscgad917.github.io/login/?utm_source=chatgpt.com");
   });
 
   init();
