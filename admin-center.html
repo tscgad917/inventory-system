@@ -53,45 +53,63 @@ button{border:0;border-radius:8px;background:#17365d;color:white;padding:11px 18
 </section>
 <footer><span>管理帳號：<span id="adminEmail"></span></span><button type="button" id="logoutBtn">統一登出</button></footer>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
-  var token=localStorage.getItem("admin_access_token");
-  var email=(localStorage.getItem("admin_email")||"").toLowerCase();
-  var allowed="tscgad917@gmail.com";
-  if(!token || email!==allowed){
-    window.location.replace("admin.html");
-    return;
-  }
-  document.getElementById("welcomeTitle").textContent="您好，總務課管理人員";
-  document.getElementById("adminEmail").textContent=email;
-  document.getElementById("logoutBtn").addEventListener("click",async function(){
+  const URL="https://onebxqajsiqmhfcizaxl.supabase.co";
+  const KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+  const ALLOWED="tscgad917@gmail.com";
+  const $=id=>document.getElementById(id);
+  const db=window.supabase.createClient(URL,KEY);
+
+  async function init(){
     try{
-      await fetch("https://onebxqajsiqmhfcizaxl.supabase.co/auth/v1/logout",{
-        method:"POST",
-        headers:{
-          "apikey":"sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq",
-          "Authorization":"Bearer "+token
-        }
-      });
-    }catch(e){console.error("登出請求失敗",e);}
-    ["admin_access_token","admin_refresh_token","admin_email"].forEach(function(k){localStorage.removeItem(k);});
-    window.location.replace("admin.html");
-  });
-  fetch("https://onebxqajsiqmhfcizaxl.supabase.co/auth/v1/user",{
-    headers:{
-      "apikey":"sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq",
-      "Authorization":"Bearer "+token
+      let result=await db.auth.getSession();
+      if(result.error) throw result.error;
+      let session=result.data&&result.data.session;
+
+      // 相容舊版登入資訊；正常情況會直接讀到統一登入入口保存的 session。
+      if(!session){
+        const token=localStorage.getItem("admin_access_token");
+        const refresh=localStorage.getItem("admin_refresh_token");
+        const email=(localStorage.getItem("admin_email")||"").toLowerCase();
+        if(!token||!refresh||email!==ALLOWED) throw new Error("找不到有效的登入狀態，請重新登入。");
+        result=await db.auth.setSession({access_token:token,refresh_token:refresh});
+        if(result.error) throw result.error;
+        session=result.data&&result.data.session;
+      }
+      if(!session) throw new Error("未取得有效的登入 session。");
+
+      const user=await db.auth.getUser();
+      if(user.error) throw user.error;
+      const email=(user.data.user.email||"").toLowerCase();
+      if(email!==ALLOWED) throw new Error("目前帳號未獲授權使用管理中心。");
+
+      localStorage.setItem("admin_access_token",session.access_token);
+      localStorage.setItem("admin_refresh_token",session.refresh_token);
+      localStorage.setItem("admin_email",email);
+      $("welcomeTitle").textContent="您好，總務課管理人員";
+      $("adminEmail").textContent=email;
+    }catch(error){
+      console.error("統一管理中心驗證失敗：",error);
+      $("welcomeTitle").textContent="登入狀態失效";
+      const note=document.createElement("div");
+      note.className="desc";
+      note.style.color="#b91c1c";
+      note.textContent="無法確認登入狀態："+(error&&error.message?error.message:String(error))+"。請返回登入入口重新登入。";
+      $("welcomeTitle").parentNode.appendChild(note);
+      setTimeout(()=>window.location.replace("admin.html"),1800);
     }
-  }).then(function(r){
-    if(!r.ok) throw new Error("登入已失效");
-    return r.json();
-  }).then(function(user){
-    if((user.email||"").toLowerCase()!==allowed) throw new Error("管理帳號未獲授權");
-  }).catch(function(){
-    ["admin_access_token","admin_refresh_token","admin_email"].forEach(function(k){localStorage.removeItem(k);});
+  }
+
+  $("logoutBtn").addEventListener("click",async function(){
+    try{await db.auth.signOut();}catch(e){console.error("登出請求失敗",e);}
+    ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
     window.location.replace("admin.html");
   });
+
+  init();
 })();
 </script>
 </body>
