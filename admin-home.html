@@ -359,9 +359,9 @@
       <button
         type="button"
         class="logout"
-        onclick="logout()"
+        onclick="returnToAdminCenter()"
       >
-        登出管理後台
+        返回統一管理中心
       </button>
 
     </div>
@@ -402,10 +402,8 @@ async function checkAdminSession(){
 }
 checkAdminSession();
 
-async function logout(){
-  try{await adminDb.auth.signOut();}catch(e){console.error("登出失敗",e);}
-  ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
-  window.location.replace("admin.html");
+function returnToAdminCenter(){
+  window.location.replace("admin-center.html");
 }
 })();
 </script>
