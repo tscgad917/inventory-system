@@ -369,39 +369,31 @@
   </main>
 
 
-  <script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://onebxqajsiqmhfcizaxl.supabase.co";
+const SUPABASE_KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const adminDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-    // 檢查是否已登入
-    const accessToken =
-      localStorage.getItem(
-        "admin_access_token"
-      );
+async function checkAdminSession(){
+  const {data,error}=await adminDb.auth.getSession();
+  if(error||!data.session){
+    window.location.replace("admin.html");
+    return;
+  }
+  const user=await adminDb.auth.getUser();
+  if(user.error||(user.data.user.email||"").toLowerCase()!=="tscgad917@gmail.com"){
+    window.location.replace("admin.html");
+  }
+}
+checkAdminSession();
 
-    if (!accessToken) {
-      window.location.href =
-        "admin.html";
-    }
-
-
-    function logout() {
-
-      localStorage.removeItem(
-        "admin_access_token"
-      );
-
-      localStorage.removeItem(
-        "admin_refresh_token"
-      );
-
-      localStorage.removeItem(
-        "admin_email"
-      );
-
-      window.location.href =
-        "admin.html";
-    }
-
-  </script>
+async function logout(){
+  try{await adminDb.auth.signOut();}catch(e){console.error("登出失敗",e);}
+  ["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));
+  window.location.replace("admin.html");
+}
+</script>
 
 </body>
 </html>
