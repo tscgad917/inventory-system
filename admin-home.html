@@ -371,6 +371,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// 導覽限制：首次進入需由統一管理中心點選；同一分頁重新整理可繼續使用。
+// 這是前端導覽限制，不取代 Supabase 的身分驗證與 RLS 權限。
+const nav=performance.getEntriesByType("navigation")[0];
+const isReload=nav&&nav.type==="reload";
+const ticket=sessionStorage.getItem("inventoryAdminEntryTicket")==="from-center";
+sessionStorage.removeItem("inventoryAdminEntryTicket");
+if(!ticket&&!(isReload&&sessionStorage.getItem("inventoryAdminTabAuthorized")==="yes")){
+  document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再點選「庫存盤點管理」。</p><a href="admin-center.html">返回統一管理中心</a></main>';
+}else{
+  sessionStorage.setItem("inventoryAdminTabAuthorized","yes");
+}
+if(!ticket&&!(isReload&&sessionStorage.getItem("inventoryAdminTabAuthorized")==="yes")) return;
 const SUPABASE_URL="https://onebxqajsiqmhfcizaxl.supabase.co";
 const SUPABASE_KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 const adminDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
