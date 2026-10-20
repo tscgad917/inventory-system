@@ -103,12 +103,34 @@ $("batchForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("b
 $("personForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("personMsg");const id=$("personId").value;const payload={full_name:$("fullName").value.trim(),person_type:$("personType").value,title:$("title").value.trim()||null,phone:$("phone").value.trim()||null,notes:$("personNotes").value.trim()||null,updated_at:new Date().toISOString()};let r;if(id)r=await db.from("event_people").update(payload).eq("id",Number(id));else r=await db.from("event_people").insert(payload);if(r.error){showMsg("personMsg","儲存失敗："+r.error.message,true);return;}e.target.reset();$("personId").value="";showMsg("personMsg","名冊已儲存。");await loadPeople();});
 $("cancelPerson").addEventListener("click",()=>{$("personForm").reset();$("personId").value="";hideMsg("personMsg");});
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",async()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("secondary",x!==btn));["batches","people","registrations"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==btn.dataset.tab));if(btn.dataset.tab==="registrations")await loadRegistrations();}));
+async function reviewIdentity(registrationId,kind){
+ const select=$("registrations").querySelector('[data-review-select="'+registrationId+'"]');
+ const personId=select?Number(select.value):0;
+ if(!personId){alert("請先選擇名冊人物。");return;}
+ const p=people.find(x=>x.id===personId);
+ if(!p||!p.is_active){alert("請選擇啟用中的名冊人物。");return;}
+ if(kind==="spouse"&&!["representative","director","supervisor"].includes(p.person_type)){alert("配偶關係人只能選擇公司代表、理事或監事。");return;}
+ const current=registrations.find(x=>x.id===registrationId);if(!current)return;
+ let payload;
+ if(kind==="person"){
+  payload={identity_status:"matched",person_id:p.id,spouse_of_person_id:null,person_name_snapshot:p.full_name,person_title_snapshot:p.title||null,spouse_name_snapshot:null,spouse_title_snapshot:null,reviewed_at:new Date().toISOString(),reviewed_by:ALLOWED,updated_at:new Date().toISOString()};
+ }else{
+  payload={identity_status:"spouse_matched",person_id:null,spouse_of_person_id:p.id,person_name_snapshot:null,person_title_snapshot:null,spouse_name_snapshot:p.full_name,spouse_title_snapshot:p.title||null,reviewed_at:new Date().toISOString(),reviewed_by:ALLOWED,updated_at:new Date().toISOString()};
+ }
+ const r=await db.from("event_registrations").update(payload).eq("id",registrationId);
+ if(r.error){alert("確認失敗："+r.error.message);return;}
+ alert("身分已更新。");await loadRegistrations();
+}
 async function loadRegistrations(){
  const id=$("registrationBatch").value;if(!id){$("stats").innerHTML="";$("registrations").textContent="請先選擇活動。";registrations=[];return;}
  const r=await db.from("event_registrations").select("*").eq("batch_id",Number(id)).order("created_at");if(r.error){$("registrations").textContent="載入失敗："+r.error.message;return;}registrations=r.data||[];
  const total=registrations.length,attend=registrations.filter(x=>x.attending).length,notAttend=total-attend,meal=registrations.filter(x=>x.meal_required===true).length,meat=registrations.filter(x=>x.diet_type==="meat").length,veg=registrations.filter(x=>x.diet_type==="vegetarian").length,pending=registrations.filter(x=>x.identity_status==="pending_review").length;
  $("stats").innerHTML=[["報名人數",total],["出席",attend],["不出席",notAttend],["需要餐食",meal],["葷食",meat],["素食",veg],["待確認身分",pending]].map(x=>'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join("");
- const idLabel={matched:"名冊符合",spouse_matched:"配偶符合",pending_review:"待確認"};$("registrations").innerHTML=registrations.length?'<table><thead><tr><th>姓名</th><th>身分狀態</th><th>出席</th><th>餐食</th><th>職稱／關係</th><th>填寫時間</th></tr></thead><tbody>'+registrations.map(x=>'<tr><td>'+esc(x.respondent_name)+'</td><td>'+esc(idLabel[x.identity_status]||x.identity_status)+'</td><td>'+(x.attending?'出席':'不出席')+'</td><td>'+(x.meal_required?(x.diet_type==="meat"?"葷食":"素食"):"不需要／未出席")+'</td><td>'+esc(x.person_title_snapshot||x.spouse_title_snapshot||"待確認")+(x.spouse_name_snapshot?"<br>關係人："+esc(x.spouse_name_snapshot):"")+'</td><td>'+esc(dateLocal(x.created_at))+'</td></tr>').join("")+'</tbody></table>':'目前沒有報名紀錄。';
+ const idLabel={matched:"名冊符合",spouse_matched:"配偶符合",pending_review:"待確認"};
+ const activePeople=people.filter(p=>p.is_active);
+ $("registrations").innerHTML=registrations.length?'<table><thead><tr><th>姓名</th><th>身分狀態</th><th>出席</th><th>餐食</th><th>職稱／關係</th><th>填寫時間</th><th>人工確認</th></tr></thead><tbody>'+registrations.map(x=>'<tr><td>'+esc(x.respondent_name)+'</td><td>'+esc(idLabel[x.identity_status]||x.identity_status)+'</td><td>'+(x.attending?'出席':'不出席')+'</td><td>'+(x.meal_required?(x.diet_type==="meat"?"葷食":"素食"):"不需要／未出席")+'</td><td>'+esc(x.person_title_snapshot||x.spouse_title_snapshot||"待確認")+(x.spouse_name_snapshot?"<br>關係人："+esc(x.spouse_name_snapshot):"")+'</td><td>'+esc(dateLocal(x.created_at))+'</td><td>'+(x.identity_status==="pending_review"?'<select data-review-select="'+x.id+'"><option value="">選擇名冊人物</option>'+activePeople.map(p=>'<option value="'+p.id+'">'+esc(p.full_name)+'（'+esc(p.title||p.person_type)+'）</option>').join("")+'</select><div class="actions" style="margin-top:6px"><button class="btn" data-review-person="'+x.id+'">確認本人</button><button class="btn secondary" data-review-spouse="'+x.id+'">確認配偶</button></div>':'—')+'</td></tr>').join("")+'</tbody></table>':'目前沒有報名紀錄。';
+ $("registrations").querySelectorAll("[data-review-person]").forEach(btn=>btn.addEventListener("click",()=>reviewIdentity(Number(btn.dataset.reviewPerson),"person")));
+ $("registrations").querySelectorAll("[data-review-spouse]").forEach(btn=>btn.addEventListener("click",()=>reviewIdentity(Number(btn.dataset.reviewSpouse),"spouse")));
 }
 $("registrationBatch").addEventListener("change",loadRegistrations);$("refreshRegs").addEventListener("click",loadRegistrations);
 $("exportCsv").addEventListener("click",()=>{if(!registrations.length){alert("目前沒有可匯出的紀錄。");return;}const cols=[["respondent_name","姓名"],["identity_status","身分狀態"],["attending","是否出席"],["meal_required","是否需要餐食"],["diet_type","餐食種類"],["person_title_snapshot","職稱"],["spouse_name_snapshot","關係人姓名"],["notes","備註"],["created_at","填寫時間"]];const csv="\uFEFF"+[cols.map(c=>c[1]).join(","),...registrations.map(r=>cols.map(c=>{let v=r[c[0]];if(c[0]==="attending")v=v?"出席":"不出席";if(c[0]==="meal_required")v=v===true?"需要":v===false?"不需要":"";if(c[0]==="diet_type")v=v==="meat"?"葷食":v==="vegetarian"?"素食":"";return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(","))].join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="活動報名紀錄.csv";a.click();URL.revokeObjectURL(a.href);});
