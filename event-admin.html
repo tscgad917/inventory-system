@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>社員及貴賓活動報名統計｜管理後台</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7f2;color:#3f4b3b;font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;line-height:1.6}header{background:#44633f;color:#fff;padding:20px}header>div,main{max-width:1100px;margin:auto}h1{font-size:22px;margin:0}main{padding:22px 16px 40px}.bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button,.btn{border:0;border-radius:8px;background:#44633f;color:white;padding:10px 14px;font:inherit;cursor:pointer}.tabs button.secondary,.btn.secondary{background:#e6eee5;color:#355334}.panel{background:#fff;border:1px solid #dfe7dc;border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 4px 14px #26332c0a}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}label{display:block;font-weight:600;font-size:14px;margin-bottom:5px}input,select,textarea{width:100%;padding:10px;border:1px solid #ccd7cb;border-radius:8px;font:inherit;background:white}textarea{min-height:76px}form .field{margin-bottom:12px}.muted{color:#718071;font-size:13px}.msg{padding:11px;border-radius:8px;background:#edf5ef;margin:10px 0;white-space:pre-wrap}.error{background:#fff0ef;color:#9f2e25}.hidden{display:none!important}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px;min-width:650px}th,td{text-align:left;padding:9px;border-bottom:1px solid #e7ece5;vertical-align:top}th{background:#f3f7f1}.tag{display:inline-block;background:#edf5ef;color:#355334;border-radius:999px;padding:2px 8px;font-size:12px}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{font-size:12px;padding:6px 9px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.stat{background:#f3f7f1;border-radius:10px;padding:12px}.stat strong{display:block;font-size:24px;color:#355334}.qr{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}.qr canvas,.qr img{max-width:190px}a{color:#245c39}@media(max-width:600px){main{padding:16px 10px}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<header><div><div style="font-size:13px;opacity:.85">淡水信用合作社｜總務課</div><h1>社員及貴賓活動報名統計</h1></div></header>
+<main>
+<div class="bar"><div class="muted" id="adminState">正在確認管理員身分……</div><div class="actions"><a href="admin-center.html">返回統一管理中心</a><button class="btn secondary" id="logout">登出</button></div></div>
+<div id="fatal" class="msg error hidden"></div>
+<div id="app" class="hidden">
+<div class="tabs"><button data-tab="batches">活動批次</button><button data-tab="people" class="secondary">人物名冊</button><button data-tab="registrations" class="secondary">報名紀錄與統計</button></div>
+<section id="tab-batches" class="panel">
+<h2>建立活動批次</h2><p class="muted">建立後可設定開放狀態；只有狀態為「開放填寫」且目前時間落在填寫期間內，前台才能提交。</p>
+<form id="batchForm">
+<div class="grid">
+<div class="field"><label for="batchName">活動名稱</label><input id="batchName" required maxlength="150" placeholder="例如：理監事聯席會議餐敘"></div>
+<div class="field"><label for="location">活動地點</label><input id="location" required maxlength="250" placeholder="請輸入活動地點"></div>
+<div class="field"><label for="activityStart">活動開始時間</label><input id="activityStart" type="datetime-local" required></div>
+<div class="field"><label for="activityEnd">活動結束時間（選填）</label><input id="activityEnd" type="datetime-local"></div>
+<div class="field"><label for="formStart">開放填寫時間</label><input id="formStart" type="datetime-local" required></div>
+<div class="field"><label for="formEnd">填寫截止時間</label><input id="formEnd" type="datetime-local" required></div>
+</div>
+<div class="field"><label for="description">活動說明（選填）</label><textarea id="description" maxlength="1000"></textarea></div>
+<button class="btn" type="submit">建立活動</button>
+</form><div id="batchMsg" class="msg hidden"></div>
+<h2 style="margin-top:24px">活動清單</h2><div id="batches" class="table-wrap">載入中……</div>
+</section>
+<section id="tab-people" class="panel hidden">
+<h2>人物名冊維護</h2><p class="muted">停用人物不會刪除歷史報名資料。名冊姓名應避免重複；同名者將交由管理人員確認。</p>
+<form id="personForm">
+<input id="personId" type="hidden">
+<div class="grid">
+<div class="field"><label for="fullName">姓名</label><input id="fullName" required maxlength="100"></div>
+<div class="field"><label for="personType">身分別</label><select id="personType" required><option value="representative">公司代表</option><option value="director">理事</option><option value="supervisor">監事</option><option value="guest">貴賓</option></select></div>
+<div class="field"><label for="title">職稱</label><input id="title" maxlength="100" placeholder="例如：理事長"></div>
+<div class="field"><label for="phone">聯絡電話</label><input id="phone" maxlength="50"></div>
+</div><div class="field"><label for="personNotes">備註</label><input id="personNotes" maxlength="500"></div>
+<div class="actions"><button class="btn" type="submit">儲存名冊</button><button class="btn secondary" type="button" id="cancelPerson">清除表單</button></div>
+</form><div id="personMsg" class="msg hidden"></div><div id="people" class="table-wrap">載入中……</div>
+</section>
+<section id="tab-registrations" class="panel hidden">
+<h2>報名紀錄與統計</h2><div class="field"><label for="registrationBatch">選擇活動</label><select id="registrationBatch"><option value="">請選擇活動</option></select></div>
+<div id="stats" class="stats"></div><div class="actions" style="margin:12px 0"><button class="btn" id="exportCsv" type="button">匯出 CSV</button><button class="btn secondary" id="refreshRegs" type="button">重新載入</button></div>
+<div id="registrations" class="table-wrap">請先選擇活動。</div>
+</section>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const SUPABASE_URL="https://onebxqajsiqmhfcizaxl.supabase.co";
+const SUPABASE_KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const ALLOWED="tscgad917@gmail.com";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+let batches=[],people=[],registrations=[];
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function showMsg(id,text,error){const el=$(id);el.textContent=text;el.classList.remove("hidden","error");if(error)el.classList.add("error");}
+function hideMsg(id){$(id).classList.add("hidden");}
+function dateLocal(v){if(!v)return "";const d=new Date(v);return Number.isNaN(d.getTime())?"":d.toLocaleString("zh-TW",{hour12:false});}
+function localISO(id){const v=$(id).value;return v?new Date(v).toISOString():null;}
+async function init(){
+ try{
+  let r=await db.auth.getSession();if(r.error)throw r.error;let session=r.data.session;
+  if(!session){const access=localStorage.getItem("admin_access_token"),refresh=localStorage.getItem("admin_refresh_token"),email=(localStorage.getItem("admin_email")||"").toLowerCase();if(!access||!refresh||email!==ALLOWED)throw new Error("找不到有效登入狀態，請從統一管理中心重新登入。");r=await db.auth.setSession({access_token:access,refresh_token:refresh});if(r.error)throw r.error;session=r.data.session;}
+  if(!session)throw new Error("未取得有效登入狀態。");
+  const u=await db.auth.getUser();if(u.error)throw u.error;if((u.data.user.email||"").toLowerCase()!==ALLOWED)throw new Error("此帳號未獲授權。");
+  localStorage.setItem("admin_access_token",session.access_token);localStorage.setItem("admin_refresh_token",session.refresh_token);localStorage.setItem("admin_email",ALLOWED);
+  $("adminState").textContent="管理員已驗證："+ALLOWED;$("app").classList.remove("hidden");
+  await Promise.all([loadBatches(),loadPeople()]);
+ }catch(e){$("adminState").textContent="驗證失敗";$("fatal").textContent=(e&&e.message)||String(e);$("fatal").classList.remove("hidden");}
+}
+async function loadBatches(){
+ const r=await db.from("event_batches").select("*").order("activity_start",{ascending:false});if(r.error)throw r.error;batches=r.data||[];
+ $("batches").innerHTML=batches.length?'<table><thead><tr><th>活動</th><th>活動時間／地點</th><th>填寫期間</th><th>狀態</th><th>前台連結／操作</th></tr></thead><tbody>'+batches.map(b=>'<tr><td><strong>'+esc(b.batch_name)+'</strong><br><small>ID '+b.id+'</small></td><td>'+esc(dateLocal(b.activity_start))+'<br>'+esc(b.location)+'</td><td>'+esc(dateLocal(b.form_start))+'<br>至 '+esc(dateLocal(b.form_end))+'</td><td><select data-status="'+b.id+'">'+[['draft','草稿'],['scheduled','尚未開放'],['open','開放填寫'],['closed','停止填寫'],['completed','已完成']].map(x=>'<option value="'+x[0]+'" '+(b.status===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></td><td><div class="actions"><button class="btn" data-save-status="'+b.id+'">更新狀態</button><button class="btn secondary" data-show-qr="'+b.id+'">報名連結／QR</button></div><div id="qr-'+b.id+'"></div></td></tr>').join("")+'</tbody></table>':'目前尚無活動。';
+ $("registrationBatch").innerHTML='<option value="">請選擇活動</option>'+batches.map(b=>'<option value="'+b.id+'">'+esc(b.batch_name)+'（'+esc(b.status)+'）</option>').join("");
+ $("batches").querySelectorAll("[data-save-status]").forEach(btn=>btn.addEventListener("click",async()=>{const id=Number(btn.dataset.saveStatus),status=$("batches").querySelector('[data-status="'+id+'"]').value;const r=await db.from("event_batches").update({status,updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadBatches();alert("活動狀態已更新。");}));
+ $("batches").querySelectorAll("[data-show-qr]").forEach(btn=>btn.addEventListener("click",()=>showQr(Number(btn.dataset.showQr))));
+}
+function showQr(id){
+ const b=batches.find(x=>x.id===id);if(!b)return;const url=location.origin+location.pathname.replace(/[^/]*$/,"")+"event-form.html?token="+encodeURIComponent(b.public_token);const el=$("qr-"+id);
+ el.innerHTML='<div class="qr"><div><p><a href="'+esc(url)+'" target="_blank" rel="noopener">開啟報名頁</a></p><input readonly value="'+esc(url)+'" aria-label="報名網址"><button class="btn secondary" data-copy="'+esc(url)+'">複製網址</button><p class="muted">QR Code 載入後可直接列印或截取使用。</p></div><div id="qrimg-'+id+'"></div></div>';
+ el.querySelector("[data-copy]").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url);alert("已複製報名網址。");}catch(e){alert("請手動複製網址欄位。");}});
+ const script=document.createElement("script");script.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";script.onload=()=>{if(window.QRCode)new QRCode($("qrimg-"+id),{text:url,width:180,height:180});};document.head.appendChild(script);
+}
+async function loadPeople(){
+ const r=await db.from("event_people").select("*").order("is_active",{ascending:false}).order("full_name");if(r.error)throw r.error;people=r.data||[];
+ const types={representative:"公司代表",director:"理事",supervisor:"監事",guest:"貴賓"};
+ $("people").innerHTML=people.length?'<table><thead><tr><th>姓名</th><th>身分／職稱</th><th>電話</th><th>狀態</th><th>操作</th></tr></thead><tbody>'+people.map(p=>'<tr><td>'+esc(p.full_name)+'</td><td>'+types[p.person_type]+'<br>'+esc(p.title)+'</td><td>'+esc(p.phone)+'</td><td>'+(p.is_active?'<span class="tag">啟用</span>':'<span class="tag">停用</span>')+'</td><td><div class="actions"><button class="btn secondary" data-edit-person="'+p.id+'">編輯</button><button class="btn" data-toggle-person="'+p.id+'">'+(p.is_active?'停用':'重新啟用')+'</button></div></td></tr>').join("")+'</tbody></table>':'尚無人物名冊資料。';
+ $("people").querySelectorAll("[data-edit-person]").forEach(btn=>btn.addEventListener("click",()=>{const p=people.find(x=>x.id===Number(btn.dataset.editPerson));if(!p)return;$("personId").value=p.id;$("fullName").value=p.full_name;$("personType").value=p.person_type;$("title").value=p.title||"";$("phone").value=p.phone||"";$("personNotes").value=p.notes||"";window.scrollTo({top:0,behavior:"smooth"});}));
+ $("people").querySelectorAll("[data-toggle-person]").forEach(btn=>btn.addEventListener("click",async()=>{const p=people.find(x=>x.id===Number(btn.dataset.togglePerson));if(!p)return;const r=await db.from("event_people").update({is_active:!p.is_active,updated_at:new Date().toISOString()}).eq("id",p.id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadPeople();}));
+}
+$("batchForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("batchMsg");const activity_start=localISO("activityStart"),activity_end=localISO("activityEnd"),form_start=localISO("formStart"),form_end=localISO("formEnd");if(new Date(form_end)<=new Date(form_start)){showMsg("batchMsg","填寫截止時間必須晚於開放時間。",true);return;}if(activity_end&&new Date(activity_end)<new Date(activity_start)){showMsg("batchMsg","活動結束時間不可早於開始時間。",true);return;}
+ const payload={batch_name:$("batchName").value.trim(),location:$("location").value.trim(),activity_start,activity_end,form_start,form_end,description:$("description").value.trim()||null,status:"draft"};
+ const r=await db.from("event_batches").insert(payload).select().single();if(r.error){showMsg("batchMsg","建立失敗："+r.error.message,true);return;}e.target.reset();showMsg("batchMsg","活動已建立，預設為草稿。請在活動清單更新為「開放填寫」後，前台才會受理報名。");await loadBatches();});
+$("personForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("personMsg");const id=$("personId").value;const payload={full_name:$("fullName").value.trim(),person_type:$("personType").value,title:$("title").value.trim()||null,phone:$("phone").value.trim()||null,notes:$("personNotes").value.trim()||null,updated_at:new Date().toISOString()};let r;if(id)r=await db.from("event_people").update(payload).eq("id",Number(id));else r=await db.from("event_people").insert(payload);if(r.error){showMsg("personMsg","儲存失敗："+r.error.message,true);return;}e.target.reset();$("personId").value="";showMsg("personMsg","名冊已儲存。");await loadPeople();});
+$("cancelPerson").addEventListener("click",()=>{$("personForm").reset();$("personId").value="";hideMsg("personMsg");});
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",async()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("secondary",x!==btn));["batches","people","registrations"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==btn.dataset.tab));if(btn.dataset.tab==="registrations")await loadRegistrations();}));
+async function loadRegistrations(){
+ const id=$("registrationBatch").value;if(!id){$("stats").innerHTML="";$("registrations").textContent="請先選擇活動。";registrations=[];return;}
+ const r=await db.from("event_registrations").select("*").eq("batch_id",Number(id)).order("created_at");if(r.error){$("registrations").textContent="載入失敗："+r.error.message;return;}registrations=r.data||[];
+ const total=registrations.length,attend=registrations.filter(x=>x.attending).length,notAttend=total-attend,meal=registrations.filter(x=>x.meal_required===true).length,meat=registrations.filter(x=>x.diet_type==="meat").length,veg=registrations.filter(x=>x.diet_type==="vegetarian").length,pending=registrations.filter(x=>x.identity_status==="pending_review").length;
+ $("stats").innerHTML=[["報名人數",total],["出席",attend],["不出席",notAttend],["需要餐食",meal],["葷食",meat],["素食",veg],["待確認身分",pending]].map(x=>'<div class="stat"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join("");
+ const idLabel={matched:"名冊符合",spouse_matched:"配偶符合",pending_review:"待確認"};$("registrations").innerHTML=registrations.length?'<table><thead><tr><th>姓名</th><th>身分狀態</th><th>出席</th><th>餐食</th><th>職稱／關係</th><th>填寫時間</th></tr></thead><tbody>'+registrations.map(x=>'<tr><td>'+esc(x.respondent_name)+'</td><td>'+esc(idLabel[x.identity_status]||x.identity_status)+'</td><td>'+(x.attending?'出席':'不出席')+'</td><td>'+(x.meal_required?(x.diet_type==="meat"?"葷食":"素食"):"不需要／未出席")+'</td><td>'+esc(x.person_title_snapshot||x.spouse_title_snapshot||"待確認")+(x.spouse_name_snapshot?"<br>關係人："+esc(x.spouse_name_snapshot):"")+'</td><td>'+esc(dateLocal(x.created_at))+'</td></tr>').join("")+'</tbody></table>':'目前沒有報名紀錄。';
+}
+$("registrationBatch").addEventListener("change",loadRegistrations);$("refreshRegs").addEventListener("click",loadRegistrations);
+$("exportCsv").addEventListener("click",()=>{if(!registrations.length){alert("目前沒有可匯出的紀錄。");return;}const cols=[["respondent_name","姓名"],["identity_status","身分狀態"],["attending","是否出席"],["meal_required","是否需要餐食"],["diet_type","餐食種類"],["person_title_snapshot","職稱"],["spouse_name_snapshot","關係人姓名"],["notes","備註"],["created_at","填寫時間"]];const csv="\uFEFF"+[cols.map(c=>c[1]).join(","),...registrations.map(r=>cols.map(c=>{let v=r[c[0]];if(c[0]==="attending")v=v?"出席":"不出席";if(c[0]==="meal_required")v=v===true?"需要":v===false?"不需要":"";if(c[0]==="diet_type")v=v==="meat"?"葷食":v==="vegetarian"?"素食":"";return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(","))].join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="活動報名紀錄.csv";a.click();URL.revokeObjectURL(a.href);});
+$("logout").addEventListener("click",async()=>{try{await db.auth.signOut();}catch(e){}["admin_access_token","admin_refresh_token","admin_email"].forEach(k=>localStorage.removeItem(k));location.href="https://tscgad917.github.io/login/";});
+init();
+})();
+</script>
+</body>
+</html>
