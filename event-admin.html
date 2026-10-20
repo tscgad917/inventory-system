@@ -42,7 +42,12 @@
 <div class="field"><label for="phone">聯絡電話</label><input id="phone" maxlength="50"></div>
 </div><div class="field"><label for="personNotes">備註</label><input id="personNotes" maxlength="500"></div>
 <div class="actions"><button class="btn" type="submit">儲存名冊</button><button class="btn secondary" type="button" id="cancelPerson">清除表單</button></div>
-</form><div id="personMsg" class="msg hidden"></div><div id="people" class="table-wrap">載入中……</div>
+</form><div id="personMsg" class="msg hidden"></div><div class="field"><label for="peopleTypeFilter">快速查詢身分</label><select id="peopleTypeFilter"><option value="all">全部身分</option><option value="director">理事</option><option value="supervisor">監事</option><option value="advisor">顧問</option><option value="representative">社員代表</option><option value="staff">職員</option><option value="spouse">理監事及顧問配偶</option><option value="guest">貴賓</option></select></div><div id="peopleCount" class="msg">名冊共 0 人</div><div id="people" class="table-wrap">載入中……</div><div id="personConfirmModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="personConfirmTitle" style="position:fixed;inset:0;z-index:9999;background:#17231788;align-items:center;justify-content:center;padding:18px">
+<div style="width:min(560px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:14px;padding:22px;box-shadow:0 20px 60px #0003">
+<h2 id="personConfirmTitle" style="margin-top:0">確認儲存名冊變更</h2><p class="muted">請再次確認以下變更內容。按「確認儲存」後才會更新資料庫。</p>
+<div id="personConfirmChanges" style="white-space:pre-wrap;line-height:1.9;padding:12px;background:#f3f7f1;border-radius:8px;margin-bottom:16px"></div>
+<div class="actions" style="justify-content:flex-end"><button class="btn secondary" type="button" id="cancelPersonConfirm">取消</button><button class="btn" type="button" id="confirmPersonSave">確認儲存</button></div>
+</div></div>
 </section>
 <section id="tab-registrations" class="panel hidden">
 <h2>報名紀錄與統計</h2><div class="field"><label for="registrationBatch">選擇活動</label><select id="registrationBatch"><option value="">請選擇活動</option></select></div>
@@ -101,18 +106,50 @@ function showQr(id){
  el.querySelector("[data-copy]").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url);alert("已複製報名網址。");}catch(e){alert("請手動複製網址欄位。");}});
  const script=document.createElement("script");script.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";script.onload=()=>{if(window.QRCode)new QRCode($("qrimg-"+id),{text:url,width:180,height:180});};document.head.appendChild(script);
 }
+const PERSON_TYPES={director:"理事",supervisor:"監事",advisor:"顧問",representative:"社員代表",staff:"職員",spouse:"理監事及顧問配偶",guest:"貴賓"};
+let originalPerson=null;
+function renderPeople(){
+ const selected=$("peopleTypeFilter").value;
+ const filtered=selected==="all"?people:people.filter(p=>p.person_type===selected);
+ $("peopleCount").textContent=(selected==="all"?"全部身分":PERSON_TYPES[selected])+"：共 "+filtered.length+" 人（名冊總數 "+people.length+" 人）";
+ $("people").innerHTML=filtered.length?'<table><thead><tr><th>姓名</th><th>身分／職稱</th><th>電話</th><th>狀態</th><th>操作</th></tr></thead><tbody>'+filtered.map(p=>'<tr><td>'+esc(p.full_name)+'</td><td>'+esc(PERSON_TYPES[p.person_type]||p.person_type)+'<br>'+esc(p.title)+'</td><td>'+esc(p.phone)+'</td><td>'+(p.is_active?'<span class="tag">啟用</span>':'<span class="tag">停用</span>')+'</td><td><div class="actions"><button class="btn secondary" data-edit-person="'+p.id+'">編輯</button><button class="btn" data-toggle-person="'+p.id+'">'+(p.is_active?'停用':'重新啟用')+'</button></div></td></tr>').join("")+'</tbody></table>':'目前此身分沒有名冊資料。';
+ $("people").querySelectorAll("[data-edit-person]").forEach(btn=>btn.addEventListener("click",()=>{const p=people.find(x=>x.id===Number(btn.dataset.editPerson));if(!p)return;originalPerson={...p};$("personId").value=p.id;$("fullName").value=p.full_name;$("personType").value=p.person_type;$("title").value=p.title||"";$("phone").value=p.phone||"";$("personNotes").value=p.notes||"";hideMsg("personMsg");window.scrollTo({top:0,behavior:"smooth"});}));
+ $("people").querySelectorAll("[data-toggle-person]").forEach(btn=>btn.addEventListener("click",async()=>{const p=people.find(x=>x.id===Number(btn.dataset.togglePerson));if(!p)return;if(!confirm("確定要"+(p.is_active?"停用":"重新啟用")+"「"+p.full_name+"」？"))return;const r=await db.from("event_people").update({is_active:!p.is_active,updated_at:new Date().toISOString()}).eq("id",p.id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadPeople();}));
+}
 async function loadPeople(){
- const r=await db.from("event_people").select("*").order("is_active",{ascending:false}).order("full_name");if(r.error)throw r.error;people=r.data||[];
- const types={director:"理事",supervisor:"監事",advisor:"顧問",representative:"社員代表",staff:"職員",spouse:"理監事及顧問配偶",guest:"貴賓"};
- $("people").innerHTML=people.length?'<table><thead><tr><th>姓名</th><th>身分／職稱</th><th>電話</th><th>狀態</th><th>操作</th></tr></thead><tbody>'+people.map(p=>'<tr><td>'+esc(p.full_name)+'</td><td>'+types[p.person_type]+'<br>'+esc(p.title)+'</td><td>'+esc(p.phone)+'</td><td>'+(p.is_active?'<span class="tag">啟用</span>':'<span class="tag">停用</span>')+'</td><td><div class="actions"><button class="btn secondary" data-edit-person="'+p.id+'">編輯</button><button class="btn" data-toggle-person="'+p.id+'">'+(p.is_active?'停用':'重新啟用')+'</button></div></td></tr>').join("")+'</tbody></table>':'尚無人物名冊資料。';
- $("people").querySelectorAll("[data-edit-person]").forEach(btn=>btn.addEventListener("click",()=>{const p=people.find(x=>x.id===Number(btn.dataset.editPerson));if(!p)return;$("personId").value=p.id;$("fullName").value=p.full_name;$("personType").value=p.person_type;$("title").value=p.title||"";$("phone").value=p.phone||"";$("personNotes").value=p.notes||"";window.scrollTo({top:0,behavior:"smooth"});}));
- $("people").querySelectorAll("[data-toggle-person]").forEach(btn=>btn.addEventListener("click",async()=>{const p=people.find(x=>x.id===Number(btn.dataset.togglePerson));if(!p)return;const r=await db.from("event_people").update({is_active:!p.is_active,updated_at:new Date().toISOString()}).eq("id",p.id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadPeople();}));
+ const r=await db.from("event_people").select("*").order("is_active",{ascending:false}).order("full_name");if(r.error)throw r.error;people=r.data||[];renderPeople();
 }
 $("batchForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("batchMsg");const activity_start=localISO("activityStart"),activity_end=localISO("activityEnd"),form_start=localISO("formStart"),form_end=localISO("formEnd");if(new Date(form_end)<=new Date(form_start)){showMsg("batchMsg","填寫截止時間必須晚於開放時間。",true);return;}if(activity_end&&new Date(activity_end)<new Date(activity_start)){showMsg("batchMsg","活動結束時間不可早於開始時間。",true);return;}
  const payload={batch_name:$("batchName").value.trim(),location:$("location").value.trim(),activity_start,activity_end,form_start,form_end,description:$("description").value.trim()||null,status:"draft"};
  const r=await db.from("event_batches").insert(payload).select().single();if(r.error){showMsg("batchMsg","建立失敗："+r.error.message,true);return;}e.target.reset();showMsg("batchMsg","活動已建立，預設為草稿。請在活動清單更新為「開放填寫」後，前台才會受理報名。");await loadBatches();});
-$("personForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("personMsg");const id=$("personId").value;const payload={full_name:$("fullName").value.trim(),person_type:$("personType").value,title:$("title").value.trim()||null,phone:$("phone").value.trim()||null,notes:$("personNotes").value.trim()||null,updated_at:new Date().toISOString()};let r;if(id)r=await db.from("event_people").update(payload).eq("id",Number(id));else r=await db.from("event_people").insert(payload);if(r.error){showMsg("personMsg","儲存失敗："+r.error.message,true);return;}e.target.reset();$("personId").value="";showMsg("personMsg","名冊已儲存。");await loadPeople();});
-$("cancelPerson").addEventListener("click",()=>{$("personForm").reset();$("personId").value="";hideMsg("personMsg");});
+function currentPersonPayload(){return {full_name:$("fullName").value.trim(),person_type:$("personType").value,title:$("title").value.trim()||null,phone:$("phone").value.trim()||null,notes:$("personNotes").value.trim()||null,updated_at:new Date().toISOString()};}
+function showPersonConfirm(payload){
+ const labels={full_name:"姓名",person_type:"身分別",title:"職稱",phone:"聯絡電話",notes:"備註"};
+ const changes=[];
+ for(const key of ["full_name","person_type","title","phone","notes"]){
+  const before=originalPerson?.[key]??null, after=payload[key]??null;
+  if(String(before||"")!==String(after||""))changes.push(labels[key]+"：\n  原本："+(before||"（空白）")+"\n  修改為："+(after||"（空白）"));
+ }
+ $("personConfirmChanges").textContent=changes.length?changes.join("\n\n"):"資料內容沒有變更。";
+ $("confirmPersonSave").disabled=!changes.length;
+ $("confirmPersonSave").style.opacity=changes.length?"1":".5";
+ $("personConfirmModal").classList.remove("hidden");$("personConfirmModal").style.display="flex";
+}
+function closePersonConfirm(){$("personConfirmModal").classList.add("hidden");$("personConfirmModal").style.display="none";}
+async function savePersonChanges(){
+ const id=$("personId").value,payload=currentPersonPayload();
+ $("confirmPersonSave").disabled=true;
+ let r;if(id)r=await db.from("event_people").update(payload).eq("id",Number(id));else r=await db.from("event_people").insert(payload);
+ $("confirmPersonSave").disabled=false;
+ if(r.error){closePersonConfirm();showMsg("personMsg","儲存失敗："+r.error.message,true);return;}
+ closePersonConfirm();$("personForm").reset();$("personId").value="";originalPerson=null;showMsg("personMsg",id?"名冊變更已儲存。":"名冊已新增。");await loadPeople();
+}
+$("personForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("personMsg");const id=$("personId").value;if(id){showPersonConfirm(currentPersonPayload());return;}await savePersonChanges();});
+$("confirmPersonSave").addEventListener("click",savePersonChanges);
+$("cancelPersonConfirm").addEventListener("click",closePersonConfirm);
+$("personConfirmModal").addEventListener("click",e=>{if(e.target===$("personConfirmModal"))closePersonConfirm();});
+$("peopleTypeFilter").addEventListener("change",renderPeople);
+$("cancelPerson").addEventListener("click",()=>{$("personForm").reset();$("personId").value="";originalPerson=null;hideMsg("personMsg");closePersonConfirm();});
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",async()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("secondary",x!==btn));["batches","people","registrations"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==btn.dataset.tab));if(btn.dataset.tab==="registrations")await loadRegistrations();}));
 async function reviewIdentity(registrationId,kind){
  const select=$("registrations").querySelector('[data-review-select="'+registrationId+'"]');
