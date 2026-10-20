@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活動報名｜淡水信用合作社</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7f2;color:#354335;font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;line-height:1.65}.top{background:#44633f;color:white;padding:22px 18px}.top>div,main{max-width:760px;margin:auto}h1{font-size:22px;margin:0}.sub{font-size:13px;opacity:.85}main{padding:24px 16px 48px}.card{background:white;border:1px solid #dfe7dc;border-radius:14px;padding:24px;margin-bottom:16px;box-shadow:0 4px 14px #26332c0a}h2{font-size:20px;color:#355334;margin:0 0 8px}.meta{color:#647463;font-size:14px;white-space:pre-line}.field{margin:16px 0}label{display:block;font-weight:600;margin-bottom:6px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd6c9;border-radius:8px;font:inherit;background:#fff}input[type=checkbox],input[type=radio]{width:auto;margin-right:8px}.choice{display:flex;gap:18px;flex-wrap:wrap}.choice label{font-weight:400;display:flex;align-items:center}.btn{width:100%;border:0;border-radius:9px;padding:13px 16px;background:#44633f;color:white;font:inherit;font-weight:700;cursor:pointer}.btn:disabled{opacity:.55;cursor:not-allowed}.msg{padding:12px;border-radius:8px;background:#edf5ef;margin-top:14px;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0ef;color:#9f2e25}.hidden{display:none!important}.note{font-size:13px;color:#738071}.result-code{font-size:19px;font-weight:700;letter-spacing:.05em;overflow-wrap:anywhere;background:#f3f7f1;padding:12px;border-radius:8px}.required{color:#a83226}@media(max-width:520px){main{padding:16px 10px 32px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header class="top"><div><div class="sub">淡水信用合作社</div><h1>社員及貴賓活動報名</h1></div></header>
+<main>
+<section class="card">
+<h2 id="batchTitle">正在載入活動資訊……</h2>
+<div id="batchMeta" class="meta"></div>
+<div id="pageMsg" class="msg hidden"></div>
+</section>
+<section id="formCard" class="card hidden">
+<p class="note">請依實際情況填寫。姓名符合名冊者將自動比對；無法確認的資料會交由總務課人工確認。</p>
+<form id="registrationForm">
+<div class="field"><label for="respondentName">參加者姓名 <span class="required">*</span></label><input id="respondentName" maxlength="100" required autocomplete="name" placeholder="請輸入姓名"></div>
+<div class="field"><label><input id="isSpouse" type="checkbox">我是公司代表、理事或監事的配偶</label><div id="spouseArea" class="hidden" style="margin-top:10px"><label for="spouseName">配偶姓名（名冊中的代表／理監事）</label><input id="spouseName" maxlength="100" placeholder="請輸入配偶姓名"></div></div>
+<div class="field"><label>是否出席活動 <span class="required">*</span></label><div class="choice"><label><input type="radio" name="attending" value="yes" required>出席</label><label><input type="radio" name="attending" value="no">不出席</label></div></div>
+<div id="mealArea" class="hidden">
+<div class="field"><label>是否需要餐食 <span class="required">*</span></label><div class="choice"><label><input type="radio" name="meal" value="yes">需要</label><label><input type="radio" name="meal" value="no">不需要</label></div></div>
+<div id="dietArea" class="field hidden"><label>餐食種類 <span class="required">*</span></label><div class="choice"><label><input type="radio" name="diet" value="meat">葷食</label><label><input type="radio" name="diet" value="vegetarian">素食</label></div></div>
+</div>
+<div class="field"><label for="notes">備註（選填）</label><textarea id="notes" maxlength="1000" rows="3" placeholder="如有其他需求，請填寫"></textarea></div>
+<div class="field"><label for="editCode">修改碼（修改既有報名時填寫）</label><input id="editCode" maxlength="100" autocomplete="off" placeholder="首次報名請留白"><div class="note">若你先前已取得修改碼，請在此輸入，即可更新原有紀錄。請勿將修改碼提供給他人。</div></div>
+<button id="submitBtn" class="btn" type="submit">送出報名</button>
+</form>
+<div id="result" class="msg hidden"></div>
+</section>
+<section class="card"><div class="note">本頁僅供本場活動報名。若姓名比對不符、配偶資料待確認，請聯絡總務課協助核對。送出後請保存系統提供的修改碼。</div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const URL="https://onebxqajsiqmhfcizaxl.supabase.co";
+const KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const db=window.supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+const token=new URLSearchParams(location.search).get("token");
+let batch=null;
+function message(id,text,error){const el=$(id);el.textContent=text;el.classList.remove("hidden","error");if(error)el.classList.add("error");}
+function toggleMeal(){
+ const v=document.querySelector('input[name="attending"]:checked');
+ const attending=v&&v.value==="yes";
+ $("mealArea").classList.toggle("hidden",!attending);
+ if(!attending){document.querySelectorAll('input[name="meal"],input[name="diet"]').forEach(x=>x.checked=false);$("dietArea").classList.add("hidden");}
+}
+function toggleDiet(){
+ const m=document.querySelector('input[name="meal"]:checked');
+ const needed=m&&m.value==="yes";
+ $("dietArea").classList.toggle("hidden",!needed);
+ if(!needed)document.querySelectorAll('input[name="diet"]').forEach(x=>x.checked=false);
+}
+document.querySelectorAll('input[name="attending"]').forEach(x=>x.addEventListener("change",toggleMeal));
+document.querySelectorAll('input[name="meal"]').forEach(x=>x.addEventListener("change",toggleDiet));
+$("isSpouse").addEventListener("change",()=>{$("spouseArea").classList.toggle("hidden",!$("isSpouse").checked);if(!$("isSpouse").checked)$("spouseName").value="";});
+async function init(){
+ if(!token){$("batchTitle").textContent="無效的活動連結";message("pageMsg","網址缺少活動識別碼，請掃描正確的活動 QR Code。",true);return;}
+ try{
+  const {data,error}=await db.rpc("event_public_batch_info",{p_public_token:token});if(error)throw error;
+  if(!data||!data.available){$("batchTitle").textContent="無法載入活動";message("pageMsg",data&&data.message?data.message:"找不到此活動。",true);return;}
+  batch=data;$("batchTitle").textContent=data.batch_name;
+  $("batchMeta").textContent="活動時間："+new Date(data.activity_start).toLocaleString("zh-TW",{hour12:false})+(data.activity_end?" 至 "+new Date(data.activity_end).toLocaleString("zh-TW",{hour12:false}):"")+"\n活動地點："+data.location+(data.description?"\n活動說明："+data.description:"")+"\n填寫期間："+new Date(data.form_start).toLocaleString("zh-TW",{hour12:false})+" 至 "+new Date(data.form_end).toLocaleString("zh-TW",{hour12:false});
+  if(data.form_open){$("formCard").classList.remove("hidden");const saved=localStorage.getItem("event-edit-"+token);if(saved)$("editCode").value=saved;message("pageMsg","目前開放填寫。");}
+  else message("pageMsg",data.message||"目前未開放填寫。",true);
+ }catch(e){$("batchTitle").textContent="活動資訊載入失敗";message("pageMsg","無法載入活動資訊："+(e.message||String(e)),true);}
+}
+$("registrationForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!batch||!batch.form_open)return;
+ const name=$("respondentName").value.trim();
+ const attendance=document.querySelector('input[name="attending"]:checked');
+ const meal=document.querySelector('input[name="meal"]:checked');
+ const diet=document.querySelector('input[name="diet"]:checked');
+ if(!name){message("result","請填寫參加者姓名。",true);return;}
+ if(!attendance){message("result","請選擇是否出席。",true);return;}
+ if(attendance.value==="yes"&&!meal){message("result","請選擇是否需要餐食。",true);return;}
+ if(attendance.value==="yes"&&meal.value==="yes"&&!diet){message("result","請選擇葷食或素食。",true);return;}
+ if($("isSpouse").checked&&!$("spouseName").value.trim()){message("result","請填寫配偶姓名。",true);return;}
+ const payload={
+  p_public_token:token,
+  p_respondent_name:name,
+  p_attending:attendance.value==="yes",
+  p_meal_required:attendance.value==="yes"&&meal.value==="yes"?true:attendance.value==="yes"?false:null,
+  p_diet_type:attendance.value==="yes"&&meal.value==="yes"?diet.value:null,
+  p_notes:$("notes").value.trim()||null,
+  p_spouse_of_name:$("isSpouse").checked?$("spouseName").value.trim():null,
+  p_edit_code:$("editCode").value.trim()||null
+ };
+ $("submitBtn").disabled=true;$("submitBtn").textContent="送出中……";
+ try{
+  const {data,error}=await db.rpc("event_submit_registration",payload);if(error)throw error;
+  if(!data||!data.success)throw new Error("系統未確認報名結果，請稍後再試。");
+  if(data.edit_code){$("editCode").value=data.edit_code;localStorage.setItem("event-edit-"+token,data.edit_code);message("result","報名成功！請立即保存以下修改碼；關閉此頁或更換裝置後，可能需要重新輸入。");const code=document.createElement("div");code.className="result-code";code.textContent=data.edit_code;$("result").appendChild(code);const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.style.marginTop="10px";copy.textContent="複製修改碼";copy.onclick=async()=>{try{await navigator.clipboard.writeText(data.edit_code);alert("修改碼已複製。");}catch(e){alert("請手動選取並保存修改碼。");}};$("result").appendChild(copy);}
+  else message("result",data.message||"報名資料已更新。");
+  if(data.identity_status==="pending_review"){$("result").textContent+="\n你的姓名或配偶資料需要總務課進一步確認。";}
+  $("result").classList.remove("hidden");$("result").classList.remove("error");
+ }catch(err){message("result","送出失敗："+(err.message||String(err)),true);}
+ finally{$("submitBtn").disabled=false;$("submitBtn").textContent="送出報名";}
+});
+init();
+})();
+</script>
+</body>
+</html>
