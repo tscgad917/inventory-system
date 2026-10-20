@@ -67,6 +67,17 @@ function hideMsg(id){$(id).classList.add("hidden");}
 function dateLocal(v){if(!v)return "";const d=new Date(v);return Number.isNaN(d.getTime())?"":d.toLocaleString("zh-TW",{hour12:false});}
 function localISO(id){const v=$(id).value;return v?new Date(v).toISOString():null;}
 async function init(){
+ // 導覽限制：首次進入需由統一管理中心點選；同一分頁重新整理可繼續使用。
+ // 這是前端導覽限制，不取代 Supabase 的身分驗證與 RLS 權限。
+ const nav=performance.getEntriesByType("navigation")[0];
+ const isReload=nav&&nav.type==="reload";
+ const fromCenter=sessionStorage.getItem("eventAdminEntryTicket")==="from-center";
+ sessionStorage.removeItem("eventAdminEntryTicket");
+ if(!fromCenter&&!(isReload&&sessionStorage.getItem("eventAdminTabAuthorized")==="yes")){
+  document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再由管理中心選擇對應的管理功能。</p></main>';
+  return;
+ }
+ sessionStorage.setItem("eventAdminTabAuthorized","yes");
  try{
   let r=await db.auth.getSession();if(r.error)throw r.error;let session=r.data.session;
   if(!session){const access=localStorage.getItem("admin_access_token"),refresh=localStorage.getItem("admin_refresh_token"),email=(localStorage.getItem("admin_email")||"").toLowerCase();if(!access||!refresh||email!==ALLOWED)throw new Error("找不到有效登入狀態，請從統一管理中心重新登入。");r=await db.auth.setSession({access_token:access,refresh_token:refresh});if(r.error)throw r.error;session=r.data.session;}
