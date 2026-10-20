@@ -37,7 +37,7 @@
 <input id="personId" type="hidden">
 <div class="grid">
 <div class="field"><label for="fullName">姓名</label><input id="fullName" required maxlength="100"></div>
-<div class="field"><label for="personType">身分別</label><select id="personType" required><option value="representative">公司代表</option><option value="director">理事</option><option value="supervisor">監事</option><option value="guest">貴賓</option></select></div>
+<div class="field"><label for="personType">身分別</label><select id="personType" required><option value="director">理事</option><option value="supervisor">監事</option><option value="advisor">顧問</option><option value="representative">社員代表</option><option value="staff">職員</option><option value="spouse">理監事及顧問配偶</option><option value="guest">貴賓</option></select></div>
 <div class="field"><label for="title">職稱</label><input id="title" maxlength="100" placeholder="例如：理事長"></div>
 <div class="field"><label for="phone">聯絡電話</label><input id="phone" maxlength="50"></div>
 </div><div class="field"><label for="personNotes">備註</label><input id="personNotes" maxlength="500"></div>
@@ -103,7 +103,7 @@ function showQr(id){
 }
 async function loadPeople(){
  const r=await db.from("event_people").select("*").order("is_active",{ascending:false}).order("full_name");if(r.error)throw r.error;people=r.data||[];
- const types={representative:"公司代表",director:"理事",supervisor:"監事",guest:"貴賓"};
+ const types={director:"理事",supervisor:"監事",advisor:"顧問",representative:"社員代表",staff:"職員",spouse:"理監事及顧問配偶",guest:"貴賓"};
  $("people").innerHTML=people.length?'<table><thead><tr><th>姓名</th><th>身分／職稱</th><th>電話</th><th>狀態</th><th>操作</th></tr></thead><tbody>'+people.map(p=>'<tr><td>'+esc(p.full_name)+'</td><td>'+types[p.person_type]+'<br>'+esc(p.title)+'</td><td>'+esc(p.phone)+'</td><td>'+(p.is_active?'<span class="tag">啟用</span>':'<span class="tag">停用</span>')+'</td><td><div class="actions"><button class="btn secondary" data-edit-person="'+p.id+'">編輯</button><button class="btn" data-toggle-person="'+p.id+'">'+(p.is_active?'停用':'重新啟用')+'</button></div></td></tr>').join("")+'</tbody></table>':'尚無人物名冊資料。';
  $("people").querySelectorAll("[data-edit-person]").forEach(btn=>btn.addEventListener("click",()=>{const p=people.find(x=>x.id===Number(btn.dataset.editPerson));if(!p)return;$("personId").value=p.id;$("fullName").value=p.full_name;$("personType").value=p.person_type;$("title").value=p.title||"";$("phone").value=p.phone||"";$("personNotes").value=p.notes||"";window.scrollTo({top:0,behavior:"smooth"});}));
  $("people").querySelectorAll("[data-toggle-person]").forEach(btn=>btn.addEventListener("click",async()=>{const p=people.find(x=>x.id===Number(btn.dataset.togglePerson));if(!p)return;const r=await db.from("event_people").update({is_active:!p.is_active,updated_at:new Date().toISOString()}).eq("id",p.id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadPeople();}));
@@ -120,7 +120,7 @@ async function reviewIdentity(registrationId,kind){
  if(!personId){alert("請先選擇名冊人物。");return;}
  const p=people.find(x=>x.id===personId);
  if(!p||!p.is_active){alert("請選擇啟用中的名冊人物。");return;}
- if(kind==="spouse"&&!["representative","director","supervisor"].includes(p.person_type)){alert("配偶關係人只能選擇公司代表、理事或監事。");return;}
+ if(kind==="spouse"&&!["director","supervisor","advisor"].includes(p.person_type)){alert("配偶關係人只能選擇理事、監事或顧問。");return;}
  const current=registrations.find(x=>x.id===registrationId);if(!current)return;
  let payload;
  if(kind==="person"){
