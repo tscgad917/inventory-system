@@ -73,7 +73,7 @@ async function init(){
   $("spouseField").classList.toggle("hidden",!allowedTypes.includes("spouse"));
   $("identityHint").textContent="本場活動開放身分："+allowedTypes.map(t=>identityLabels[t]||t).join("、");
   $("batchMeta").textContent="活動時間："+new Date(data.activity_start).toLocaleString("zh-TW",{hour12:false})+(data.activity_end?" 至 "+new Date(data.activity_end).toLocaleString("zh-TW",{hour12:false}):"")+"\n活動地點："+data.location+(data.description?"\n活動說明："+data.description:"")+"\n填寫期間："+new Date(data.form_start).toLocaleString("zh-TW",{hour12:false})+" 至 "+new Date(data.form_end).toLocaleString("zh-TW",{hour12:false});
-  if(data.form_open){$("formCard").classList.remove("hidden");const saved=localStorage.getItem("event-edit-"+token);if(saved)$("editCode").value=saved;message("pageMsg","目前開放填寫。");}
+  if(data.form_open){$("formCard").classList.remove("hidden");message("pageMsg","目前開放填寫。");}
   else message("pageMsg",data.message||"目前未開放填寫。",true);
  }catch(e){$("batchTitle").textContent="活動資訊載入失敗";message("pageMsg","無法載入活動資訊："+(e.message||String(e)),true);}
 }
@@ -106,7 +106,7 @@ $("registrationForm").addEventListener("submit",async e=>{
  try{
   const {data,error}=await db.rpc("event_submit_registration",payload);if(error)throw error;
   if(!data||!data.success)throw new Error("系統未確認報名結果，請稍後再試。");
-  if(data.edit_code){$("editCode").value=data.edit_code;localStorage.setItem("event-edit-"+token,data.edit_code);message("result","報名成功！請立即保存以下修改碼；關閉此頁或更換裝置後，可能需要重新輸入。");const code=document.createElement("div");code.className="result-code";code.textContent=data.edit_code;$("result").appendChild(code);const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.style.marginTop="10px";copy.textContent="複製修改碼";copy.onclick=async()=>{try{await navigator.clipboard.writeText(data.edit_code);alert("修改碼已複製。");}catch(e){alert("請手動選取並保存修改碼。");}};$("result").appendChild(copy);}
+  if(data.edit_code){message("result","報名成功！請立即保存以下修改碼。若要日後修改，請自行保存修改碼並於修改時手動輸入。");const code=document.createElement("div");code.className="result-code";code.textContent=data.edit_code;$("result").appendChild(code);const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.style.marginTop="10px";copy.textContent="複製修改碼";copy.onclick=async()=>{try{await navigator.clipboard.writeText(data.edit_code);alert("修改碼已複製。");}catch(e){alert("請手動選取並保存修改碼。");}};$("result").appendChild(copy);}
   else message("result",data.message||"報名資料已更新。");
   if(data.identity_status==="pending_review"){$("result").textContent+="\n你的姓名或配偶資料需要總務課進一步確認。";}
   $("result").classList.remove("hidden");$("result").classList.remove("error");
