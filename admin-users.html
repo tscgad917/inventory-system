@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理人員權限管理｜總務課管理中心</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7f2;color:#3f4b3b;font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;line-height:1.6}
+header{background:#44633f;color:#fff;padding:22px 18px}header .inner,main{max-width:920px;margin:auto}h1{font-size:22px;margin:0}main{padding:24px 16px 48px}.panel{background:#fff;border:1px solid #dfe7dc;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px #1f37200a}
+h2{font-size:18px;color:#44633f;margin:0 0 12px}.muted{color:#6c7a67;font-size:14px}.controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:220px}label{font-size:14px;font-weight:600}input{font:inherit;border:1px solid #cfd9d2;border-radius:8px;padding:11px 12px;min-width:0}button,a.btn{font:inherit;font-size:14px;border:0;border-radius:8px;padding:11px 15px;background:#44633f;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}button.secondary,a.secondary{background:#edf3ed;color:#365333;border:1px solid #d5e2d5}button.danger{background:#9b3434}button:disabled{opacity:.55;cursor:not-allowed}.message{margin-top:12px;font-size:14px;white-space:pre-wrap}.error{color:#b91c1c}.success{color:#166534}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:550px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid #e5ebe4;font-size:14px}th{background:#f5f8f4;color:#4a5e4a}.pill{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;background:#eaf3ec;color:#44633f}.pill.off{background:#fcecec;color:#9b3434}.actions{display:flex;gap:7px;flex-wrap:wrap}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>總務課管理中心｜管理人員權限管理</h1><div class="muted" style="color:#e2ece1">只有最高管理員可以新增或停用管理人員</div></div></header>
+<main>
+<section class="panel">
+<div class="top"><div><h2>新增管理人員</h2><div class="muted">新增後，該同仁須使用自己的信箱建立 Supabase 帳號或登入。此處不會設定或查看對方密碼。</div></div><a class="btn secondary" href="admin-center.html">返回統一管理中心</a></div>
+<form id="addForm" style="margin-top:16px"><div class="controls"><div class="field"><label for="email">管理人員 Email</label><input id="email" type="email" required maxlength="254" placeholder="name@example.com"></div><button id="addBtn" type="submit">新增授權</button></div></form>
+<div id="formMessage" class="message"></div>
+</section>
+<section class="panel">
+<div class="top"><div><h2>管理人員名單</h2><div class="muted">停用後，該帳號即無法通過管理中心及各系統的授權檢查。</div></div><button id="reload" class="secondary" type="button">重新載入</button></div>
+<div id="listMessage" class="message">正在驗證最高管理員身分……</div>
+<div class="table-wrap"><table><thead><tr><th>Email</th><th>角色</th><th>狀態</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="rows"><tr><td colspan="5">讀取中……</td></tr></tbody></table></div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const URL="https://onebxqajsiqmhfcizaxl.supabase.co";
+const KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const OWNER="tscgad917@gmail.com";
+const db=window.supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+let rows=[];
+function msg(id,text,type){const el=$(id);el.textContent=text;el.className="message"+(type?" "+type:"");}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function init(){
+ const s=await db.auth.getSession();if(s.error)throw s.error;
+ if(!s.data.session){location.replace("https://tscgad917.github.io/login/");return;}
+ const u=await db.auth.getUser();if(u.error)throw u.error;
+ const email=(u.data.user.email||"").toLowerCase();
+ if(email!==OWNER){msg("listMessage","只有最高管理員可以管理其他帳號。","error");document.getElementById("addForm").remove();return;}
+ const a=await db.from("admin_authorizations").select("email,role,is_active").eq("email",OWNER).eq("is_active",true).maybeSingle();
+ if(a.error||!a.data||a.data.role!=="owner"){msg("listMessage","無法確認最高管理員授權，請先確認 Supabase 授權資料表已建立。","error");return;}
+ await load();
+}
+async function load(){
+ msg("listMessage","正在載入管理人員名單……");
+ const r=await db.from("admin_authorizations").select("email,role,is_active,created_at").order("created_at",{ascending:true});
+ if(r.error){msg("listMessage","讀取失敗："+r.error.message,"error");return;}
+ rows=r.data||[];render();msg("listMessage","共 "+rows.length+" 個管理帳號。","success");
+}
+function render(){
+ $("rows").innerHTML=rows.map(r=>'<tr><td>'+esc(r.email)+'</td><td>'+(r.role==="owner"?"最高管理員":"一般管理員")+'</td><td><span class="pill '+(r.is_active?"":"off")+'">'+(r.is_active?"啟用中":"已停用")+'</span></td><td>'+esc(r.created_at?new Date(r.created_at).toLocaleDateString("zh-TW"):"—")+'</td><td>'+(r.role==="owner"?"—":'<div class="actions"><button class="'+(r.is_active?"danger":"secondary")+'" data-email="'+esc(r.email)+'" data-active="'+(!r.is_active)+'">'+(r.is_active?"停用":"重新啟用")+'</button></div>')+'</td></tr>').join("")||'<tr><td colspan="5">目前沒有管理人員。</td></tr>';
+ $("rows").querySelectorAll("button[data-email]").forEach(b=>b.addEventListener("click",()=>toggle(b.dataset.email,b.dataset.active==="true")));
+}
+$("addForm").addEventListener("submit",async e=>{
+ e.preventDefault();const email=$("email").value.trim().toLowerCase();
+ if(!email){msg("formMessage","請輸入有效的 Email。","error");return;}
+ if(email===OWNER){msg("formMessage","此信箱已是最高管理員。","error");return;}
+ $("addBtn").disabled=true;
+ const r=await db.from("admin_authorizations").upsert({email,role:"admin",is_active:true,created_by:OWNER,updated_at:new Date().toISOString()},{onConflict:"email"});
+ $("addBtn").disabled=false;
+ if(r.error){msg("formMessage","新增失敗："+r.error.message,"error");return;}
+ $("email").value="";msg("formMessage","已新增 "+email+" 的管理權限。請通知同仁使用自己的 Email 建立帳號或登入；如 Supabase 要求信箱確認，請先完成確認。","success");await load();
+});
+async function toggle(email,active){
+ if(email===OWNER){alert("不可停用最高管理員。");return;}
+ if(!confirm((active?"重新啟用":"停用")+" "+email+" 的管理權限？"))return;
+ const r=await db.from("admin_authorizations").update({is_active:active,updated_at:new Date().toISOString()}).eq("email",email).neq("role","owner");
+ if(r.error){msg("listMessage","更新失敗："+r.error.message,"error");return;}
+ await load();
+}
+$("reload").addEventListener("click",load);
+init().catch(e=>{console.error(e);msg("listMessage","驗證或載入失敗："+e.message+"。請先在 Supabase 執行 admin-authorizations.sql。","error");});
+})();
+</script>
+</body>
+</html>
