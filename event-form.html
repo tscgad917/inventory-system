@@ -18,8 +18,9 @@
 <section id="formCard" class="card hidden">
 <p class="note">請依實際情況填寫。姓名符合名冊者將自動比對；無法確認的資料會交由總務課人工確認。</p>
 <form id="registrationForm">
+<div class="field"><label for="respondentType">參與身分 <span class="required">*</span></label><select id="respondentType" required><option value="">請先載入活動開放身分</option></select><div class="note" id="identityHint">請依本場活動開放的身分選擇。</div></div>
 <div class="field"><label for="respondentName">參加者姓名 <span class="required">*</span></label><input id="respondentName" maxlength="100" required autocomplete="name" placeholder="請輸入姓名"></div>
-<div class="field"><label><input id="isSpouse" type="checkbox">我是理事、監事或顧問的配偶</label><div id="spouseArea" class="hidden" style="margin-top:10px"><label for="spouseName">配偶姓名（名冊中的理事／監事／顧問）</label><input id="spouseName" maxlength="100" placeholder="請輸入配偶姓名"></div></div>
+<div class="field" id="spouseField"><label><input id="isSpouse" type="checkbox">我是理事、監事或顧問的配偶</label><div id="spouseArea" class="hidden" style="margin-top:10px"><label for="spouseName">配偶姓名（名冊中的理事／監事／顧問）</label><input id="spouseName" maxlength="100" placeholder="請輸入配偶姓名"></div></div>
 <div class="field"><label>是否出席活動 <span class="required">*</span></label><div class="choice"><label><input type="radio" name="attending" value="yes" required>出席</label><label><input type="radio" name="attending" value="no">不出席</label></div></div>
 <div id="mealArea" class="hidden">
 <div class="field"><label>是否需要餐食 <span class="required">*</span></label><div class="choice"><label><input type="radio" name="meal" value="yes">需要</label><label><input type="radio" name="meal" value="no">不需要</label></div></div>
@@ -58,13 +59,19 @@ function toggleDiet(){
 }
 document.querySelectorAll('input[name="attending"]').forEach(x=>x.addEventListener("change",toggleMeal));
 document.querySelectorAll('input[name="meal"]').forEach(x=>x.addEventListener("change",toggleDiet));
-$("isSpouse").addEventListener("change",()=>{$("spouseArea").classList.toggle("hidden",!$("isSpouse").checked);if(!$("isSpouse").checked)$("spouseName").value="";});
+$("isSpouse").addEventListener("change",()=>{$("spouseArea").classList.toggle("hidden",!$("isSpouse").checked);if(!$("isSpouse").checked){$("spouseName").value="";if($("respondentType").value==="spouse")$("respondentType").value="";}else if(Array.from($("respondentType").options).some(o=>o.value==="spouse"))$("respondentType").value="spouse";});
+$("respondentType").addEventListener("change",()=>{const spouse=$("respondentType").value==="spouse";$("isSpouse").checked=spouse;$("spouseArea").classList.toggle("hidden",!spouse);if(!spouse)$("spouseName").value="";});
 async function init(){
  if(!token){$("batchTitle").textContent="無效的活動連結";message("pageMsg","網址缺少活動識別碼，請掃描正確的活動 QR Code。",true);return;}
  try{
   const {data,error}=await db.rpc("event_public_batch_info",{p_public_token:token});if(error)throw error;
   if(!data||!data.available){$("batchTitle").textContent="無法載入活動";message("pageMsg",data&&data.message?data.message:"找不到此活動。",true);return;}
   batch=data;$("batchTitle").textContent=data.batch_name;
+  const identityLabels={director:"理事",supervisor:"監事",advisor:"顧問",representative:"社員代表",staff:"職員",spouse:"理監事及顧問配偶",guest:"貴賓"};
+  const allowedTypes=Array.isArray(data.allowed_person_types)?data.allowed_person_types:["director","supervisor","advisor","representative","staff","spouse","guest"];
+  $("respondentType").innerHTML='<option value="">請選擇身分</option>'+allowedTypes.map(t=>'<option value="'+t+'">'+(identityLabels[t]||t)+'</option>').join("");
+  $("spouseField").classList.toggle("hidden",!allowedTypes.includes("spouse"));
+  $("identityHint").textContent="本場活動開放身分："+allowedTypes.map(t=>identityLabels[t]||t).join("、");
   $("batchMeta").textContent="活動時間："+new Date(data.activity_start).toLocaleString("zh-TW",{hour12:false})+(data.activity_end?" 至 "+new Date(data.activity_end).toLocaleString("zh-TW",{hour12:false}):"")+"\n活動地點："+data.location+(data.description?"\n活動說明："+data.description:"")+"\n填寫期間："+new Date(data.form_start).toLocaleString("zh-TW",{hour12:false})+" 至 "+new Date(data.form_end).toLocaleString("zh-TW",{hour12:false});
   if(data.form_open){$("formCard").classList.remove("hidden");const saved=localStorage.getItem("event-edit-"+token);if(saved)$("editCode").value=saved;message("pageMsg","目前開放填寫。");}
   else message("pageMsg",data.message||"目前未開放填寫。",true);
@@ -81,9 +88,13 @@ $("registrationForm").addEventListener("submit",async e=>{
  if(attendance.value==="yes"&&!meal){message("result","請選擇是否需要餐食。",true);return;}
  if(attendance.value==="yes"&&meal.value==="yes"&&!diet){message("result","請選擇葷食或素食。",true);return;}
  if($("isSpouse").checked&&!$("spouseName").value.trim()){message("result","請填寫配偶姓名。",true);return;}
+ const selectedType=$("isSpouse").checked?"spouse":$("respondentType").value;
+ if(!selectedType){message("result","請選擇本場活動開放的參與身分。",true);return;}
+ if(!Array.isArray(batch.allowed_person_types)||!batch.allowed_person_types.includes(selectedType)){message("result","此身分不在本場活動允許參與的範圍內。",true);return;}
  const payload={
   p_public_token:token,
   p_respondent_name:name,
+  p_respondent_person_type:selectedType,
   p_attending:attendance.value==="yes",
   p_meal_required:attendance.value==="yes"&&meal.value==="yes"?true:attendance.value==="yes"?false:null,
   p_diet_type:attendance.value==="yes"&&meal.value==="yes"?diet.value:null,
