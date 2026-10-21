@@ -408,9 +408,11 @@ async function checkAdminSession(){
     return;
   }
   const user=await adminDb.auth.getUser();
-  if(user.error||(user.data.user.email||"").toLowerCase()!=="tscgad917@gmail.com"){
-    window.location.replace("https://tscgad917.github.io/login/");
-  }
+  if(user.error){window.location.replace("https://tscgad917.github.io/login/");return;}
+  const email=(user.data.user.email||"").toLowerCase();
+  const auth=await adminDb.from("admin_authorizations").select("email,role,is_active").eq("email",email).eq("is_active",true).maybeSingle();
+  if(auth.error||!auth.data){window.location.replace("https://tscgad917.github.io/login/");return;}
+  localStorage.setItem("admin_email",email);localStorage.setItem("admin_role",auth.data.role);
 }
 checkAdminSession();
 
