@@ -26,6 +26,15 @@
 <div class="field"><label for="formStart">開放填寫時間</label><input id="formStart" type="datetime-local" required></div>
 <div class="field"><label for="formEnd">填寫截止時間</label><input id="formEnd" type="datetime-local" required></div>
 </div>
+<div class="field"><label>本場活動開放參與身分（可複選）</label><div class="grid" id="batchIdentityOptions" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="director" checked style="width:auto"> 理事</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="supervisor" checked style="width:auto"> 監事</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="advisor" checked style="width:auto"> 顧問</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="representative" checked style="width:auto"> 社員代表</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="staff" checked style="width:auto"> 職員</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="spouse" checked style="width:auto"> 理監事及顧問配偶</label>
+<label style="font-weight:400"><input type="checkbox" name="batchIdentity" value="guest" checked style="width:auto"> 貴賓</label>
+</div><p class="muted">僅勾選本場活動允許參與的身分；未勾選的身分不應列入本場報名對象。</p></div>
 <div class="field"><label for="description">活動說明（選填）</label><textarea id="description" maxlength="1000"></textarea></div>
 <button class="btn" type="submit">建立活動</button>
 </form><div id="batchMsg" class="msg hidden"></div>
@@ -95,7 +104,7 @@ async function init(){
 }
 async function loadBatches(){
  const r=await db.from("event_batches").select("*").order("activity_start",{ascending:false});if(r.error)throw r.error;batches=r.data||[];
- $("batches").innerHTML=batches.length?'<table><thead><tr><th>活動</th><th>活動時間／地點</th><th>填寫期間</th><th>狀態</th><th>前台連結／操作</th></tr></thead><tbody>'+batches.map(b=>'<tr><td><strong>'+esc(b.batch_name)+'</strong><br><small>ID '+b.id+'</small></td><td>'+esc(dateLocal(b.activity_start))+'<br>'+esc(b.location)+'</td><td>'+esc(dateLocal(b.form_start))+'<br>至 '+esc(dateLocal(b.form_end))+'</td><td><select data-status="'+b.id+'">'+[['draft','草稿'],['scheduled','尚未開放'],['open','開放填寫'],['closed','停止填寫'],['completed','已完成']].map(x=>'<option value="'+x[0]+'" '+(b.status===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></td><td><div class="actions"><button class="btn" data-save-status="'+b.id+'">更新狀態</button><button class="btn secondary" data-show-qr="'+b.id+'">報名連結／QR</button></div><div id="qr-'+b.id+'"></div></td></tr>').join("")+'</tbody></table>':'目前尚無活動。';
+ $("batches").innerHTML=batches.length?'<table><thead><tr><th>活動</th><th>活動時間／地點</th><th>填寫期間</th><th>狀態</th><th>前台連結／操作</th></tr></thead><tbody>'+batches.map(b=>'<tr><td><strong>'+esc(b.batch_name)+'</strong><br><small>ID '+b.id+'</small><br><small>參與身分：'+esc((b.allowed_person_types||["director","supervisor","advisor","representative","staff","spouse","guest"]).map(t=>PERSON_TYPES[t]||t).join("、"))+'</small></td><td>'+esc(dateLocal(b.activity_start))+'<br>'+esc(b.location)+'</td><td>'+esc(dateLocal(b.form_start))+'<br>至 '+esc(dateLocal(b.form_end))+'</td><td><select data-status="'+b.id+'">'+[['draft','草稿'],['scheduled','尚未開放'],['open','開放填寫'],['closed','停止填寫'],['completed','已完成']].map(x=>'<option value="'+x[0]+'" '+(b.status===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></td><td><div class="actions"><button class="btn" data-save-status="'+b.id+'">更新狀態</button><button class="btn secondary" data-show-qr="'+b.id+'">報名連結／QR</button></div><div id="qr-'+b.id+'"></div></td></tr>').join("")+'</tbody></table>':'目前尚無活動。';
  $("registrationBatch").innerHTML='<option value="">請選擇活動</option>'+batches.map(b=>'<option value="'+b.id+'">'+esc(b.batch_name)+'（'+esc(b.status)+'）</option>').join("");
  $("batches").querySelectorAll("[data-save-status]").forEach(btn=>btn.addEventListener("click",async()=>{const id=Number(btn.dataset.saveStatus),status=$("batches").querySelector('[data-status="'+id+'"]').value;const r=await db.from("event_batches").update({status,updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert("更新失敗："+r.error.message);return;}await loadBatches();alert("活動狀態已更新。");}));
  $("batches").querySelectorAll("[data-show-qr]").forEach(btn=>btn.addEventListener("click",()=>showQr(Number(btn.dataset.showQr))));
@@ -121,7 +130,7 @@ async function loadPeople(){
  const r=await db.from("event_people").select("*").order("is_active",{ascending:false}).order("full_name");if(r.error)throw r.error;people=r.data||[];renderPeople();
 }
 $("batchForm").addEventListener("submit",async e=>{e.preventDefault();hideMsg("batchMsg");const activity_start=localISO("activityStart"),activity_end=localISO("activityEnd"),form_start=localISO("formStart"),form_end=localISO("formEnd");if(new Date(form_end)<=new Date(form_start)){showMsg("batchMsg","填寫截止時間必須晚於開放時間。",true);return;}if(activity_end&&new Date(activity_end)<new Date(activity_start)){showMsg("batchMsg","活動結束時間不可早於開始時間。",true);return;}
- const payload={batch_name:$("batchName").value.trim(),location:$("location").value.trim(),activity_start,activity_end,form_start,form_end,description:$("description").value.trim()||null,status:"draft"};
+ const allowed_person_types=Array.from(document.querySelectorAll('input[name="batchIdentity"]:checked')).map(x=>x.value);if(!allowed_person_types.length){showMsg("batchMsg","請至少勾選一種本場活動允許參與的身分。",true);return;}const payload={batch_name:$("batchName").value.trim(),location:$("location").value.trim(),activity_start,activity_end,form_start,form_end,description:$("description").value.trim()||null,allowed_person_types,status:"draft"};
  const r=await db.from("event_batches").insert(payload).select().single();if(r.error){showMsg("batchMsg","建立失敗："+r.error.message,true);return;}e.target.reset();showMsg("batchMsg","活動已建立，預設為草稿。請在活動清單更新為「開放填寫」後，前台才會受理報名。");await loadBatches();});
 function currentPersonPayload(){return {full_name:$("fullName").value.trim(),person_type:$("personType").value,title:$("title").value.trim()||null,phone:$("phone").value.trim()||null,notes:$("personNotes").value.trim()||null,updated_at:new Date().toISOString()};}
 function showPersonConfirm(payload){
