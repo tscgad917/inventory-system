@@ -110,7 +110,16 @@ $("registrationForm").addEventListener("submit",async e=>{
   else message("result",data.message||"報名資料已更新。");
   if(data.identity_status==="pending_review"){$("result").textContent+="\n你的姓名或配偶資料需要總務課進一步確認。";}
   $("result").classList.remove("hidden");$("result").classList.remove("error");
- }catch(err){message("result","送出失敗："+(err.message||String(err)),true);}
+ }catch(err){
+  const errText=err&&err.message?err.message:String(err);
+  if(errText.includes("IDENTITY_NOT_ELIGIBLE")){
+   const warning="姓名有誤或非本場次活動資格，請確認填寫的姓名及身分別，或洽總務課協助確認。";
+   alert(warning);
+   message("result",warning,true);
+  }else{
+   message("result","送出失敗："+errText,true);
+  }
+ }
  finally{$("submitBtn").disabled=false;$("submitBtn").textContent="送出報名";}
 });
 init();
