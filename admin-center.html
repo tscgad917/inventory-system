@@ -180,6 +180,10 @@ button:active{transform:translateY(1px)}
 
       const user=await db.auth.getUser();
       if(user.error) throw user.error;
+      if(user.data.user.user_metadata&&user.data.user.user_metadata.must_change_password===true){
+        window.location.replace("https://tscgad917.github.io/inventory-system/force-change-password.html");
+        return;
+      }
       const email=(user.data.user.email||"").toLowerCase();
       const authorization=await db.from("admin_authorizations").select("email,role,is_active").eq("email",email).eq("is_active",true).maybeSingle();
       if(authorization.error) throw authorization.error;
