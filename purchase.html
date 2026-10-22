@@ -437,6 +437,13 @@ document.documentElement.style.visibility = "hidden";
     const token=localStorage.getItem("admin_access_token")||"";
     const email=(localStorage.getItem("admin_email")||"").trim().toLowerCase();
     if(!token||!email) throw new Error("沒有有效的統一登入狀態。");
+    const userResponse=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token},cache:"no-store"});
+    if(!userResponse.ok) throw new Error("登入狀態已失效，請重新登入。");
+    const authUser=await userResponse.json();
+    if(authUser.user_metadata&&authUser.user_metadata.must_change_password===true){
+      window.location.replace("force-change-password.html");
+      return;
+    }
     const endpoint=SUPABASE_URL+"/rest/v1/admin_authorizations?email=eq."+encodeURIComponent(email)+"&is_active=eq.true&select=email";
     const response=await fetch(endpoint,{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token},cache:"no-store"});
     if(!response.ok) throw new Error("無法確認管理員授權。");
