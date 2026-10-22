@@ -50,8 +50,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const password = typeof body.password === "string" ? body.password : "";
-    if (password.length < 12) {
-      return new Response(JSON.stringify({ error: "新密碼至少需要 12 個字元。" }), { status: 400, headers });
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: "新密碼至少需要 8 個字元。" }), { status: 400, headers });
     }
     if (password === "00000000") {
       return new Response(JSON.stringify({ error: "請勿繼續使用初始密碼。" }), { status: 400, headers });
