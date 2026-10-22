@@ -409,7 +409,7 @@ async function checkAdminSession(){
   }
   const user=await adminDb.auth.getUser();
   if(user.error){window.location.replace("https://tscgad917.github.io/login/");return;}
-  if(user.data.user.user_metadata&&user.data.user.user_metadata.must_change_password===true){
+  if(user.data.user.app_metadata&&user.data.user.app_metadata.must_change_password===true){
     window.location.replace("https://tscgad917.github.io/inventory-system/force-change-password.html");return;
   }
   const email=(user.data.user.email||"").toLowerCase();
