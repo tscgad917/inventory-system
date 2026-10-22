@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       email,
       password: INITIAL_PASSWORD,
       email_confirm: true,
-      user_metadata: { must_change_password: true },
+      app_metadata: { must_change_password: true },
     });
 
     if (createError) {
