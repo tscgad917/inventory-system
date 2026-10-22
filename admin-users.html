@@ -14,8 +14,8 @@ h2{font-size:18px;color:#44633f;margin:0 0 12px}.muted{color:#6c7a67;font-size:1
 <header><div class="inner"><h1>總務課管理中心｜管理人員權限管理</h1><div class="muted" style="color:#e2ece1">只有最高管理員可以新增或停用管理人員</div></div></header>
 <main>
 <section class="panel">
-<div class="top"><div><h2>新增管理人員</h2><div class="muted">新增後，該同仁須使用自己的信箱建立 Supabase 帳號或登入。此處不會設定或查看對方密碼。</div></div><a class="btn secondary" href="admin-center.html">返回統一管理中心</a></div>
-<form id="addForm" style="margin-top:16px"><div class="controls"><div class="field"><label for="email">管理人員 Email</label><input id="email" type="email" required maxlength="254" placeholder="name@example.com"></div><button id="addBtn" type="submit">新增授權</button></div></form>
+<div class="top"><div><h2>新增管理人員</h2><div class="muted">新增授權後會嘗試建立 Supabase 登入帳號；初始密碼為 00000000，並標記首次登入需更改密碼。需先部署安全的 Edge Function。</div></div><a class="btn secondary" href="admin-center.html">返回統一管理中心</a></div>
+<form id="addForm" style="margin-top:16px"><div class="controls"><div class="field"><label for="email">管理人員 Email</label><input id="email" type="email" required maxlength="254" placeholder="name@example.com"></div><button id="addBtn" type="submit">新增授權並建立登入帳號</button></div></form>
 <div id="formMessage" class="message"></div>
 </section>
 <section class="panel">
@@ -60,11 +60,28 @@ $("addForm").addEventListener("submit",async e=>{
  e.preventDefault();const email=$("email").value.trim().toLowerCase();
  if(!email){msg("formMessage","請輸入有效的 Email。","error");return;}
  if(email===OWNER){msg("formMessage","此信箱已是最高管理員。","error");return;}
- $("addBtn").disabled=true;
- const r=await db.from("admin_authorizations").upsert({email,role:"admin",is_active:true,created_by:OWNER,updated_at:new Date().toISOString()},{onConflict:"email"});
- $("addBtn").disabled=false;
- if(r.error){msg("formMessage","新增失敗："+r.error.message,"error");return;}
- $("email").value="";msg("formMessage","已新增 "+email+" 的管理權限。請通知同仁使用自己的 Email 建立帳號或登入；如 Supabase 要求信箱確認，請先完成確認。","success");await load();
+ $("addBtn").disabled=true;msg("formMessage","正在新增授權並建立登入帳號……");
+ try{
+  const s=await db.auth.getSession();
+  const session=s.data&&s.data.session;
+  if(s.error||!session)throw new Error("登入狀態已失效，請重新登入。");
+  const r=await db.from("admin_authorizations").upsert({email,role:"admin",is_active:true,created_by:OWNER,updated_at:new Date().toISOString()},{onConflict:"email"});
+  if(r.error)throw new Error("新增授權失敗："+r.error.message);
+  const response=await fetch(URL+"/functions/v1/admin-create-user",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","apikey":KEY,"Authorization":"Bearer "+session.access_token},
+   body:JSON.stringify({email})
+  });
+  const result=await response.json().catch(()=>({error:"伺服器回傳非預期內容。"}));
+  if(!response.ok)throw new Error(result.error||"Edge Function 呼叫失敗（HTTP "+response.status+"）。授權已新增或更新，但登入帳號尚未建立。");
+  $("email").value="";
+  msg("formMessage","已完成！\nEmail："+email+"\n初始密碼：00000000\n信箱已由系統確認，不需驗證邀請信。\n請同事登入後立即更改初始密碼。","success");
+  await load();
+ }catch(error){
+  console.error("新增管理人員失敗：",error);
+  msg("formMessage","處理失敗："+(error&&error.message?error.message:String(error))+"\n若訊息提到 Edge Function，請先在 Supabase 部署 admin-create-user 函式；管理授權可能已新增，請勿重複建立授權資料。","error");
+  await load();
+ }finally{$("addBtn").disabled=false;}
 });
 async function toggle(email,active){
  if(email===OWNER){alert("不可停用最高管理員。");return;}
