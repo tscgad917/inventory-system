@@ -521,7 +521,7 @@ document.documentElement.style.visibility = "hidden";
     const userResponse=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token},cache:"no-store"});
     if(!userResponse.ok) throw new Error("登入狀態已失效，請重新登入。");
     const authUser=await userResponse.json();
-    if(authUser.user_metadata&&authUser.user_metadata.must_change_password===true){
+    if(authUser.app_metadata&&authUser.app_metadata.must_change_password===true){
       window.location.replace("force-change-password.html");
       return;
     }
