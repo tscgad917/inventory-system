@@ -40,6 +40,7 @@ async function init(){
  const s=await db.auth.getSession();if(s.error)throw s.error;
  if(!s.data.session){location.replace("https://tscgad917.github.io/login/");return;}
  const u=await db.auth.getUser();if(u.error)throw u.error;
+ if(u.data.user.user_metadata&&u.data.user.user_metadata.must_change_password===true){window.location.replace("https://tscgad917.github.io/inventory-system/force-change-password.html");return;}
  const email=(u.data.user.email||"").toLowerCase();
  if(email!==OWNER){msg("listMessage","只有最高管理員可以管理其他帳號。","error");document.getElementById("addForm").remove();return;}
  const a=await db.from("admin_authorizations").select("email,role,is_active").eq("email",OWNER).eq("is_active",true).maybeSingle();
