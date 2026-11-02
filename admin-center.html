@@ -46,7 +46,7 @@ button:active{transform:translateY(1px)}
 </style>
 </head>
 <body>
-<header><div class="inner"><div class="system-name">淡水信用合作社</div><h1>總務課統一管理中心</h1><div class="sub">登入一次，集中管理四套業務系統</div></div></header>
+<header><div class="inner"><div class="system-name">淡水信用合作社</div><h1>總務課統一管理中心</h1><div class="sub">登入一次，集中管理五套業務系統</div></div></header>
 <main>
 <section class="welcome">
 <h2 id="welcomeTitle">正在確認管理員身分……</h2>
@@ -71,6 +71,11 @@ button:active{transform:translateY(1px)}
 <a class="card" href="event-admin.html" onclick="sessionStorage.setItem('eventAdminEntryTicket','from-center')">
 <div class="num">SYSTEM 04</div><div class="title">社員及貴賓活動報名</div>
 <div class="desc">活動批次、代表及理監事名冊、報名統計、餐食需求及待確認資料。</div>
+<span class="status">新系統｜建置中</span>
+</a>
+<a class="card" href="../paper-demand-statistics/general-survey/admin.html" onclick="sessionStorage.setItem('surveyAdminEntryTicket','from-center')">
+<div class="num">SYSTEM 05</div><div class="title">通用問卷平台</div>
+<div class="desc">年度問卷建立、填報單位設定、題目圖片管理、填報進度及需求統計。</div>
 <span class="status">新系統｜建置中</span>
 </a>
 <a class="card" id="adminUsersCard" href="admin-users.html" style="display:none">
