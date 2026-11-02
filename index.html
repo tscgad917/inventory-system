@@ -896,12 +896,12 @@
 
         "/rest/v1/inventory_periods" +
 
-        "?select=period_month,count_date,is_open" +
+        "?select=period_month,count_date,is_open,open_mode" +
 
-        "&count_date=eq." +
-
+        "&or=(count_date.eq." +
         today +
-
+        ",open_mode.eq.open)" +
+        "&order=period_month.desc&limit=1" +
         "&apikey=" +
 
         encodeURIComponent(
@@ -1029,11 +1029,19 @@
         periods[0];
 
 
-      // 今天是盤點日，但尚未開放
+      // 自動模式須為盤點日；手動提前開放可提前填報；手動關閉一律不開放
 
-      if (
-        !period.is_open
-      ) {
+      const isPeriodOpen =
+        (
+          period.open_mode === "open" &&
+          today <= period.count_date
+        ) ||
+        (
+          period.open_mode === "auto" &&
+          period.count_date === today
+        );
+
+      if (!isPeriodOpen) {
 
 
         status.className =
@@ -1061,7 +1069,10 @@
       // 今天是開放盤點日
 
       currentPeriod =
-        period;
+        {
+          ...period,
+          is_open: true
+        };
 
 
       status.className =
@@ -1069,7 +1080,9 @@
 
 
       status.textContent =
-        "本日為盤點日，現在可以填寫及送出盤點資料。";
+        period.open_mode === "open" && period.count_date > today
+          ? "管理人員已提前開放盤點，現在可以填寫及送出資料。"
+          : "本日為盤點日，現在可以填寫及送出盤點資料。";
 
 
       formArea.classList.remove(
