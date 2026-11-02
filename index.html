@@ -901,7 +901,7 @@
         "&or=(count_date.eq." +
         today +
         ",open_mode.eq.open)" +
-        "&order=period_month.desc&limit=1" +
+        "&order=period_month.desc" +
         "&apikey=" +
 
         encodeURIComponent(
@@ -996,11 +996,32 @@
       );
 
 
-      // 今天沒有設定為盤點日
+      // 只保留今天應開放的盤點期間，避免未來或已過期的手動開放資料干擾當日盤點
 
-      if (
-        periods.length === 0
-      ) {
+      const eligiblePeriods =
+        periods.filter(function (item) {
+          return (
+            (item.open_mode === "auto" && item.count_date === today) ||
+            (item.open_mode === "open" && item.count_date >= today)
+          );
+        });
+
+
+      // 優先選擇今天的盤點期間；若無，才選擇最接近的未來手動提前開放期間
+
+      eligiblePeriods.sort(function (a, b) {
+        const aIsToday = a.count_date === today ? 0 : 1;
+        const bIsToday = b.count_date === today ? 0 : 1;
+
+        if (aIsToday !== bIsToday) {
+          return aIsToday - bIsToday;
+        }
+
+        return a.count_date.localeCompare(b.count_date);
+      });
+
+
+      if (eligiblePeriods.length === 0) {
 
 
         status.className =
@@ -1026,7 +1047,7 @@
 
 
       const period =
-        periods[0];
+        eligiblePeriods[0];
 
 
       // 自動模式須為盤點日；手動提前開放可提前填報；手動關閉一律不開放
