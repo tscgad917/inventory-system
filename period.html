@@ -503,21 +503,19 @@
 
       <div class="form-group">
 
-        <label for="isOpen">
-          開放狀態
+        <label for="openMode">
+          開放模式
         </label>
 
-        <select id="isOpen">
-
-          <option value="false">
-            未開放
-          </option>
-
-          <option value="true">
-            開放
-          </option>
-
+        <select id="openMode">
+          <option value="auto">自動開放（盤點日當天）</option>
+          <option value="open">手動提前開放</option>
+          <option value="closed">手動關閉</option>
         </select>
+
+        <div class="helper-text">
+          自動模式依實際盤點日開放；遇颱風或特殊情況可手動關閉，亦可提前開放。
+        </div>
 
       </div>
 
@@ -712,9 +710,9 @@ const countDateInput =
     "countDate"
   );
 
-const isOpenInput =
+const openModeInput =
   document.getElementById(
-    "isOpen"
+    "openMode"
   );
 
 const noteInput =
@@ -760,7 +758,7 @@ async function loadPeriods() {
       await fetch(
         SUPABASE_URL +
         "/rest/v1/inventory_periods" +
-        "?select=id,period_month,count_date,is_open,note" +
+        "?select=id,period_month,count_date,is_open,open_mode,note" +
         "&order=period_month.asc",
         {
           method: "GET",
@@ -955,18 +953,27 @@ async function loadPeriods() {
             "span"
           );
 
+        const isPeriodOpen =
+          period.open_mode === "open" &&
+          today <= period.count_date ||
+          (
+            period.open_mode === "auto" &&
+            today === period.count_date
+          );
+
+        const modeLabels = {
+          auto: "自動開放",
+          open: "手動提前開放",
+          closed: "手動關閉"
+        };
+
         statusBadge.textContent =
-          period.is_open
-            ? "開放"
-            : "未開放";
+          (modeLabels[period.open_mode] || "自動開放") +
+          (isPeriodOpen ? "（目前開放）" : "（目前未開放）");
 
         statusBadge.className =
           "status-badge " +
-          (
-            period.is_open
-              ? "open"
-              : "closed"
-          );
+          (isPeriodOpen ? "open" : "closed");
 
 
         statusItem.appendChild(
@@ -1298,10 +1305,8 @@ function startEdit(period) {
   countDateInput.value =
     period.count_date;
 
-  isOpenInput.value =
-    period.is_open
-      ? "true"
-      : "false";
+  openModeInput.value =
+    period.open_mode || (period.is_open ? "open" : "auto");
 
   noteInput.value =
     period.note || "";
@@ -1338,9 +1343,8 @@ async function savePeriod() {
   const countDate =
     countDateInput.value;
 
-  const isOpen =
-    isOpenInput.value ===
-    "true";
+  const openMode =
+    openModeInput.value;
 
   const note =
     noteInput.value.trim();
@@ -1369,7 +1373,7 @@ async function savePeriod() {
     await updatePeriod(
       editingId,
       countDate,
-      isOpen,
+      openMode,
       note
     );
 
@@ -1385,8 +1389,11 @@ async function savePeriod() {
     count_date:
       countDate,
 
+    open_mode:
+      openMode,
+
     is_open:
-      isOpen,
+      openMode !== "closed",
 
     note:
       note || null
@@ -1472,7 +1479,7 @@ async function savePeriod() {
 async function updatePeriod(
   id,
   countDate,
-  isOpen,
+  openMode,
   note
 ) {
 
@@ -1481,8 +1488,11 @@ async function updatePeriod(
     count_date:
       countDate,
 
+    open_mode:
+      openMode,
+
     is_open:
-      isOpen,
+      openMode !== "closed",
 
     note:
       note || null
@@ -1592,8 +1602,8 @@ function clearForm() {
   countDateInput.value =
     "";
 
-  isOpenInput.value =
-    "false";
+  openModeInput.value =
+    "auto";
 
   noteInput.value =
     "";
