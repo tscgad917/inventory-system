@@ -85,14 +85,19 @@ const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
 function tab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("secondary",b.dataset.tab!==name));document.querySelectorAll("section[id^=tab-]").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name));}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
-// 每次進入管理後台都必須由統一管理中心點選入口。
-// 使用一次性票證，不保留可讓使用者直接貼網址重進的工作階段旗標。
-const entryTicket=sessionStorage.getItem("financialReadingAdminEntryTicket");
+// 導覽限制：首次進入需由統一管理中心點選；同一分頁重新整理可繼續使用。
+// 直接複製或貼上後台網址時，顯示與庫存盤點管理相同的提示頁。
+const nav=performance.getEntriesByType("navigation")[0];
+const isReload=nav&&nav.type==="reload";
+const ticket=sessionStorage.getItem("financialReadingAdminEntryTicket")==="from-center";
 sessionStorage.removeItem("financialReadingAdminEntryTicket");
-if(entryTicket!=="from-center"){
- window.location.replace("https://tscgad917.github.io/inventory-system/admin-center.html");
- throw new Error("請先由總務課統一管理中心進入財經知識選讀系統。");
+const alreadyAuthorized=isReload&&sessionStorage.getItem("financialReadingAdminTabAuthorized")==="yes";
+const allowed=ticket||alreadyAuthorized;
+if(!allowed){
+ document.body.innerHTML='<main style="max-width:680px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;color:#26332c"><h2>請由統一管理中心進入</h2><p>為避免直接開啟後台連結，請先返回統一管理中心，再由管理中心選擇「財經知識選讀與分享」。</p></main>';
+ return;
 }
+sessionStorage.setItem("financialReadingAdminTabAuthorized","yes");
 async function auth(){
  let r=await db.auth.getSession();if(r.error)throw r.error;let s=r.data.session;
  if(!s){const a=localStorage.getItem("admin_access_token"),q=localStorage.getItem("admin_refresh_token");if(!a||!q)throw new Error("登入狀態失效，請由統一管理中心重新登入。");r=await db.auth.setSession({access_token:a,refresh_token:q});if(r.error)throw r.error;s=r.data.session;}
@@ -187,7 +192,7 @@ async function loadStats(){
 }
 $("statsMonth").addEventListener("change",()=>loadStats().catch(e=>msg("statsCards",e.message,true)));
 $("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem("financialReadingAdminSession");
-sessionStorage.removeItem("financialReadingAdminEntryTicket");location.href="https://tscgad917.github.io/login/";};
+sessionStorage.removeItem("financialReadingAdminEntryTicket");sessionStorage.removeItem("financialReadingAdminTabAuthorized");location.href="https://tscgad917.github.io/login/";};
 async function init(){try{await auth();$("app").classList.remove("hidden");await Promise.all([loadArticles(),loadMonths(),loadUnits(),loadEmployees()]);await loadStats();}catch(e){$("fatal").textContent=e.message;$("fatal").classList.remove("hidden");$("adminState").textContent="驗證失敗";}}
 init();
 })();
