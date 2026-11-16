@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>財經知識選讀｜管理後台</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7f2;color:#344236;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+header{background:#44633f;color:#fff;padding:20px}header>div,main{max-width:1120px;margin:auto}h1{font-size:22px;margin:0}
+main{padding:22px 16px 44px}.bar,.tabs,.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.tabs{justify-content:flex-start;margin:16px 0}.tabs button,.btn{border:0;border-radius:8px;padding:10px 14px;background:#44633f;color:#fff;cursor:pointer;font:inherit}.tabs button.secondary,.btn.secondary{background:#e6eee5;color:#355334}.btn.danger{background:#a8322a}
+.panel{background:#fff;border:1px solid #dfe7dc;border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 4px 14px #26332c0a}.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.field{margin-bottom:12px}label{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ccd7cb;border-radius:8px;font:inherit;background:white}textarea{min-height:82px}
+.muted{color:#718071;font-size:13px}.msg{padding:11px;border-radius:8px;background:#edf5ef;margin:10px 0;white-space:pre-wrap}.error{background:#fff0ef;color:#9f2e25}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}th,td{text-align:left;padding:9px;border-bottom:1px solid #e7ece5;vertical-align:top}th{background:#f3f7f1}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.stat{background:#f3f7f1;border-radius:10px;padding:12px}.stat strong{display:block;font-size:24px;color:#355334}
+a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}.check{display:flex;gap:8px;align-items:flex-start;background:#f7f9f6;padding:9px;border-radius:8px}.check input{width:auto;margin-top:5px}
+@media(max-width:600px){main{padding:16px 10px}.panel{padding:14px}}
+</style></head><body>
+<header><div><div style="font-size:13px;opacity:.85">淡水信用合作社｜總務課統一管理中心</div><h1>財經知識選讀與分享｜管理後台</h1></div></header>
+<main>
+<div class="bar"><div id="adminState" class="muted">正在確認管理員身分……</div><div class="actions"><a href="admin-center.html">返回統一管理中心</a><button class="btn secondary" id="logout">登出</button></div></div>
+<div id="fatal" class="msg error hidden"></div>
+<div id="app" class="hidden">
+<div class="tabs">
+<button data-tab="articles">文章及著作權管理</button><button class="secondary" data-tab="months">每月選讀發布</button><button class="secondary" data-tab="employees">員工帳號對應</button><button class="secondary" data-tab="stats">閱讀及心得統計</button>
+</div>
+<section id="tab-articles" class="panel">
+<h2>新增文章</h2><p class="muted">先建檔及登錄著作權檢核結果，再上傳 PDF。只有權利狀態為「已確認可使用」的文章，才能發布給員工閱讀。</p>
+<form id="articleForm">
+<div class="grid">
+<div class="field"><label for="title">文章標題 *</label><input id="title" required maxlength="300"></div>
+<div class="field"><label for="author">作者</label><input id="author" maxlength="200"></div>
+<div class="field"><label for="publisher">刊物／出版者</label><input id="publisher" maxlength="200"></div>
+<div class="field"><label for="issueDate">刊登／出版日期</label><input id="issueDate" type="date"></div>
+<div class="field"><label for="sourceType">來源類型</label><select id="sourceType"><option value="public_web">公開網路文章</option><option value="company_magazine">公司訂閱刊物</option><option value="other">其他</option></select></div>
+<div class="field"><label for="category">文章分類</label><select id="category">
+<option value="macroeconomy">總體經濟</option><option value="financial_markets">金融市場與貨幣政策</option><option value="cooperative_banking">銀行及信用合作社</option><option value="fintech">金融科技與數位轉型</option><option value="investment">投資與資產管理</option><option value="management">企業經營管理</option><option value="industry_trends" selected>產業趨勢</option><option value="other">其他</option></select></div>
+</div>
+<div class="field"><label for="sourceUrl">原始文章網址</label><input id="sourceUrl" type="url" placeholder="https://"></div>
+<div class="field"><label for="abstract">文章摘要／選讀簡介</label><textarea id="abstract" maxlength="2000"></textarea></div>
+<h3>著作權檢核紀錄</h3>
+<div class="grid">
+<div class="field"><label for="rightsStatus">檢核結果 *</label><select id="rightsStatus"><option value="pending">待檢核</option><option value="approved">已確認可使用</option><option value="needs_review">需要進一步確認</option><option value="rejected">不建議使用</option></select></div>
+<div class="field"><label for="legalBasis">使用依據／授權方式</label><input id="legalBasis" placeholder="例如：取得授權、著作權法第61條等"></div>
+<div class="field"><label for="evidenceUrl">授權或檢核證明網址</label><input id="evidenceUrl" type="url" placeholder="https://"></div>
+</div>
+<div class="field"><label for="rightsNotes">檢核備註（含重製、公開傳輸及圖片處理）</label><textarea id="rightsNotes"></textarea></div>
+<div class="field"><label for="pdfFile">文章 PDF（限 PDF，最大 50MB）</label><input id="pdfFile" type="file" accept="application/pdf"></div>
+<div class="actions"><button class="btn" type="submit" id="saveArticle">儲存文章</button><span class="muted">PDF 將存放於非公開 Storage。</span></div>
+</form><div id="articleMsg" class="msg hidden"></div>
+<h3 style="margin-top:24px">文章資料庫</h3><div id="articleList" class="table-wrap">載入中……</div>
+</section>
+<section id="tab-months" class="panel hidden">
+<h2>建立每月選讀</h2><p class="muted">依總經理紙本呈閱選定結果，由總務課登錄及發布；此系統不設總經理線上簽核。</p>
+<form id="monthForm">
+<div class="grid">
+<div class="field"><label for="monthStart">選讀月份 *</label><input id="monthStart" type="month" required></div>
+<div class="field"><label for="monthTitle">本月主題／名稱 *</label><input id="monthTitle" required maxlength="200" placeholder="例如：11月財經知識選讀"></div>
+<div class="field"><label for="readingStart">閱讀開始時間</label><input id="readingStart" type="datetime-local"></div>
+<div class="field"><label for="readingEnd">閱讀結束時間</label><input id="readingEnd" type="datetime-local"></div>
+</div>
+<div class="field"><label for="monthDescription">發布說明</label><textarea id="monthDescription"></textarea></div>
+<div class="field"><label>選擇本月文章</label><div id="monthArticleChoices" class="checklist">請先建立文章且完成著作權檢核。</div></div>
+<button class="btn" type="submit">建立選讀月份（草稿）</button>
+</form><div id="monthMsg" class="msg hidden"></div>
+<h3 style="margin-top:24px">月份清單</h3><div id="monthList" class="table-wrap">載入中……</div>
+</section>
+<section id="tab-employees" class="panel hidden">
+<h2>員工帳號與單位對應</h2><p class="muted">員工須先由管理者在 Supabase Auth 建立帳號，再於此處將登入 Email 對應至員工姓名及單位。此處不會建立或寄送帳號邀請。</p>
+<form id="employeeForm">
+<div class="grid">
+<div class="field"><label for="employeeEmail">員工登入 Email *</label><input id="employeeEmail" type="email" required></div>
+<div class="field"><label for="employeeName">員工姓名 *</label><input id="employeeName" required></div>
+<div class="field"><label for="employeeNo">員工編號（選填）</label><input id="employeeNo"></div>
+<div class="field"><label for="employeeUnit">所屬營業單位 *</label><select id="employeeUnit" required></select></div>
+</div><button class="btn" type="submit">建立／更新員工對應</button>
+</form><div id="employeeMsg" class="msg hidden"></div>
+<h3 style="margin-top:24px">已開通員工</h3><div id="employeeList" class="table-wrap">載入中……</div>
+</section>
+<section id="tab-stats" class="panel hidden">
+<h2>閱讀及心得統計</h2><div class="field"><label for="statsMonth">選擇月份</label><select id="statsMonth"><option value="">全部月份</option></select></div>
+<div id="statsCards" class="cards"></div><h3>各單位參與情形</h3><div id="unitStats" class="table-wrap">載入中……</div><h3 style="margin-top:22px">員工心得</h3><div id="sharingList" class="table-wrap">載入中……</div>
+</section>
+</div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const URL="https://onebxqajsiqmhfcizaxl.supabase.co",KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
+let articles=[],months=[],units=[],profiles=[],activeEmail="";
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
+function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
+function tab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("secondary",b.dataset.tab!==name));document.querySelectorAll("section[id^=tab-]").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name));}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+async function auth(){
+ let r=await db.auth.getSession();if(r.error)throw r.error;let s=r.data.session;
+ if(!s){const a=localStorage.getItem("admin_access_token"),q=localStorage.getItem("admin_refresh_token");if(!a||!q)throw new Error("登入狀態失效，請由統一管理中心重新登入。");r=await db.auth.setSession({access_token:a,refresh_token:q});if(r.error)throw r.error;s=r.data.session;}
+ const u=await db.auth.getUser();if(u.error)throw u.error;activeEmail=(u.data.user.email||"").toLowerCase();
+ const a=await db.from("admin_authorizations").select("role,is_active").eq("email",activeEmail).eq("is_active",true).maybeSingle();
+ if(a.error)throw a.error;if(!a.data)throw new Error("此帳號未獲總務課管理授權。");
+ $("adminState").textContent="管理員已驗證："+activeEmail;
+}
+async function loadArticles(){
+ const r=await db.from("fr_articles").select("*,fr_rights_records(review_status,legal_basis,reviewed_at),fr_article_files(id,original_filename,is_current)").order("created_at",{ascending:false});
+ if(r.error)throw r.error;articles=r.data||[];
+ $("articleList").innerHTML=articles.length?'<table><thead><tr><th>文章</th><th>來源／分類</th><th>著作權狀態</th><th>PDF</th></tr></thead><tbody>'+articles.map(a=>'<tr><td><strong>'+esc(a.title)+'</strong><br><small>'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</small></td><td>'+esc(a.source_type)+'<br>'+esc(a.category)+'</td><td>'+esc((a.fr_rights_records||[]).map(x=>x.review_status).join("、")||"未登錄")+'</td><td>'+esc((a.fr_article_files||[]).filter(x=>x.is_current).map(x=>x.original_filename).join("、")||"尚未上傳")+'</td></tr>').join("")+'</tbody></table>':'目前尚無文章。';
+ $("monthArticleChoices").innerHTML=articles.length?articles.map(a=>{const ok=(a.fr_rights_records||[]).some(x=>x.review_status==="approved");return '<label class="check"><input type="checkbox" value="'+a.id+'" '+(ok?"":"disabled")+'><span><strong>'+esc(a.title)+'</strong><br><small>'+ (ok?"著作權已確認":"尚未確認可使用")+'</small></span></label>';}).join(""):"請先建立文章。";
+}
+async function loadMonths(){
+ const r=await db.from("fr_monthly_selections").select("*,fr_monthly_selection_articles(id,article_id,reflection_required,fr_articles(title))").order("month_start",{ascending:false});
+ if(r.error)throw r.error;months=r.data||[];
+ $("monthList").innerHTML=months.length?'<table><thead><tr><th>月份／主題</th><th>文章</th><th>閱讀期間</th><th>狀態／操作</th></tr></thead><tbody>'+months.map(m=>'<tr><td>'+esc(m.month_start)+'<br><strong>'+esc(m.title)+'</strong></td><td>'+esc((m.fr_monthly_selection_articles||[]).map(x=>x.fr_articles?.title||"").join("、"))+'</td><td>'+dt(m.reading_start_at)+'<br>至 '+dt(m.reading_end_at)+'</td><td>'+esc(m.status)+'<br>'+(m.status==="draft"?'<button class="btn" data-publish="'+m.id+'">發布</button>':m.status==="published"?'<button class="btn secondary" data-close="'+m.id+'">結束閱讀</button>':"")+'</td></tr>').join("")+'</tbody></table>':'尚無選讀月份。';
+ $("monthList").querySelectorAll("[data-publish]").forEach(b=>b.onclick=()=>publishMonth(b.dataset.publish));
+ $("monthList").querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeMonth(b.dataset.close));
+ $("statsMonth").innerHTML='<option value="">全部月份</option>'+months.map(m=>'<option value="'+m.id+'">'+esc(m.month_start)+' '+esc(m.title)+'</option>').join("");
+}
+async function publishMonth(id){const r=await db.from("fr_monthly_selections").update({status:"published",published_by:(await db.auth.getUser()).data.user.id,published_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert(r.error.message);return;}await loadMonths();alert("選讀月份已發布。");}
+async function closeMonth(id){const r=await db.from("fr_monthly_selections").update({status:"closed",updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert(r.error.message);return;}await loadMonths();}
+$("articleForm").addEventListener("submit",async e=>{
+ e.preventDefault();const btn=$("saveArticle");btn.disabled=true;
+ try{
+  const user=(await db.auth.getUser()).data.user;
+  const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value||null,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
+  const a=await db.from("fr_articles").insert(payload).select().single();if(a.error)throw a.error;
+  const rights=await db.from("fr_rights_records").insert({article_id:a.data.id,review_status:$("rightsStatus").value,legal_basis:$("legalBasis").value.trim()||null,evidence_url:$("evidenceUrl").value.trim()||null,notes:$("rightsNotes").value.trim()||null,reviewed_by:user.id,reviewed_at:$("rightsStatus").value==="pending"?null:new Date().toISOString()});
+  if(rights.error)throw rights.error;
+  const file=$("pdfFile").files[0];
+  if(file){if(file.type!=="application/pdf")throw new Error("只接受 PDF 檔案。");if(file.size>52428800)throw new Error("PDF 不可超過 50MB。");
+   const safe=file.name.replace(/[^\w.\-\u4e00-\u9fff]/g,"_"),path=a.data.id+"/"+Date.now()+"-"+safe;
+   const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
+   const fr=await db.from("fr_article_files").insert({article_id:a.data.id,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id});if(fr.error)throw fr.error;
+  }
+  $("articleForm").reset();msg("articleMsg","文章已新增。");await loadArticles();await loadMonths();
+ }catch(err){msg("articleMsg","儲存失敗："+err.message,true);}finally{btn.disabled=false;}
+});
+$("monthForm").addEventListener("submit",async e=>{
+ e.preventDefault();try{
+  const ids=[...$("monthArticleChoices").querySelectorAll("input:checked")].map(x=>x.value);if(!ids.length)throw new Error("請至少選擇一篇文章。");
+  const month=$("monthStart").value+"-01";const ins=await db.from("fr_monthly_selections").insert({month_start:month,title:$("monthTitle").value.trim(),description:$("monthDescription").value.trim()||null,reading_start_at:$("readingStart").value?new Date($("readingStart").value).toISOString():null,reading_end_at:$("readingEnd").value?new Date($("readingEnd").value).toISOString():null,selected_by:(await db.auth.getUser()).data.user.id,status:"draft"}).select().single();if(ins.error)throw ins.error;
+  const rows=ids.map((id,i)=>({selection_id:ins.data.id,article_id:id,sort_order:i,reflection_required:false}));
+  const add=await db.from("fr_monthly_selection_articles").insert(rows);if(add.error)throw add.error;
+  msg("monthMsg","已建立草稿。確認內容後，請在月份清單按「發布」。");$("monthForm").reset();await loadMonths();
+ }catch(err){msg("monthMsg","建立失敗："+err.message,true);}
+});
+async function loadUnits(){
+ const r=await db.from("units").select("id,code,name,is_active").eq("is_active",true).order("code");if(r.error)throw r.error;units=r.data||[];
+ $("employeeUnit").innerHTML=units.filter(u=>u.code&&u.code!=="0917").map(u=>'<option value="'+u.id+'">'+esc(u.code)+'｜'+esc(u.name)+'</option>').join("");
+}
+async function loadEmployees(){
+ const r=await db.from("fr_employee_profiles").select("user_id,employee_name,employee_no,is_active,units(name,code)").order("employee_name");if(r.error)throw r.error;profiles=r.data||[];
+ $("employeeList").innerHTML=profiles.length?'<table><thead><tr><th>員工</th><th>單位</th><th>帳號 UUID</th><th>狀態</th></tr></thead><tbody>'+profiles.map(p=>'<tr><td>'+esc(p.employee_name)+'<br><small>'+esc(p.employee_no||"")+'</small></td><td>'+esc(p.units?.code||"")+'｜'+esc(p.units?.name||"")+'</td><td><small>'+esc(p.user_id)+'</small></td><td>'+ (p.is_active?"啟用":"停用")+'</td></tr>').join("")+'</tbody></table>':'尚無員工帳號對應。';
+}
+$("employeeForm").addEventListener("submit",async e=>{
+ e.preventDefault();try{
+  const r=await db.rpc("fr_admin_assign_employee",{p_email:$("employeeEmail").value.trim().toLowerCase(),p_unit_id:Number($("employeeUnit").value),p_employee_name:$("employeeName").value.trim(),p_employee_no:$("employeeNo").value.trim()||null});
+  if(r.error)throw r.error;msg("employeeMsg","員工帳號已完成對應。");$("employeeForm").reset();await loadEmployees();
+ }catch(err){msg("employeeMsg","設定失敗："+err.message,true);}
+});
+async function loadStats(){
+ const sel=$("statsMonth").value;let q=db.from("fr_monthly_selection_articles").select("id,selection_id,fr_articles(title),fr_monthly_selections(month_start,title)").order("sort_order");
+ if(sel)q=q.eq("selection_id",sel);const sr=await q;if(sr.error)throw sr.error;const ids=(sr.data||[]).map(x=>x.id);
+ if(!ids.length){$("statsCards").innerHTML='<div class="stat">目前沒有選讀文章</div>';$("unitStats").innerHTML="—";$("sharingList").innerHTML="—";return;}
+ const [rr,pp,ep]=await Promise.all([
+  db.from("fr_reading_records").select("selection_article_id,user_id,completed_at").in("selection_article_id",ids),
+  db.from("fr_sharing_posts").select("selection_article_id,user_id,content,created_at,fr_monthly_selection_articles(fr_articles(title),fr_monthly_selections(month_start))").in("selection_article_id",ids),
+  db.from("fr_employee_profiles").select("user_id,employee_name,units(name,code)").eq("is_active",true)
+ ]);if(rr.error)throw rr.error;if(pp.error)throw pp.error;if(ep.error)throw ep.error;
+ const total=ep.data.length,read=new Set((rr.data||[]).map(x=>x.user_id)),share=new Set((pp.data||[]).map(x=>x.user_id));
+ $("statsCards").innerHTML='<div class="stat"><span>開通員工</span><strong>'+total+'</strong></div><div class="stat"><span>有閱讀紀錄</span><strong>'+read.size+'</strong></div><div class="stat"><span>有心得分享</span><strong>'+share.size+'</strong></div><div class="stat"><span>選讀文章</span><strong>'+ids.length+'</strong></div>';
+ const unitsMap=new Map();(ep.data||[]).forEach(p=>{const k=p.units?.code||"未知";if(!unitsMap.has(k))unitsMap.set(k,{name:p.units?.name||"",staff:0,read:0,share:0,users:[]});unitsMap.get(k).staff++;unitsMap.get(k).users.push(p.user_id);});
+ unitsMap.forEach(v=>{v.read=v.users.filter(id=>read.has(id)).length;v.share=v.users.filter(id=>share.has(id)).length;});
+ $("unitStats").innerHTML='<table><thead><tr><th>單位</th><th>員工數</th><th>閱讀人數</th><th>閱讀率</th><th>心得人數</th><th>心得率</th></tr></thead><tbody>'+[...unitsMap.entries()].sort().map(([code,v])=>'<tr><td>'+esc(code)+'｜'+esc(v.name)+'</td><td>'+v.staff+'</td><td>'+v.read+'</td><td>'+ (v.staff?Math.round(v.read/v.staff*100):0)+'%</td><td>'+v.share+'</td><td>'+(v.staff?Math.round(v.share/v.staff*100):0)+'%</td></tr>').join("")+'</tbody></table>';
+ $("sharingList").innerHTML=(pp.data||[]).length?'<table><thead><tr><th>月份</th><th>文章</th><th>心得內容</th><th>提交時間</th></tr></thead><tbody>'+pp.data.map(p=>'<tr><td>'+esc(p.fr_monthly_selection_articles?.fr_monthly_selections?.month_start||"")+'</td><td>'+esc(p.fr_monthly_selection_articles?.fr_articles?.title||"")+'</td><td style="white-space:pre-wrap">'+esc(p.content)+'</td><td>'+dt(p.created_at)+'</td></tr>').join("")+'</tbody></table>':'尚無心得分享。';
+}
+$("statsMonth").addEventListener("change",()=>loadStats().catch(e=>msg("statsCards",e.message,true)));
+$("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));location.href="https://tscgad917.github.io/login/";};
+async function init(){try{await auth();$("app").classList.remove("hidden");await Promise.all([loadArticles(),loadMonths(),loadUnits(),loadEmployees()]);await loadStats();}catch(e){$("fatal").textContent=e.message;$("fatal").classList.remove("hidden");$("adminState").textContent="驗證失敗";}}
+init();
+})();
+</script></body></html>
