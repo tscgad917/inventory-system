@@ -51,7 +51,7 @@ async function loadUnits(){
 }
 async function loadSelections(){
  $("monthlyContent").innerHTML='<div class="panel muted">正在載入選讀文章……</div>';
- const r=await db.from("fr_monthly_selections").select("id,month_start,title,description,reading_start_at,reading_end_at,fr_monthly_selection_articles(id,sort_order,reflection_required,fr_articles(id,title,author,publisher,issue_date,category,abstract,source_url,fr_article_files(id,storage_path,original_filename,is_current)))").eq("status","published").order("month_start",{ascending:false});
+ const r=await db.from("fr_monthly_selections").select("id,month_start,title,description,reading_start_at,reading_end_at,fr_monthly_selection_articles(id,sort_order,reflection_required,fr_articles(id,title,author,publisher,issue_date,issue_date_precision,category,abstract,source_url,fr_article_files(id,storage_path,original_filename,is_current)))").eq("status","published").order("month_start",{ascending:false});
  if(r.error)throw r.error;
  months=(r.data||[]).filter(m=>m.fr_monthly_selection_articles?.length);
  $("monthlyContent").innerHTML=months.length?months.map(m=>'<section class="panel"><h2>'+esc(m.month_start)+'｜'+esc(m.title)+'</h2><p class="muted">'+esc(m.description||"")+'</p><div class="grid">'+m.fr_monthly_selection_articles.sort((a,b)=>a.sort_order-b.sort_order).map(x=>{const a=x.fr_articles||{};return '<article class="article"><h3>'+esc(a.title)+'</h3><div class="muted">'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</div><span class="tag">'+esc(a.category)+'</span><p>'+esc(a.abstract||"尚無文章簡介")+'</p><button data-open="'+x.id+'">閱讀文章</button></article>';}).join("")+'</div></section>').join(""):'<section class="panel">目前沒有開放中的選讀文章。</section>';
@@ -63,7 +63,7 @@ async function openArticle(id){
  const a=item.fr_articles,file=(a.fr_article_files||[]).find(f=>f.is_current);if(!file)throw new Error("此文章目前沒有可閱讀的 PDF。");
  const signed=await db.storage.from("financial-reading-pdfs").createSignedUrl(file.storage_path,1800);if(signed.error)throw signed.error;
  currentSelectionArticle=item;currentMonth=month;
- $("readerTitle").textContent=a.title;$("readerMeta").textContent=(a.author||"")+"｜"+(a.publisher||"")+"｜"+month.month_start+"｜"+identity.unitName+"／"+identity.name;
+ $("readerTitle").textContent=a.title;$("readerMeta").textContent=(a.author||"")+"｜"+(a.publisher||"")+"｜刊登／出版："+(a.issue_date?(a.issue_date_precision==="month"?a.issue_date.slice(0,7):a.issue_date):"未提供")+"｜選讀月份："+month.month_start+"｜"+identity.unitName+"／"+identity.name;
  $("pdfViewer").src=signed.data.signedUrl+"#toolbar=1&navpanes=0";
  $("sharingContent").value="";
  $("sharingContent").value="";
