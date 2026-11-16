@@ -73,9 +73,14 @@ async function openArticle(id){
 $("continueBtn").onclick=async()=>{
  const unitId=$("unit").value,name=$("name").value.trim();
  if(!unitId||!name){msg("identityMsg","請選擇所屬營業單位並輸入姓名。",true);return;}
- identity={unitId:Number(unitId),unitName:$("unit").selectedOptions[0].textContent,name};
- $("identitySummary").textContent=identity.unitName+"｜"+identity.name;
- try{await loadSelections();hide("identityPanel");show("appPanel");}catch(e){msg("identityMsg","載入文章失敗："+e.message,true);}
+ try{
+  const verified=await db.rpc("fr_public_verify_employee",{p_employee_name:name});
+  if(verified.error)throw verified.error;
+  if(verified.data!==true){msg("identityMsg","查無符合的在職員工資料，請確認姓名是否正確；如資料有誤，請洽總務課更新社員及貴賓系統名冊。",true);return;}
+  identity={unitId:Number(unitId),unitName:$("unit").selectedOptions[0].textContent,name};
+  $("identitySummary").textContent=identity.unitName+"｜"+identity.name;
+  await loadSelections();hide("identityPanel");show("appPanel");
+ }catch(e){msg("identityMsg","身分驗證或載入文章失敗："+e.message,true);}
 };
 $("markRead").onclick=async()=>{
  if(!currentSelectionArticle)return;
