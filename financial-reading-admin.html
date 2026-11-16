@@ -162,7 +162,7 @@ $("articleForm").addEventListener("submit",async e=>{
   const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value?($("issueDatePrecision").value==="month"?$("issueDate").value+"-01":$("issueDate").value):null,issue_date_precision:$("issueDatePrecision").value,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
    let articleId=editingArticleId;
    if(articleId){
-    const upd=await db.from("fr_articles").update(payload).eq("id",articleId);if(upd.error)throw upd.error;
+    const updatePayload={...payload};delete updatePayload.created_by;const upd=await db.from("fr_articles").update(updatePayload).eq("id",articleId);if(upd.error)throw upd.error;
    }else{
     // 若前次新增文章成功、但 PDF 上傳失敗，重試時沿用尚未附檔的文章。
     const prior=await db.from("fr_articles").select("id").eq("title",payload.title).eq("created_by",user.id).order("created_at",{ascending:false}).limit(1).maybeSingle();if(prior.error)throw prior.error;
