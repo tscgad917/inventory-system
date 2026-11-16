@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>財經知識選讀與分享｜淡水信用合作社</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f3;color:#334136;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+header{background:#14532d;color:#fff;padding:20px 16px}header>div,main{max-width:960px;margin:auto}.brand{font-size:13px;opacity:.9}.brand-title{font-size:21px;font-weight:700}
+main{padding:26px 16px 48px}.panel{background:#fff;border:1px solid #dfe7dc;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px #26332c0a}
+h1{font-size:24px;color:#14532d;margin:0 0 8px}h2{font-size:19px;color:#245c39;margin:0 0 10px}.muted{color:#718071;font-size:13px}
+input,textarea{width:100%;padding:12px;border:1px solid #ccd7cb;border-radius:8px;font:inherit;margin:5px 0 12px}textarea{min-height:120px}
+button{border:0;border-radius:8px;padding:11px 16px;background:#17613a;color:white;cursor:pointer;font:inherit;font-weight:600}button.secondary{background:#e6eee5;color:#355334}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.article{border:1px solid #dfe7dc;border-radius:12px;padding:16px;background:#fff}.article h3{margin:0 0 6px;color:#245c39;font-size:18px}.tag{display:inline-block;background:#edf5ef;color:#355334;border-radius:999px;padding:2px 9px;font-size:12px;margin:2px 4px 8px 0}
+.msg{padding:11px;border-radius:8px;background:#edf5ef;margin:10px 0;white-space:pre-wrap}.error{background:#fff0ef;color:#9f2e25}.hidden{display:none!important}
+.viewer{width:100%;height:75vh;border:1px solid #dfe7dc;border-radius:8px;background:#f5f7f5}.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:600px){main{padding:18px 12px}.panel{padding:16px}.viewer{height:65vh}}
+</style></head><body>
+<header><div><div class="brand">淡水信用合作社</div><div class="brand-title">財經知識選讀與分享</div></div></header>
+<main>
+<section id="loginPanel" class="panel">
+<h1>員工登入</h1><p class="muted">請使用已由總務課開通的個人帳號登入。若尚未取得帳號，請洽總務課。</p>
+<label for="email">登入 Email</label><input id="email" type="email" autocomplete="username" required>
+<label for="password">密碼</label><input id="password" type="password" autocomplete="current-password" required>
+<button id="loginBtn">登入閱讀平台</button><div id="loginMsg" class="msg hidden"></div>
+</section>
+<section id="profilePanel" class="panel hidden"><h2>帳號尚未開通</h2><p>已成功登入，但此帳號尚未完成員工姓名及營業單位對應。請聯絡總務課管理人員開通，不需要自行註冊。</p><div id="profileEmail" class="muted"></div><button class="secondary" id="profileLogout">登出</button></section>
+<section id="appPanel" class="hidden">
+<div class="panel topbar"><div><h1 id="welcome">本月財經知識選讀</h1><div class="muted" id="employeeInfo"></div></div><button class="secondary" id="logoutBtn">登出</button></div>
+<div id="monthlyContent"></div>
+</section>
+<section id="readerPanel" class="panel hidden"><div class="topbar"><div><h2 id="readerTitle"></h2><div class="muted" id="readerMeta"></div></div><button class="secondary" id="closeReader">返回文章列表</button></div><iframe id="pdfViewer" class="viewer" title="文章 PDF 閱讀器"></iframe><div id="readMsg" class="msg hidden"></div><div style="margin-top:12px"><button id="markRead">標記已閱讀</button></div><div style="margin-top:22px;border-top:1px solid #e5ebe4;padding-top:18px"><h2>心得分享</h2><p class="muted">心得為自由提交；提交後可再次修改。</p><textarea id="sharingContent" maxlength="10000" placeholder="分享這篇文章帶給你的觀點、啟發或工作上的連結……"></textarea><button id="saveSharing">提交／更新心得</button><div id="sharingMsg" class="msg hidden"></div></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+const URL="https://onebxqajsiqmhfcizaxl.supabase.co",KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
+const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
+let user=null,profile=null,currentArticle=null,currentSelectionArticle=null;
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).classList.add("hidden")}
+function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
+function switchToApp(){hide("loginPanel");hide("profilePanel");show("appPanel");}
+async function loadProfile(){
+ const r=await db.from("fr_employee_profiles").select("user_id,employee_name,employee_no,is_active,units(name,code)").eq("user_id",user.id).eq("is_active",true).maybeSingle();
+ if(r.error)throw r.error;profile=r.data;
+ if(!profile){hide("loginPanel");hide("appPanel");$("profileEmail").textContent=user.email||"";show("profilePanel");return false;}
+ $("employeeInfo").textContent=profile.employee_name+"｜"+(profile.units?.name||"")+"（"+(profile.units?.code||"")+"）";
+ switchToApp();await loadSelections();return true;
+}
+async function loadSelections(){
+ $("monthlyContent").innerHTML='<div class="panel muted">正在載入選讀文章……</div>';
+ const r=await db.from("fr_monthly_selections").select("id,month_start,title,description,reading_start_at,reading_end_at,fr_monthly_selection_articles(id,sort_order,reflection_required,fr_articles(id,title,author,publisher,issue_date,category,abstract,source_url,fr_article_files(id,storage_path,original_filename,is_current)))").eq("status","published").order("month_start",{ascending:false});
+ if(r.error)throw r.error;
+ const rows=(r.data||[]).filter(m=>m.fr_monthly_selection_articles?.length);
+ $("monthlyContent").innerHTML=rows.length?rows.map(m=>'<section class="panel"><h2>'+esc(m.month_start)+'｜'+esc(m.title)+'</h2><p class="muted">'+esc(m.description||"")+'</p><div class="grid">'+m.fr_monthly_selection_articles.sort((a,b)=>a.sort_order-b.sort_order).map(x=>{const a=x.fr_articles||{};return '<article class="article"><h3>'+esc(a.title)+'</h3><div class="muted">'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</div><span class="tag">'+esc(a.category)+'</span><p>'+esc(a.abstract||"尚無文章簡介")+'</p><button data-open="'+x.id+'">閱讀文章</button></article>';}).join("")+'</div></section>').join(""):'<section class="panel">目前沒有開放中的選讀文章。</section>';
+ $("monthlyContent").querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openArticle(b.dataset.open,rows)));
+}
+async function openArticle(id,months){
+ let item=null,month=null;for(const m of months){const found=(m.fr_monthly_selection_articles||[]).find(x=>x.id===id);if(found){item=found;month=m;break;}}
+ if(!item||!item.fr_articles)throw new Error("找不到文章資料。");
+ const a=item.fr_articles,file=(a.fr_article_files||[]).find(f=>f.is_current);if(!file)throw new Error("此文章目前沒有可閱讀的 PDF。");
+ const signed=await db.storage.from("financial-reading-pdfs").createSignedUrl(file.storage_path,1800);if(signed.error)throw signed.error;
+ currentArticle=a;currentSelectionArticle=item;
+ $("readerTitle").textContent=a.title;$("readerMeta").textContent=(a.author||"")+"｜"+(a.publisher||"")+"｜"+month.month_start;
+ $("pdfViewer").src=signed.data.signedUrl+"#toolbar=1&navpanes=0";
+ $("sharingContent").value="";
+ const post=await db.from("fr_sharing_posts").select("content").eq("selection_article_id",item.id).eq("user_id",user.id).maybeSingle();if(post.error)throw post.error;if(post.data)$("sharingContent").value=post.data.content;
+ const record=await db.from("fr_reading_records").select("id,open_count").eq("selection_article_id",item.id).eq("user_id",user.id).maybeSingle();if(record.error)throw record.error;
+ const payload={selection_article_id:item.id,user_id:user.id,last_opened_at:new Date().toISOString(),open_count:record.data?(record.data.open_count+1):1};
+ if(record.data){const up=await db.from("fr_reading_records").update(payload).eq("id",record.data.id);if(up.error)throw up.error;}
+ else{const ins=await db.from("fr_reading_records").insert(payload);if(ins.error)throw ins.error;}
+ hide("appPanel");show("readerPanel");$("readMsg").classList.add("hidden");
+}
+$("markRead").onclick=async()=>{if(!currentSelectionArticle)return;const r=await db.from("fr_reading_records").update({completed_at:new Date().toISOString()}).eq("selection_article_id",currentSelectionArticle.id).eq("user_id",user.id);if(r.error){msg("readMsg",r.error.message,true);return;}msg("readMsg","已記錄閱讀完成，謝謝你的參與。");};
+$("saveSharing").onclick=async()=>{if(!currentSelectionArticle)return;const content=$("sharingContent").value.trim();if(!content){msg("sharingMsg","請先輸入心得內容。",true);return;}const old=await db.from("fr_sharing_posts").select("id").eq("selection_article_id",currentSelectionArticle.id).eq("user_id",user.id).maybeSingle();if(old.error){msg("sharingMsg",old.error.message,true);return;}const payload={selection_article_id:currentSelectionArticle.id,user_id:user.id,content,updated_at:new Date().toISOString()};const r=old.data?await db.from("fr_sharing_posts").update(payload).eq("id",old.data.id):await db.from("fr_sharing_posts").insert(payload);if(r.error){msg("sharingMsg",r.error.message,true);return;}msg("sharingMsg","心得已儲存。");};
+$("closeReader").onclick=()=>{hide("readerPanel");show("appPanel");$("pdfViewer").src="about:blank";};
+async function login(){const email=$("email").value.trim().toLowerCase(),password=$("password").value;try{const r=await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;user=r.data.user;await loadProfile();}catch(e){msg("loginMsg","登入失敗："+e.message,true);}}
+$("loginBtn").onclick=login;$("password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+async function logout(){await db.auth.signOut();user=null;profile=null;hide("appPanel");hide("profilePanel");hide("readerPanel");show("loginPanel");$("pdfViewer").src="about:blank";}
+$("logoutBtn").onclick=logout;$("profileLogout").onclick=logout;
+async function restore(){const r=await db.auth.getSession();if(r.error)throw r.error;if(r.data.session){user=r.data.session.user;await loadProfile();}}
+restore().catch(e=>msg("loginMsg","無法恢復登入狀態："+e.message,true));
+})();
+</script></body></html>
