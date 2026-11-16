@@ -66,7 +66,7 @@ async function openArticle(id){
  $("readerTitle").textContent=a.title;$("readerMeta").textContent=(a.author||"")+"｜"+(a.publisher||"")+"｜"+month.month_start+"｜"+identity.unitName+"／"+identity.name;
  $("pdfViewer").src=signed.data.signedUrl+"#toolbar=1&navpanes=0";
  $("sharingContent").value="";
- const post=await db.rpc("fr_public_get_sharing",{p_selection_article_id:item.id,p_unit_id:identity.unitId,p_submitter_name:identity.name});if(post.error)throw post.error;if(post.data)$("sharingContent").value=post.data;
+ $("sharingContent").value="";
  const read=await db.rpc("fr_public_submit_reading",{p_selection_article_id:item.id,p_unit_id:identity.unitId,p_submitter_name:identity.name,p_completed:false});if(read.error)throw read.error;
  hide("appPanel");show("readerPanel");$("readMsg").classList.add("hidden");$("sharingMsg").classList.add("hidden");
 }
