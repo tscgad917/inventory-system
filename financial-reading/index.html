@@ -18,7 +18,7 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#17613a;color:whi
 <main>
 <section id="identityPanel" class="panel">
 <h1>開始閱讀</h1>
-<p class="muted">本階段免帳號、免密碼。請選擇所屬營業單位並輸入姓名，即可閱讀文章及提交心得。請確認姓名填寫正確，以利總務課彙整參與情形。</p>
+<p class="muted">請選擇所屬單位並輸入員工姓名。系統會核對社員及貴賓系統中的有效員工名冊，確認身分後才能進入閱讀。</p>
 <div class="field"><label for="unit">所屬營業單位 <span class="required">*</span></label><select id="unit"><option value="">正在載入單位……</option></select></div>
 <div class="field"><label for="name">姓名 <span class="required">*</span></label><input id="name" maxlength="80" autocomplete="name" placeholder="請輸入姓名"></div>
 <button id="continueBtn">進入選讀文章</button><div id="identityMsg" class="msg hidden"></div>
@@ -47,7 +47,7 @@ function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).class
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
 async function loadUnits(){
  const r=await db.rpc("fr_public_units");if(r.error)throw r.error;
- $("unit").innerHTML='<option value="">請選擇所屬營業單位</option>'+(r.data||[]).map(u=>'<option value="'+u.id+'">'+esc(u.code)+'｜'+esc(u.name)+'</option>').join("");
+ $("unit").innerHTML='<option value="">請選擇所屬單位</option>'+(r.data||[]).map(u=>'<option value="'+u.id+'">'+esc(u.code)+'｜'+esc(u.name)+'</option>').join("");
 }
 async function loadSelections(){
  $("monthlyContent").innerHTML='<div class="panel muted">正在載入選讀文章……</div>';
@@ -74,7 +74,7 @@ $("continueBtn").onclick=async()=>{
  const unitId=$("unit").value,name=$("name").value.trim();
  if(!unitId||!name){msg("identityMsg","請選擇所屬營業單位並輸入姓名。",true);return;}
  try{
-  const verified=await db.rpc("fr_public_verify_employee",{p_employee_name:name});
+  const verified=await db.rpc("fr_public_verify_employee",{p_unit_id:Number(unitId),p_employee_name:name});
   if(verified.error)throw verified.error;
   if(verified.data!==true){msg("identityMsg","查無符合的在職員工資料，請確認姓名是否正確；如資料有誤，請洽總務課更新社員及貴賓系統名冊。",true);return;}
   identity={unitId:Number(unitId),unitName:$("unit").selectedOptions[0].textContent,name};
