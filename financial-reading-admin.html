@@ -85,13 +85,11 @@ const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
 function tab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("secondary",b.dataset.tab!==name));document.querySelectorAll("section[id^=tab-]").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name));}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
-// 管理後台僅能由總務課統一管理中心進入。
+// 每次進入管理後台都必須由統一管理中心點選入口。
+// 使用一次性票證，不保留可讓使用者直接貼網址重進的工作階段旗標。
 const entryTicket=sessionStorage.getItem("financialReadingAdminEntryTicket");
-if(entryTicket==="from-center"){
- sessionStorage.removeItem("financialReadingAdminEntryTicket");
- sessionStorage.setItem("financialReadingAdminSession","authorized");
-}
-if(sessionStorage.getItem("financialReadingAdminSession")!=="authorized"){
+sessionStorage.removeItem("financialReadingAdminEntryTicket");
+if(entryTicket!=="from-center"){
  window.location.replace("https://tscgad917.github.io/inventory-system/admin-center.html");
  throw new Error("請先由總務課統一管理中心進入財經知識選讀系統。");
 }
@@ -188,7 +186,8 @@ async function loadStats(){
  $("sharingList").innerHTML=shareRows.length?'<table><thead><tr><th>月份</th><th>單位／姓名</th><th>文章</th><th>心得內容</th><th>提交時間</th></tr></thead><tbody>'+shareRows.map(p=>'<tr><td>'+esc(p.fr_monthly_selection_articles?.fr_monthly_selections?.month_start||"")+'</td><td>'+esc(p.units?.code||"")+'｜'+esc(p.units?.name||"")+'<br>'+esc(p.submitter_name||"")+'</td><td>'+esc(p.fr_monthly_selection_articles?.fr_articles?.title||"")+'</td><td style="white-space:pre-wrap">'+esc(p.content)+'</td><td>'+dt(p.created_at)+'</td></tr>').join("")+'</tbody></table>':'尚無心得分享。';
 }
 $("statsMonth").addEventListener("change",()=>loadStats().catch(e=>msg("statsCards",e.message,true)));
-$("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem("financialReadingAdminSession");location.href="https://tscgad917.github.io/login/";};
+$("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem("financialReadingAdminSession");
+sessionStorage.removeItem("financialReadingAdminEntryTicket");location.href="https://tscgad917.github.io/login/";};
 async function init(){try{await auth();$("app").classList.remove("hidden");await Promise.all([loadArticles(),loadMonths(),loadUnits(),loadEmployees()]);await loadStats();}catch(e){$("fatal").textContent=e.message;$("fatal").classList.remove("hidden");$("adminState").textContent="驗證失敗";}}
 init();
 })();
