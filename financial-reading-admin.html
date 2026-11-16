@@ -129,15 +129,29 @@ $("articleForm").addEventListener("submit",async e=>{
  try{
   const user=(await db.auth.getUser()).data.user;
   const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value?($("issueDatePrecision").value==="month"?$("issueDate").value+"-01":$("issueDate").value):null,issue_date_precision:$("issueDatePrecision").value,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
-  const a=await db.from("fr_articles").insert(payload).select().single();if(a.error)throw a.error;
-  const rights=await db.from("fr_rights_records").insert({article_id:a.data.id,review_status:$("rightsStatus").value,legal_basis:$("legalBasis").value.trim()||null,evidence_url:$("evidenceUrl").value.trim()||null,notes:$("rightsNotes").value.trim()||null,reviewed_by:user.id,reviewed_at:$("rightsStatus").value==="pending"?null:new Date().toISOString()});
-  if(rights.error)throw rights.error;
-  const file=$("pdfFile").files[0];
-  if(file){if(file.type!=="application/pdf")throw new Error("只接受 PDF 檔案。");if(file.size>52428800)throw new Error("PDF 不可超過 50MB。");
-   const safe=file.name.replace(/[^\w.\-\u4e00-\u9fff]/g,"_"),path=a.data.id+"/"+Date.now()+"-"+safe;
-   const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
-   const fr=await db.from("fr_article_files").insert({article_id:a.data.id,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id});if(fr.error)throw fr.error;
-  }
+   // 若前次新增文章成功、但 PDF 上傳失敗，重試時沿用該筆尚未附檔的文章，避免產生重複資料。
+   const prior=await db.from("fr_articles").select("id").eq("title",payload.title).eq("created_by",user.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+   if(prior.error)throw prior.error;
+   let articleId=null;
+   if(prior.data){
+    const existingFiles=await db.from("fr_article_files").select("id").eq("article_id",prior.data.id).limit(1);
+    if(existingFiles.error)throw existingFiles.error;
+    if(!existingFiles.data?.length){
+     const upd=await db.from("fr_articles").update(payload).eq("id",prior.data.id).select("id").single();if(upd.error)throw upd.error;articleId=upd.data.id;
+    }
+   }
+   if(!articleId){const a=await db.from("fr_articles").insert(payload).select().single();if(a.error)throw a.error;articleId=a.data.id;}
+   const rightsPayload={article_id:articleId,review_status:$("rightsStatus").value,legal_basis:$("legalBasis").value.trim()||null,evidence_url:$("evidenceUrl").value.trim()||null,notes:$("rightsNotes").value.trim()||null,reviewed_by:user.id,reviewed_at:$("rightsStatus").value==="pending"?null:new Date().toISOString()};
+   const oldRights=await db.from("fr_rights_records").select("id").eq("article_id",articleId).limit(1).maybeSingle();if(oldRights.error)throw oldRights.error;
+   const rights=oldRights.data?await db.from("fr_rights_records").update(rightsPayload).eq("id",oldRights.data.id):await db.from("fr_rights_records").insert(rightsPayload);
+   if(rights.error)throw rights.error;
+   const file=$("pdfFile").files[0];
+   if(file){if(file.type!=="application/pdf")throw new Error("只接受 PDF 檔案。");if(file.size>52428800)throw new Error("PDF 不可超過 50MB。");
+    // Storage object key 僅使用英數與副檔名；原始中文檔名另存於資料庫供顯示。
+    const path=articleId+"/"+Date.now()+".pdf";
+    const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
+    const fr=await db.from("fr_article_files").insert({article_id:articleId,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id});if(fr.error)throw fr.error;
+   }
   $("articleForm").reset();$("issueDate").type="date";$("issueDateHint").textContent="請填寫完整年月日。";msg("articleMsg","文章已新增。");await loadArticles();await loadMonths();
  }catch(err){msg("articleMsg","儲存失敗："+err.message,true);}finally{btn.disabled=false;}
 });
