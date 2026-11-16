@@ -21,7 +21,7 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 <div id="fatal" class="msg error hidden"></div>
 <div id="app" class="hidden">
 <div class="tabs">
-<button data-tab="articles">文章及著作權管理</button><button class="secondary" data-tab="months">每月選讀發布</button><button class="secondary" data-tab="employees">員工帳號對應</button><button class="secondary" data-tab="stats">閱讀及心得統計</button>
+<button data-tab="articles">文章及著作權管理</button><button class="secondary" data-tab="months">每月選讀發布</button><button class="secondary" data-tab="employees">參與人員名單</button><button class="secondary" data-tab="stats">閱讀及心得統計</button>
 </div>
 <section id="tab-articles" class="panel">
 <h2>新增文章</h2><p class="muted">先建檔及登錄著作權檢核結果，再上傳 PDF。只有權利狀態為「已確認可使用」的文章，才能發布給員工閱讀。</p>
@@ -65,16 +65,8 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 <h3 style="margin-top:24px">月份清單</h3><div id="monthList" class="table-wrap">載入中……</div>
 </section>
 <section id="tab-employees" class="panel hidden">
-<h2>員工帳號與單位對應</h2><p class="muted">員工須先由管理者在 Supabase Auth 建立帳號，再於此處將登入 Email 對應至員工姓名及單位。此處不會建立或寄送帳號邀請。</p>
-<form id="employeeForm">
-<div class="grid">
-<div class="field"><label for="employeeEmail">員工登入 Email *</label><input id="employeeEmail" type="email" required></div>
-<div class="field"><label for="employeeName">員工姓名 *</label><input id="employeeName" required></div>
-<div class="field"><label for="employeeNo">員工編號（選填）</label><input id="employeeNo"></div>
-<div class="field"><label for="employeeUnit">所屬營業單位 *</label><select id="employeeUnit" required></select></div>
-</div><button class="btn" type="submit">建立／更新員工對應</button>
-</form><div id="employeeMsg" class="msg hidden"></div>
-<h3 style="margin-top:24px">已開通員工</h3><div id="employeeList" class="table-wrap">載入中……</div>
+<h2>參與人員名單</h2><p class="muted">依員工填寫的單位及姓名彙整，不需建立個別帳號。相同單位及姓名於不同文章的紀錄會合併為同一參與人員。</p>
+<div id="employeeList" class="table-wrap">載入中……</div>
 </section>
 <section id="tab-stats" class="panel hidden">
 <h2>閱讀及心得統計</h2><div class="field"><label for="statsMonth">選擇月份</label><select id="statsMonth"><option value="">全部月份</option></select></div>
@@ -143,35 +135,47 @@ $("monthForm").addEventListener("submit",async e=>{
   msg("monthMsg","已建立草稿。確認內容後，請在月份清單按「發布」。");$("monthForm").reset();await loadMonths();
  }catch(err){msg("monthMsg","建立失敗："+err.message,true);}
 });
-async function loadUnits(){
- const r=await db.from("units").select("id,code,name,is_active").eq("is_active",true).order("code");if(r.error)throw r.error;units=r.data||[];
- $("employeeUnit").innerHTML=units.filter(u=>u.code&&u.code!=="0917").map(u=>'<option value="'+u.id+'">'+esc(u.code)+'｜'+esc(u.name)+'</option>').join("");
+async function loadUnits(){ 
+ const r=await db.from("units").select("id,code,name,is_active").eq("is_active",true).order("code");
+ if(r.error)throw r.error;units=r.data||[];
 }
 async function loadEmployees(){
- const r=await db.from("fr_employee_profiles").select("user_id,employee_name,employee_no,is_active,units(name,code)").order("employee_name");if(r.error)throw r.error;profiles=r.data||[];
- $("employeeList").innerHTML=profiles.length?'<table><thead><tr><th>員工</th><th>單位</th><th>帳號 UUID</th><th>狀態</th></tr></thead><tbody>'+profiles.map(p=>'<tr><td>'+esc(p.employee_name)+'<br><small>'+esc(p.employee_no||"")+'</small></td><td>'+esc(p.units?.code||"")+'｜'+esc(p.units?.name||"")+'</td><td><small>'+esc(p.user_id)+'</small></td><td>'+ (p.is_active?"啟用":"停用")+'</td></tr>').join("")+'</tbody></table>':'尚無員工帳號對應。';
+ const [rr,pp]=await Promise.all([
+  db.from("fr_reading_records").select("unit_id,submitter_name,completed_at,units(name,code)").not("unit_id","is",null),
+  db.from("fr_sharing_posts").select("unit_id,submitter_name,created_at,units(name,code)").not("unit_id","is",null)
+ ]);
+ if(rr.error)throw rr.error;if(pp.error)throw pp.error;
+ const people=new Map();
+ [...(rr.data||[]),...(pp.data||[])].forEach(p=>{
+  const key=String(p.unit_id)+"|"+String(p.submitter_name||"").trim().toLowerCase();
+  if(!people.has(key))people.set(key,{unit:p.units?.name||"",code:p.units?.code||"",name:p.submitter_name||"",reads:0,completed:0,shares:0});
+ });
+ (rr.data||[]).forEach(p=>{const x=people.get(String(p.unit_id)+"|"+String(p.submitter_name||"").trim().toLowerCase());if(x){x.reads++;if(p.completed_at)x.completed++;}});
+ (pp.data||[]).forEach(p=>{const x=people.get(String(p.unit_id)+"|"+String(p.submitter_name||"").trim().toLowerCase());if(x)x.shares++;});
+ const rows=[...people.values()].sort((a,b)=>(a.code||"").localeCompare(b.code||"")||a.name.localeCompare(b.name,"zh-TW"));
+ $("employeeList").innerHTML=rows.length?'<table><thead><tr><th>單位</th><th>姓名</th><th>開啟文章數</th><th>完成閱讀數</th><th>心得提交數</th></tr></thead><tbody>'+rows.map(p=>'<tr><td>'+esc(p.code)+'｜'+esc(p.unit)+'</td><td>'+esc(p.name)+'</td><td>'+p.reads+'</td><td>'+p.completed+'</td><td>'+p.shares+'</td></tr>').join("")+'</tbody></table>':'目前尚無參與紀錄。';
 }
-$("employeeForm").addEventListener("submit",async e=>{
- e.preventDefault();try{
-  const r=await db.rpc("fr_admin_assign_employee",{p_email:$("employeeEmail").value.trim().toLowerCase(),p_unit_id:Number($("employeeUnit").value),p_employee_name:$("employeeName").value.trim(),p_employee_no:$("employeeNo").value.trim()||null});
-  if(r.error)throw r.error;msg("employeeMsg","員工帳號已完成對應。");$("employeeForm").reset();await loadEmployees();
- }catch(err){msg("employeeMsg","設定失敗："+err.message,true);}
-});
 async function loadStats(){
- const sel=$("statsMonth").value;let q=db.from("fr_monthly_selection_articles").select("id,selection_id,fr_articles(title),fr_monthly_selections(month_start,title)").order("sort_order");
- if(sel)q=q.eq("selection_id",sel);const sr=await q;if(sr.error)throw sr.error;const ids=(sr.data||[]).map(x=>x.id);
+ const sel=$("statsMonth").value;
+ let q=db.from("fr_monthly_selection_articles").select("id,selection_id,fr_articles(title),fr_monthly_selections(month_start,title)").order("sort_order");
+ if(sel)q=q.eq("selection_id",sel);
+ const sr=await q;if(sr.error)throw sr.error;const ids=(sr.data||[]).map(x=>x.id);
  if(!ids.length){$("statsCards").innerHTML='<div class="stat">目前沒有選讀文章</div>';$("unitStats").innerHTML="—";$("sharingList").innerHTML="—";return;}
- const [rr,pp,ep]=await Promise.all([
-  db.from("fr_reading_records").select("selection_article_id,user_id,completed_at").in("selection_article_id",ids),
-  db.from("fr_sharing_posts").select("selection_article_id,user_id,content,created_at,fr_monthly_selection_articles(fr_articles(title),fr_monthly_selections(month_start))").in("selection_article_id",ids),
-  db.from("fr_employee_profiles").select("user_id,employee_name,units(name,code)").eq("is_active",true)
- ]);if(rr.error)throw rr.error;if(pp.error)throw pp.error;if(ep.error)throw ep.error;
- const total=ep.data.length,read=new Set((rr.data||[]).map(x=>x.user_id)),share=new Set((pp.data||[]).map(x=>x.user_id));
- $("statsCards").innerHTML='<div class="stat"><span>開通員工</span><strong>'+total+'</strong></div><div class="stat"><span>有閱讀紀錄</span><strong>'+read.size+'</strong></div><div class="stat"><span>有心得分享</span><strong>'+share.size+'</strong></div><div class="stat"><span>選讀文章</span><strong>'+ids.length+'</strong></div>';
- const unitsMap=new Map();(ep.data||[]).forEach(p=>{const k=p.units?.code||"未知";if(!unitsMap.has(k))unitsMap.set(k,{name:p.units?.name||"",staff:0,read:0,share:0,users:[]});unitsMap.get(k).staff++;unitsMap.get(k).users.push(p.user_id);});
- unitsMap.forEach(v=>{v.read=v.users.filter(id=>read.has(id)).length;v.share=v.users.filter(id=>share.has(id)).length;});
- $("unitStats").innerHTML='<table><thead><tr><th>單位</th><th>員工數</th><th>閱讀人數</th><th>閱讀率</th><th>心得人數</th><th>心得率</th></tr></thead><tbody>'+[...unitsMap.entries()].sort().map(([code,v])=>'<tr><td>'+esc(code)+'｜'+esc(v.name)+'</td><td>'+v.staff+'</td><td>'+v.read+'</td><td>'+ (v.staff?Math.round(v.read/v.staff*100):0)+'%</td><td>'+v.share+'</td><td>'+(v.staff?Math.round(v.share/v.staff*100):0)+'%</td></tr>').join("")+'</tbody></table>';
- $("sharingList").innerHTML=(pp.data||[]).length?'<table><thead><tr><th>月份</th><th>文章</th><th>心得內容</th><th>提交時間</th></tr></thead><tbody>'+pp.data.map(p=>'<tr><td>'+esc(p.fr_monthly_selection_articles?.fr_monthly_selections?.month_start||"")+'</td><td>'+esc(p.fr_monthly_selection_articles?.fr_articles?.title||"")+'</td><td style="white-space:pre-wrap">'+esc(p.content)+'</td><td>'+dt(p.created_at)+'</td></tr>').join("")+'</tbody></table>':'尚無心得分享。';
+ const [rr,pp]=await Promise.all([
+  db.from("fr_reading_records").select("selection_article_id,unit_id,submitter_name,completed_at,units(name,code),fr_monthly_selection_articles(fr_articles(title),fr_monthly_selections(month_start))").in("selection_article_id",ids),
+  db.from("fr_sharing_posts").select("selection_article_id,unit_id,submitter_name,content,created_at,units(name,code),fr_monthly_selection_articles(fr_articles(title),fr_monthly_selections(month_start))").in("selection_article_id",ids)
+ ]);
+ if(rr.error)throw rr.error;if(pp.error)throw pp.error;
+ const readRows=rr.data||[],shareRows=pp.data||[];
+ const unique=(rows)=>new Set(rows.map(x=>String(x.unit_id)+"|"+String(x.submitter_name||"").trim().toLowerCase()));
+ const peopleRead=unique(readRows),peopleShare=unique(shareRows);
+ $("statsCards").innerHTML='<div class="stat"><span>選讀文章</span><strong>'+ids.length+'</strong></div><div class="stat"><span>參與閱讀人數</span><strong>'+peopleRead.size+'</strong></div><div class="stat"><span>完成閱讀人次</span><strong>'+readRows.filter(x=>x.completed_at).length+'</strong></div><div class="stat"><span>心得提交人數</span><strong>'+peopleShare.size+'</strong></div>';
+ const byUnit=new Map();
+ [...readRows,...shareRows].forEach(p=>{const key=String(p.unit_id);if(!byUnit.has(key))byUnit.set(key,{code:p.units?.code||"",name:p.units?.name||"",readers:new Set(),completed:0,sharers:new Set(),shareCount:0});});
+ readRows.forEach(p=>{const x=byUnit.get(String(p.unit_id));if(x){const person=String(p.submitter_name||"").trim().toLowerCase();x.readers.add(person);if(p.completed_at)x.completed++;}});
+ shareRows.forEach(p=>{const x=byUnit.get(String(p.unit_id));if(x){x.sharers.add(String(p.submitter_name||"").trim().toLowerCase());x.shareCount++;}});
+ $("unitStats").innerHTML=byUnit.size?'<table><thead><tr><th>營業單位</th><th>閱讀參與人數</th><th>完成閱讀人次</th><th>心得分享人數</th><th>心得件數</th></tr></thead><tbody>'+[...byUnit.values()].sort((a,b)=>a.code.localeCompare(b.code)).map(x=>'<tr><td>'+esc(x.code)+'｜'+esc(x.name)+'</td><td>'+x.readers.size+'</td><td>'+x.completed+'</td><td>'+x.sharers.size+'</td><td>'+x.shareCount+'</td></tr>').join("")+'</tbody></table>':'目前尚無參與紀錄。';
+ $("sharingList").innerHTML=shareRows.length?'<table><thead><tr><th>月份</th><th>單位／姓名</th><th>文章</th><th>心得內容</th><th>提交時間</th></tr></thead><tbody>'+shareRows.map(p=>'<tr><td>'+esc(p.fr_monthly_selection_articles?.fr_monthly_selections?.month_start||"")+'</td><td>'+esc(p.units?.code||"")+'｜'+esc(p.units?.name||"")+'<br>'+esc(p.submitter_name||"")+'</td><td>'+esc(p.fr_monthly_selection_articles?.fr_articles?.title||"")+'</td><td style="white-space:pre-wrap">'+esc(p.content)+'</td><td>'+dt(p.created_at)+'</td></tr>').join("")+'</tbody></table>':'尚無心得分享。';
 }
 $("statsMonth").addEventListener("change",()=>loadStats().catch(e=>msg("statsCards",e.message,true)));
 $("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));location.href="https://tscgad917.github.io/login/";};
