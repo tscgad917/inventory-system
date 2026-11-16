@@ -138,7 +138,7 @@ $("articleForm").addEventListener("submit",async e=>{
    const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
    const fr=await db.from("fr_article_files").insert({article_id:a.data.id,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id});if(fr.error)throw fr.error;
   }
-  $("articleForm").reset();msg("articleMsg","文章已新增。");await loadArticles();await loadMonths();
+  $("articleForm").reset();$("issueDate").type="date";$("issueDateHint").textContent="請填寫完整年月日。";msg("articleMsg","文章已新增。");await loadArticles();await loadMonths();
  }catch(err){msg("articleMsg","儲存失敗："+err.message,true);}finally{btn.disabled=false;}
 });
 $("monthForm").addEventListener("submit",async e=>{
