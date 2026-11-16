@@ -188,7 +188,7 @@ async function loadStats(){
  $("sharingList").innerHTML=shareRows.length?'<table><thead><tr><th>月份</th><th>單位／姓名</th><th>文章</th><th>心得內容</th><th>提交時間</th></tr></thead><tbody>'+shareRows.map(p=>'<tr><td>'+esc(p.fr_monthly_selection_articles?.fr_monthly_selections?.month_start||"")+'</td><td>'+esc(p.units?.code||"")+'｜'+esc(p.units?.name||"")+'<br>'+esc(p.submitter_name||"")+'</td><td>'+esc(p.fr_monthly_selection_articles?.fr_articles?.title||"")+'</td><td style="white-space:pre-wrap">'+esc(p.content)+'</td><td>'+dt(p.created_at)+'</td></tr>').join("")+'</tbody></table>':'尚無心得分享。';
 }
 $("statsMonth").addEventListener("change",()=>loadStats().catch(e=>msg("statsCards",e.message,true)));
-$("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));location.href="https://tscgad917.github.io/login/";};
+$("logout").onclick=async()=>{await db.auth.signOut();["admin_access_token","admin_refresh_token","admin_email","admin_role"].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem("financialReadingAdminSession");location.href="https://tscgad917.github.io/login/";};
 async function init(){try{await auth();$("app").classList.remove("hidden");await Promise.all([loadArticles(),loadMonths(),loadUnits(),loadEmployees()]);await loadStats();}catch(e){$("fatal").textContent=e.message;$("fatal").classList.remove("hidden");$("adminState").textContent="驗證失敗";}}
 init();
 })();
