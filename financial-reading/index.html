@@ -52,7 +52,7 @@ async function loadSelections(){
  if(r.error)throw r.error;
  const rows=(r.data||[]).filter(m=>m.fr_monthly_selection_articles?.length);
  $("monthlyContent").innerHTML=rows.length?rows.map(m=>'<section class="panel"><h2>'+esc(m.month_start)+'｜'+esc(m.title)+'</h2><p class="muted">'+esc(m.description||"")+'</p><div class="grid">'+m.fr_monthly_selection_articles.sort((a,b)=>a.sort_order-b.sort_order).map(x=>{const a=x.fr_articles||{};return '<article class="article"><h3>'+esc(a.title)+'</h3><div class="muted">'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</div><span class="tag">'+esc(a.category)+'</span><p>'+esc(a.abstract||"尚無文章簡介")+'</p><button data-open="'+x.id+'">閱讀文章</button></article>';}).join("")+'</div></section>').join(""):'<section class="panel">目前沒有開放中的選讀文章。</section>';
- $("monthlyContent").querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openArticle(b.dataset.open,rows)));
+ $("monthlyContent").querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openArticle(b.dataset.open,rows).catch(err=>alert("無法開啟文章："+err.message))));
 }
 async function openArticle(id,months){
  let item=null,month=null;for(const m of months){const found=(m.fr_monthly_selection_articles||[]).find(x=>x.id===id);if(found){item=found;month=m;break;}}
