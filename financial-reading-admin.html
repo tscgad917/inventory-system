@@ -85,6 +85,16 @@ const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
 function tab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("secondary",b.dataset.tab!==name));document.querySelectorAll("section[id^=tab-]").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name));}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+// 管理後台僅能由總務課統一管理中心進入。
+const entryTicket=sessionStorage.getItem("financialReadingAdminEntryTicket");
+if(entryTicket==="from-center"){
+ sessionStorage.removeItem("financialReadingAdminEntryTicket");
+ sessionStorage.setItem("financialReadingAdminSession","authorized");
+}
+if(sessionStorage.getItem("financialReadingAdminSession")!=="authorized"){
+ window.location.replace("https://tscgad917.github.io/inventory-system/admin-center.html");
+ throw new Error("請先由總務課統一管理中心進入財經知識選讀系統。");
+}
 async function auth(){
  let r=await db.auth.getSession();if(r.error)throw r.error;let s=r.data.session;
  if(!s){const a=localStorage.getItem("admin_access_token"),q=localStorage.getItem("admin_refresh_token");if(!a||!q)throw new Error("登入狀態失效，請由統一管理中心重新登入。");r=await db.auth.setSession({access_token:a,refresh_token:q});if(r.error)throw r.error;s=r.data.session;}
