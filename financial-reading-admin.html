@@ -30,7 +30,8 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 <div class="field"><label for="title">文章標題 *</label><input id="title" required maxlength="300"></div>
 <div class="field"><label for="author">作者</label><input id="author" maxlength="200"></div>
 <div class="field"><label for="publisher">刊物／出版者</label><input id="publisher" maxlength="200"></div>
-<div class="field"><label for="issueDate">刊登／出版日期</label><input id="issueDate" type="date"></div>
+<div class="field"><label for="issueDatePrecision">日期精度</label><select id="issueDatePrecision"><option value="day">有完整日期</option><option value="month">只有年、月</option></select></div>
+ <div class="field"><label for="issueDate">刊登／出版日期</label><input id="issueDate" type="date"><small class="muted" id="issueDateHint">請填寫完整年月日。</small></div>
 <div class="field"><label for="sourceType">來源類型</label><select id="sourceType"><option value="public_web">公開網路文章</option><option value="company_magazine">公司訂閱刊物</option><option value="other">其他</option></select></div>
 <div class="field"><label for="category">文章分類</label><select id="category">
 <option value="macroeconomy">總體經濟</option><option value="financial_markets">金融市場與貨幣政策</option><option value="cooperative_banking">銀行及信用合作社</option><option value="fintech">金融科技與數位轉型</option><option value="investment">投資與資產管理</option><option value="management">企業經營管理</option><option value="industry_trends" selected>產業趨勢</option><option value="other">其他</option></select></div>
@@ -83,6 +84,7 @@ let articles=[],months=[],units=[],profiles=[],activeEmail="";
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
+ $("issueDatePrecision").addEventListener("change",()=>{const month=$("issueDatePrecision").value==="month";$("issueDate").type=month?"month":"date";$("issueDateHint").textContent=month?"只需選擇刊物標示的年份及月份，不必自行推定日期。":"請填寫刊物標示的完整年月日。";});
 function tab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("secondary",b.dataset.tab!==name));document.querySelectorAll("section[id^=tab-]").forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name));}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
 // 導覽限制：首次進入需由統一管理中心點選；同一分頁重新整理可繼續使用。
@@ -109,7 +111,7 @@ async function auth(){
 async function loadArticles(){
  const r=await db.from("fr_articles").select("*,fr_rights_records(review_status,legal_basis,reviewed_at),fr_article_files(id,original_filename,is_current)").order("created_at",{ascending:false});
  if(r.error)throw r.error;articles=r.data||[];
- $("articleList").innerHTML=articles.length?'<table><thead><tr><th>文章</th><th>來源／分類</th><th>著作權狀態</th><th>PDF</th></tr></thead><tbody>'+articles.map(a=>'<tr><td><strong>'+esc(a.title)+'</strong><br><small>'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</small></td><td>'+esc(a.source_type)+'<br>'+esc(a.category)+'</td><td>'+esc((a.fr_rights_records||[]).map(x=>x.review_status).join("、")||"未登錄")+'</td><td>'+esc((a.fr_article_files||[]).filter(x=>x.is_current).map(x=>x.original_filename).join("、")||"尚未上傳")+'</td></tr>').join("")+'</tbody></table>':'目前尚無文章。';
+ $("articleList").innerHTML=articles.length?'<table><thead><tr><th>文章</th><th>刊登／出版日期</th><th>來源／分類</th><th>著作權狀態</th><th>PDF</th></tr></thead><tbody>'+articles.map(a=>'<tr><td><strong>'+esc(a.title)+'</strong><br><small>'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</small></td><td>'+esc(a.issue_date?(a.issue_date_precision==="month"?a.issue_date.slice(0,7):a.issue_date):"未填寫")+'</td><td>'+esc(a.source_type)+'<br>'+esc(a.category)+'</td><td>'+esc((a.fr_rights_records||[]).map(x=>x.review_status).join("、")||"未登錄")+'</td><td>'+esc((a.fr_article_files||[]).filter(x=>x.is_current).map(x=>x.original_filename).join("、")||"尚未上傳")+'</td></tr>').join("")+'</tbody></table>':'目前尚無文章。';
  $("monthArticleChoices").innerHTML=articles.length?articles.map(a=>{const ok=(a.fr_rights_records||[]).some(x=>x.review_status==="approved");const hasPdf=(a.fr_article_files||[]).some(x=>x.is_current);const ready=ok&&hasPdf;return '<label class="check"><input type="checkbox" value="'+a.id+'" '+(ready?"":"disabled")+'><span><strong>'+esc(a.title)+'</strong><br><small>'+ (ready?"著作權已確認、PDF已上傳":(!ok?"尚未確認可使用":"尚未上傳 PDF"))+'</small></span></label>';}).join(""):"請先建立文章。";
 }
 async function loadMonths(){
@@ -126,7 +128,7 @@ $("articleForm").addEventListener("submit",async e=>{
  e.preventDefault();const btn=$("saveArticle");btn.disabled=true;
  try{
   const user=(await db.auth.getUser()).data.user;
-  const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value||null,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
+  const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value?($("issueDatePrecision").value==="month"?$("issueDate").value+"-01":$("issueDate").value):null,issue_date_precision:$("issueDatePrecision").value,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
   const a=await db.from("fr_articles").insert(payload).select().single();if(a.error)throw a.error;
   const rights=await db.from("fr_rights_records").insert({article_id:a.data.id,review_status:$("rightsStatus").value,legal_basis:$("legalBasis").value.trim()||null,evidence_url:$("evidenceUrl").value.trim()||null,notes:$("rightsNotes").value.trim()||null,reviewed_by:user.id,reviewed_at:$("rightsStatus").value==="pending"?null:new Date().toISOString()});
   if(rights.error)throw rights.error;
