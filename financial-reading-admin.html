@@ -24,7 +24,7 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 <button data-tab="articles">文章及著作權管理</button><button class="secondary" data-tab="months">每月選讀發布</button><button class="secondary" data-tab="employees">參與人員名單</button><button class="secondary" data-tab="stats">閱讀及心得統計</button>
 </div>
 <section id="tab-articles" class="panel">
-<h2>新增文章</h2><p class="muted">先建檔及登錄著作權檢核結果，再上傳 PDF。只有權利狀態為「已確認可使用」的文章，才能發布給員工閱讀。</p>
+<h2 id="articleFormTitle">新增文章</h2><p class="muted">先建檔及登錄著作權檢核結果，再上傳 PDF。只有權利狀態為「已確認可使用」的文章，才能發布給員工閱讀。</p>
 <form id="articleForm">
 <div class="grid">
 <div class="field"><label for="title">文章標題 *</label><input id="title" required maxlength="300"></div>
@@ -46,7 +46,7 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 </div>
 <div class="field"><label for="rightsNotes">檢核備註（含重製、公開傳輸及圖片處理）</label><textarea id="rightsNotes"></textarea></div>
 <div class="field"><label for="pdfFile">文章 PDF（限 PDF，最大 50MB）</label><input id="pdfFile" type="file" accept="application/pdf"></div>
-<div class="actions"><button class="btn" type="submit" id="saveArticle">儲存文章</button><span class="muted">PDF 將存放於非公開 Storage。</span></div>
+<div class="actions"><button class="btn" type="submit" id="saveArticle">儲存文章</button><button class="btn secondary hidden" type="button" id="cancelEditArticle">取消編輯</button><span class="muted">PDF 將存放於非公開 Storage。</span></div>
 </form><div id="articleMsg" class="msg hidden"></div>
 <h3 style="margin-top:24px">文章資料庫</h3><div id="articleList" class="table-wrap">載入中……</div>
 </section>
@@ -80,7 +80,7 @@ a{color:#245c39}.checklist{display:grid;grid-template-columns:repeat(auto-fit,mi
 "use strict";
 const URL="https://onebxqajsiqmhfcizaxl.supabase.co",KEY="sb_publishable_TihaeP-c-zcnydbqeuN7_A_Qc9eL7Zq";
 const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let articles=[],months=[],units=[],profiles=[],activeEmail="";
+let articles=[],months=[],units=[],profiles=[],activeEmail="",editingArticleId=null;
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dt=v=>v?new Date(v).toLocaleString("zh-TW",{hour12:false}):"—";
 function msg(id,t,error=false){$(id).textContent=t;$(id).classList.remove("hidden","error");if(error)$(id).classList.add("error");}
@@ -108,10 +108,40 @@ async function auth(){
  if(a.error)throw a.error;if(!a.data)throw new Error("此帳號未獲總務課管理授權。");
  $("adminState").textContent="管理員已驗證："+activeEmail;
 }
+function resetArticleForm(){
+ editingArticleId=null;$("articleForm").reset();$("issueDate").type="date";$("issueDateHint").textContent="請填寫完整年月日。";
+ $("articleFormTitle").textContent="新增文章";$("saveArticle").textContent="儲存文章";$("cancelEditArticle").classList.add("hidden");
+}
+async function editArticle(id){
+ const a=articles.find(x=>x.id===id);if(!a)return;
+ editingArticleId=id;
+ $("title").value=a.title||"";$("author").value=a.author||"";$("publisher").value=a.publisher||"";
+ const month=a.issue_date_precision==="month";$("issueDatePrecision").value=month?"month":"day";$("issueDate").type=month?"month":"date";$("issueDate").value=a.issue_date?(month?a.issue_date.slice(0,7):a.issue_date):"";
+ $("issueDateHint").textContent=month?"只需選擇刊物標示的年份及月份，不必自行推定日期。":"請填寫完整年月日。";
+ $("sourceType").value=a.source_type||"other";$("category").value=a.category||"other";$("sourceUrl").value=a.source_url||"";$("abstract").value=a.abstract||"";
+ const rr=(a.fr_rights_records||[])[0]||{};$("rightsStatus").value=rr.review_status||"pending";$("legalBasis").value=rr.legal_basis||"";$("evidenceUrl").value=rr.evidence_url||"";$("rightsNotes").value=rr.notes||"";
+ $("pdfFile").value="";$("articleFormTitle").textContent="編輯文章資料";$("saveArticle").textContent="儲存修改";$("cancelEditArticle").classList.remove("hidden");
+ $("articleFormTitle").scrollIntoView({behavior:"smooth",block:"center"});
+}
+async function deleteArticle(id){
+ const a=articles.find(x=>x.id===id);if(!a)return;
+ if(!confirm("確定刪除文章「"+a.title+"」及其著作權紀錄、PDF檔案？此操作無法復原。"))return;
+ try{
+  const used=await db.from("fr_monthly_selection_articles").select("id,fr_monthly_selections(status)").eq("article_id",id).limit(1);
+  if(used.error)throw used.error;
+  if(used.data?.length){alert("這篇文章已被加入每月選讀，為避免破壞既有發布或閱讀紀錄，請先從相關選讀月份移除文章，或保留文章資料。");return;}
+  const paths=(a.fr_article_files||[]).map(x=>x.storage_path).filter(Boolean);
+  if(paths.length){const rm=await db.storage.from("financial-reading-pdfs").remove(paths);if(rm.error)throw rm.error;}
+  const del=await db.from("fr_articles").delete().eq("id",id);if(del.error)throw del.error;
+  if(editingArticleId===id)resetArticleForm();
+  await loadArticles();msg("articleMsg","文章及相關檔案已刪除。");
+ }catch(err){msg("articleMsg","刪除失敗："+err.message,true);}
+}
+$("cancelEditArticle").onclick=()=>resetArticleForm();
 async function loadArticles(){
- const r=await db.from("fr_articles").select("*,fr_rights_records(review_status,legal_basis,reviewed_at),fr_article_files(id,original_filename,is_current)").order("created_at",{ascending:false});
+ const r=await db.from("fr_articles").select("*,fr_rights_records(review_status,legal_basis,reviewed_at),fr_article_files(id,storage_path,original_filename,is_current)").order("created_at",{ascending:false});
  if(r.error)throw r.error;articles=r.data||[];
- $("articleList").innerHTML=articles.length?'<table><thead><tr><th>文章</th><th>刊登／出版日期</th><th>來源／分類</th><th>著作權狀態</th><th>PDF</th></tr></thead><tbody>'+articles.map(a=>'<tr><td><strong>'+esc(a.title)+'</strong><br><small>'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</small></td><td>'+esc(a.issue_date?(a.issue_date_precision==="month"?a.issue_date.slice(0,7):a.issue_date):"未填寫")+'</td><td>'+esc(a.source_type)+'<br>'+esc(a.category)+'</td><td>'+esc((a.fr_rights_records||[]).map(x=>x.review_status).join("、")||"未登錄")+'</td><td>'+esc((a.fr_article_files||[]).filter(x=>x.is_current).map(x=>x.original_filename).join("、")||"尚未上傳")+'</td></tr>').join("")+'</tbody></table>':'目前尚無文章。';
+ $("articleList").innerHTML=articles.length?'<table><thead><tr><th>文章</th><th>刊登／出版日期</th><th>來源／分類</th><th>著作權狀態</th><th>PDF</th><th>管理</th></tr></thead><tbody>'+articles.map(a=>'<tr><td><strong>'+esc(a.title)+'</strong><br><small>'+esc(a.author||"")+'｜'+esc(a.publisher||"")+'</small></td><td>'+esc(a.issue_date?(a.issue_date_precision==="month"?a.issue_date.slice(0,7):a.issue_date):"未填寫")+'</td><td>'+esc(a.source_type)+'<br>'+esc(a.category)+'</td><td>'+esc((a.fr_rights_records||[]).map(x=>x.review_status).join("、")||"未登錄")+'</td><td>'+esc((a.fr_article_files||[]).filter(x=>x.is_current).map(x=>x.original_filename).join("、")||"尚未上傳")+'</td><td><button class="btn secondary" data-edit-article="'+a.id+'">編輯</button> <button class="btn danger" data-delete-article="'+a.id+'">刪除</button></td></tr>').join("")+'</tbody></table>':'目前尚無文章。';
  $("monthArticleChoices").innerHTML=articles.length?articles.map(a=>{const ok=(a.fr_rights_records||[]).some(x=>x.review_status==="approved");const hasPdf=(a.fr_article_files||[]).some(x=>x.is_current);const ready=ok&&hasPdf;return '<label class="check"><input type="checkbox" value="'+a.id+'" '+(ready?"":"disabled")+'><span><strong>'+esc(a.title)+'</strong><br><small>'+ (ready?"著作權已確認、PDF已上傳":(!ok?"尚未確認可使用":"尚未上傳 PDF"))+'</small></span></label>';}).join(""):"請先建立文章。";
 }
 async function loadMonths(){
@@ -129,30 +159,25 @@ $("articleForm").addEventListener("submit",async e=>{
  try{
   const user=(await db.auth.getUser()).data.user;
   const payload={title:$("title").value.trim(),author:$("author").value.trim()||null,publisher:$("publisher").value.trim()||null,issue_date:$("issueDate").value?($("issueDatePrecision").value==="month"?$("issueDate").value+"-01":$("issueDate").value):null,issue_date_precision:$("issueDatePrecision").value,source_type:$("sourceType").value,source_url:$("sourceUrl").value.trim()||null,category:$("category").value,abstract:$("abstract").value.trim()||null,created_by:user.id,updated_by:user.id};
-   // 若前次新增文章成功、但 PDF 上傳失敗，重試時沿用該筆尚未附檔的文章，避免產生重複資料。
-   const prior=await db.from("fr_articles").select("id").eq("title",payload.title).eq("created_by",user.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
-   if(prior.error)throw prior.error;
-   let articleId=null;
-   if(prior.data){
-    const existingFiles=await db.from("fr_article_files").select("id").eq("article_id",prior.data.id).limit(1);
-    if(existingFiles.error)throw existingFiles.error;
-    if(!existingFiles.data?.length){
-     const upd=await db.from("fr_articles").update(payload).eq("id",prior.data.id).select("id").single();if(upd.error)throw upd.error;articleId=upd.data.id;
-    }
+   let articleId=editingArticleId;
+   if(articleId){
+    const upd=await db.from("fr_articles").update(payload).eq("id",articleId);if(upd.error)throw upd.error;
+   }else{
+    // 若前次新增文章成功、但 PDF 上傳失敗，重試時沿用尚未附檔的文章。
+    const prior=await db.from("fr_articles").select("id").eq("title",payload.title).eq("created_by",user.id).order("created_at",{ascending:false}).limit(1).maybeSingle();if(prior.error)throw prior.error;
+    if(prior.data){const existing=await db.from("fr_article_files").select("id").eq("article_id",prior.data.id).limit(1);if(existing.error)throw existing.error;if(!existing.data?.length)articleId=prior.data.id;}
+    if(!articleId){const ins=await db.from("fr_articles").insert(payload).select("id").single();if(ins.error)throw ins.error;articleId=ins.data.id;}
    }
-   if(!articleId){const a=await db.from("fr_articles").insert(payload).select().single();if(a.error)throw a.error;articleId=a.data.id;}
    const rightsPayload={article_id:articleId,review_status:$("rightsStatus").value,legal_basis:$("legalBasis").value.trim()||null,evidence_url:$("evidenceUrl").value.trim()||null,notes:$("rightsNotes").value.trim()||null,reviewed_by:user.id,reviewed_at:$("rightsStatus").value==="pending"?null:new Date().toISOString()};
    const oldRights=await db.from("fr_rights_records").select("id").eq("article_id",articleId).limit(1).maybeSingle();if(oldRights.error)throw oldRights.error;
-   const rights=oldRights.data?await db.from("fr_rights_records").update(rightsPayload).eq("id",oldRights.data.id):await db.from("fr_rights_records").insert(rightsPayload);
-   if(rights.error)throw rights.error;
+   const rights=oldRights.data?await db.from("fr_rights_records").update(rightsPayload).eq("id",oldRights.data.id):await db.from("fr_rights_records").insert(rightsPayload);if(rights.error)throw rights.error;
    const file=$("pdfFile").files[0];
    if(file){if(file.type!=="application/pdf")throw new Error("只接受 PDF 檔案。");if(file.size>52428800)throw new Error("PDF 不可超過 50MB。");
-    // Storage object key 僅使用英數與副檔名；原始中文檔名另存於資料庫供顯示。
-    const path=articleId+"/"+Date.now()+".pdf";
-    const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
-    const fr=await db.from("fr_article_files").insert({article_id:articleId,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id});if(fr.error)throw fr.error;
+    const path=articleId+"/"+Date.now()+".pdf";const up=await db.storage.from("financial-reading-pdfs").upload(path,file,{contentType:"application/pdf",upsert:false});if(up.error)throw up.error;
+    const priorFiles=await db.from("fr_article_files").update({is_current:false}).eq("article_id",articleId);if(priorFiles.error)throw priorFiles.error;
+    const fr=await db.from("fr_article_files").insert({article_id:articleId,storage_path:path,original_filename:file.name,mime_type:"application/pdf",size_bytes:file.size,uploaded_by:user.id,is_current:true});if(fr.error)throw fr.error;
    }
-  $("articleForm").reset();$("issueDate").type="date";$("issueDateHint").textContent="請填寫完整年月日。";msg("articleMsg","文章已新增。");await loadArticles();await loadMonths();
+  resetArticleForm();msg("articleMsg",wasEditing?"文章已更新。":"文章已新增。");await loadArticles();await loadMonths();
  }catch(err){msg("articleMsg","儲存失敗："+err.message,true);}finally{btn.disabled=false;}
 });
 $("monthForm").addEventListener("submit",async e=>{
